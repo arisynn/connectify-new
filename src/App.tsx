@@ -11,6 +11,7 @@ import { ThemeProvider } from './core/theme/ThemeProvider';
 import { AudioProvider } from './core/audio/AudioEngine';
 import { ProfileProvider } from './core/profile/ProfileContext';
 import { CDEProvider } from './core/cde';
+import { hasPublicAuth } from './lib/supabase';
 
 const GameApp = () => {
   const { screen, navigate } = useGame();
@@ -23,7 +24,8 @@ const GameApp = () => {
 
   return (
     <div 
-      className="relative w-full h-[100dvh] bg-theme-bg-main bg-[image:var(--asset-bg-global)] bg-cover bg-center overflow-hidden flex flex-col font-sans selection:bg-theme-primary-coral-pink/30"
+      data-screen={screen}
+      className="app-stage relative w-full h-[100dvh] bg-theme-bg-main bg-[image:var(--asset-bg-global)] bg-cover bg-center overflow-hidden flex flex-col font-sans selection:bg-theme-primary-coral-pink/30"
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
     >
        <div className="relative flex-1 w-full overflow-hidden flex flex-col">
@@ -36,7 +38,7 @@ const GameApp = () => {
            {/* Other screens are managed here or inside MainLobby */}
            {screen !== 'boot' && screen !== 'startup' && screen !== 'login' && (
              <>
-               <MainLobby />
+               {screen === 'home' && <MainLobby />}
                
                <DestinationScreen />
              </>
@@ -47,6 +49,7 @@ const GameApp = () => {
 };
 
 export default function App() {
+  if (!import.meta.env.DEV && !hasPublicAuth) return <main className="min-h-dvh flex flex-col items-center justify-center bg-slate-950 text-white text-center p-8 gap-5" data-testid="configuration-required"><h1 className="text-3xl font-bold">Connectify sedang dipersiapkan.</h1><p data-testid="configuration-message">Koneksi akun publik belum aktif. Silakan kembali setelah konfigurasi selesai.</p></main>;
   return (
     <ProfileProvider>
       <CDEProvider>

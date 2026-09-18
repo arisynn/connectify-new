@@ -9,6 +9,7 @@ import { useMultiplayer } from '../core/hooks/useMultiplayer';
 import { DynamicIcon } from '../components/theme/DynamicIcon';
 import { generateBoard } from '../core/board';
 import { useTheme } from '../core/theme/ThemeProvider';
+import { useCDE } from '../core/cde';
 import { MultiplayerGameplay } from '../game/MultiplayerGameplay';
 import { MultiplayerBlockPuzzleGameplay } from '../game/block-puzzle/MultiplayerBlockPuzzleGameplay';
 
@@ -16,6 +17,8 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
   const { navigate, user } = useGame();
   const { profile } = useProfile();
   const { activeTheme } = useTheme();
+  const cde=useCDE();
+  const savedMatch=React.useRef<string>();
   
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -28,6 +31,11 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
     createRoom, joinRoom, leaveRoom, setReady,
     startMatch, readyForGame, completeMatch, reportLoss, reportTimeUp
   } = useMultiplayer();
+  useEffect(()=>{
+    if(room?.status!=='FINISHED'||!room.matchId||savedMatch.current===room.matchId)return;
+    savedMatch.current=room.matchId;
+    cde.queueMutation('PROCESS_WIN',{game:room.gameMode==='block-puzzle'?'block':'onet',runId:room.matchId,isMultiplayer:true,isWinner:room.winner===user.name,isFlawless:false,score:0,matches:0,highestCombo:0,timeElapsed:Math.max(0,Date.now()-(room.startAt||Date.now())),level:1});
+  },[room?.status,room?.matchId]);
 
   const handleStartMatch = () => {
       let board;
@@ -229,7 +237,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
              className="absolute inset-0 z-50"
            >
-             <MultiplayerGameplay room={room} user={user} profile={profile} completeMatch={completeMatch} onAttemptLeave={handleAttemptLeave} />
+           <MultiplayerGameplay room={room} user={user} profile={profile} completeMatch={completeMatch} reportTimeUp={reportTimeUp} onAttemptLeave={handleAttemptLeave} />
            </motion.div>
         )}
         {(room?.status === 'PLAYING' || room?.status === 'FINISHED') && room?.gameMode === 'block-puzzle' && (

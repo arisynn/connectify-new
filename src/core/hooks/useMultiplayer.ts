@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { apiFetch as fetch } from '../../lib/api';
 import { useGame } from '../../GameContext';
 import { useProfile } from '../profile/ProfileContext';
 
 export interface Room {
+    matchId?: string;
     id: string;
     host: string;
     status: 'WAITING' | 'STARTING' | 'PLAYING' | 'FINISHED';

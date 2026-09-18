@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { apiFetch as fetch } from '../../lib/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { useGame } from '../../GameContext';
 import { useBlockPuzzle } from './hooks/useBlockPuzzle';
@@ -49,7 +50,7 @@ const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, report
 
      if (room?.status === 'PLAYING') {
 
-         fetch(`/api/multiplayer?action=sync&roomId=${room.id}&name=${encodeURIComponent(user.name)}&progress=${score}`);
+         fetch(`/api/multiplayer?action=sync&roomId=${room.id}&name=${encodeURIComponent(user.name)}&matchId=${room.matchId}&progress=${score}`);
 
      }
 

@@ -1,9 +1,10 @@
-import { MISSION_REWARDS } from './economy';
+import { MISSION_REWARDS, getTodayKey, canReceive, creditIncome, ECONOMY_VERSION } from './economy';
 import { WEEKLY_MISSIONS_POOL, generateWeeklyMissions, getWeekNumber } from './misiMingguan';
 
-const withReward = (m) => ({ ...m, rewardType: 'permen', rewardAmount: MISSION_REWARDS.daily[m.difficulty] || 300 });
+const withReward = (m) => ({ ...m, rewardType: 'permen', rewardAmount: MISSION_REWARDS.daily[m.difficulty] || 5 });
 
 export const DAILY_MISSIONS_POOL = [
+    { id: 'd_arcade', type: 'minigame', category: 'arcade', title: 'Petualangan Kecil', desc: 'Menangkan 1 Memory Flip atau Triple Match.', target: 1, difficulty: 'Mudah' },
     // Progress - Clear
     { id: "d_clear_easy", type: "clear", category: "progress", title: "Pemanasan", desc: "Selesaikan 2 level.", target: 2, difficulty: "Mudah" },
     { id: "d_clear_med", type: "clear", category: "progress", title: "Makin Jago", desc: "Selesaikan 4 level.", target: 4, difficulty: "Menengah" },
@@ -78,14 +79,14 @@ export const generateDailyMissions = function(profile) {
     if (highestLevel >= 15) playerDiff = "Sulit";
     else if (highestLevel >= 5) playerDiff = "Menengah";
 
-    const rng = seededRng(new Date().toDateString());
+    const rng = seededRng(getTodayKey());
 
     const slots = [
         ['progress'], // Slot 1: clear, match, score
         ['skill'],    // Slot 2: combo, flawless
         ['speed'],    // Slot 3: survivor, fast_clear
         ['economy'],  // Slot 4: openChest
-        ['progress', 'skill', 'speed', 'feature'] // Slot 5: Wildcard (anything)
+        ['arcade'] // A minigame mission is always available.
     ];
 
     const selected = [];
@@ -138,6 +139,8 @@ const EVENT_TO_TYPE = {
     useShuffle: 'useShuffle',
     dailyClaimed: 'complete_daily',
     dailyAllClaimed: 'complete_daily_all',
+    minigameWin: 'minigame',
+    blockLines: 'blockLines',
 };
 
 // "Peak" missions keep the best single value instead of accumulating.
@@ -173,17 +176,31 @@ const applyEvent = (missions, type, amount) => {
 // Ensures both daily (activeMissions) and weekly (activeWeeklyMissions) sets exist & are current.
 export const checkDailyMissions = (profile) => {
     let p = { ...profile };
-    const today = new Date().toDateString();
+    const today = getTodayKey();
+    p.pendingMissions = [...(p.pendingMissions || [])];
+    const archive = (missions, period, scope) => {
+      for (const m of missions || []) {
+        if (!m.claimed && m.progress >= m.target) {
+          const id = `${period}:${m.id}`;
+          if (!p.pendingMissions.some(x=>x.id===id)) p.pendingMissions.push({...m,id,scope,savedFrom:period,rewardAmount:MISSION_REWARDS[scope][m.difficulty]||5});
+        }
+      }
+    };
     if (!p.activeMissions || p.activeMissions.length === 0 || p.dailyMissionsDate !== today) {
+        archive(p.activeMissions,p.dailyMissionsDate,'daily');
         p.activeMissions = generateDailyMissions(p).map(m => ({ ...m, progress: 0, claimed: false }));
         p.dailyMissionsDate = today;
         p.dailyBonusClaimed = false;
     }
     const week = getWeekNumber(new Date());
     if (!p.activeWeeklyMissions || p.activeWeeklyMissions.length === 0 || p.weeklyMissionsWeek !== week) {
+        archive(p.activeWeeklyMissions,p.weeklyMissionsWeek,'weekly');
         p.activeWeeklyMissions = generateWeeklyMissions(p).map(m => ({ ...m, progress: 0, claimed: false }));
         p.weeklyMissionsWeek = week;
     }
+    // Reprice pre-update missions without deleting earned progress or claims.
+    p.activeMissions = p.activeMissions.map(m => ({ ...m, rewardAmount: MISSION_REWARDS.daily[m.difficulty] || 5 }));
+    p.activeWeeklyMissions = p.activeWeeklyMissions.map(m => ({ ...m, rewardAmount: MISSION_REWARDS.weekly[m.difficulty] || 8 }));
     return p;
 };
 
@@ -233,18 +250,22 @@ export const findMission = (profile, missionId) => {
     if (idx >= 0) return { list: 'activeMissions', index: idx, mission: daily[idx], scope: 'daily' };
     idx = weekly.findIndex(m => m.id === missionId);
     if (idx >= 0) return { list: 'activeWeeklyMissions', index: idx, mission: weekly[idx], scope: 'weekly' };
+    const pending=profile.pendingMissions||[];
+    idx=pending.findIndex(m=>m.id===missionId);
+    if(idx>=0) return {list:'pendingMissions',index:idx,mission:pending[idx],scope:'saved'};
     return null;
 };
 
 // Pure claim logic shared by client (optimistic) and server (authoritative).
 // Returns { profile, permenDelta, error }.
 export const claimMissionReward = (profile, missionId) => {
-    let p = { ...profile };
+    let p = checkDailyMissions(profile);
     const found = findMission(p, missionId);
     if (!found) return { profile: p, permenDelta: 0, error: 'MISSION_NOT_FOUND' };
     const { list, index, mission, scope } = found;
     if ((mission.progress || 0) < mission.target) return { profile: p, permenDelta: 0, error: 'MISSION_NOT_COMPLETE' };
     if (mission.claimed) return { profile: p, permenDelta: 0, error: 'MISSION_ALREADY_CLAIMED' };
+    if (!canReceive(p, mission.rewardAmount)) return { profile: p, permenDelta: 0, error: 'DAILY_INCOME_LIMIT' };
 
     const missions = [...p[list]];
     missions[index] = { ...mission, claimed: true };
@@ -258,6 +279,8 @@ export const claimMissionReward = (profile, missionId) => {
     }
 
     if (scope === 'daily') p = onDailyMissionClaimed(p);
+    if (scope === 'saved' && mission.scope === 'daily') p.statistics = {...p.statistics,totalDailyMissionsCompleted:(p.statistics?.totalDailyMissionsCompleted||0)+1};
+    p = creditIncome(p, permenDelta);
     return { profile: p, permenDelta, error: null };
 };
 

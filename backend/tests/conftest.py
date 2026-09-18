@@ -3,7 +3,26 @@ import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("preview_endpoint", "https://797bbceb-1544-416e-9057-9b67f27df8b2.preview.emergentagent.com").rstrip("/")
+
+def _load_base_url() -> str:
+    env_url = os.environ.get("REACT_APP_BACKEND_URL")
+    if env_url:
+        return env_url.rstrip("/")
+
+    env_file = "/app/frontend/.env"
+    if os.path.exists(env_file):
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if line.startswith("REACT_APP_BACKEND_URL="):
+                    return line.split("=", 1)[1].strip().rstrip("/")
+
+    raise RuntimeError("REACT_APP_BACKEND_URL is required for tests")
+
+
+BASE_URL = _load_base_url()
 API = f"{BASE_URL}/api/cde"
 
 

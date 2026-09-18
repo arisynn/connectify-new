@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import fs from 'node:fs';
+import path from 'node:path';
 
 let supabaseInstance: any = null;
 let initializationAttempted = false;
@@ -10,7 +12,14 @@ let initializationAttempted = false;
 // the SQL functions in /supabase/migrations.
 // ---------------------------------------------------------------------------
 type Row = Record<string, any>;
-const tables: Record<string, Row[]> = {};
+const previewFile = process.env.PREVIEW_DATA_FILE;
+const tables: Record<string, Row[]> = previewFile && fs.existsSync(previewFile) ? JSON.parse(fs.readFileSync(previewFile, 'utf8')) : {};
+const persistPreview = () => {
+  if (!previewFile || process.env.NODE_ENV === 'production') return;
+  fs.mkdirSync(path.dirname(previewFile), {recursive:true});
+  fs.writeFileSync(previewFile+'.tmp', JSON.stringify(tables));
+  fs.renameSync(previewFile+'.tmp',previewFile);
+};
 const getTable = (name: string) => (tables[name] = tables[name] || []);
 
 const UNIQUE_KEYS: Record<string, string[]> = {
@@ -77,6 +86,7 @@ class MockQuery {
         }
         const inserted = rows.map(r => ({ id: crypto.randomUUID(), created_at: new Date().toISOString(), ...r }));
         t.push(...inserted);
+        persistPreview();
         return Promise.resolve({ data: inserted.map(r => ({ ...r })), error: null });
       }
       if (this.op === 'upsert') {
@@ -84,6 +94,7 @@ class MockQuery {
         const existing = key ? t.find(r => String(r[key]) === String(this.payload[key])) : null;
         if (existing) Object.assign(existing, this.payload);
         else t.push({ id: crypto.randomUUID(), ...this.payload });
+        persistPreview();
         return Promise.resolve({ data: [existing || this.payload], error: null });
       }
       if (this.op === 'update') {
@@ -93,11 +104,13 @@ class MockQuery {
           if (err) return Promise.resolve({ data: null, error: err });
           Object.assign(r, this.payload);
         }
+        persistPreview();
         return Promise.resolve({ data: rows.map(r => ({ ...r })), error: null });
       }
       if (this.op === 'delete') {
         const rows = this.matching();
         tables[this.table] = t.filter(r => !rows.includes(r));
+        persistPreview();
         return Promise.resolve({ data: rows, error: null });
       }
     } catch (e: any) {
@@ -156,6 +169,7 @@ const mockRpc = async (fn: string, args: Row) => {
   profile.revision = Number(profile.revision) + 1;
   profile.updated_at = new Date().toISOString();
   log.push({ id: crypto.randomUUID(), idempotency_key: args.p_idempotency_key, account_id: args.p_account_id, operation_type: args.p_operation_type });
+  persistPreview();
   return { data: { ...profile }, error: null };
 };
 
@@ -166,7 +180,7 @@ const createMockSupabase = () => ({
       if (token.startsWith('mock-token:')) {
         return { data: { user: { id: hashToUuid(token.slice('mock-token:'.length)) } }, error: null };
       }
-      return { data: { user: { id: 'mock-uuid-1234' } }, error: null };
+      return { data: { user: null }, error: { message: 'INVALID_TOKEN' } };
     },
   },
   from: (table: string) => new MockQuery(table),
@@ -180,10 +194,13 @@ export function getSupabase(): any {
     const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey || !supabaseUrl.startsWith('http')) {
+      if (process.env.NODE_ENV === 'production' || process.env.PREVIEW_MODE !== 'true') return null;
       console.warn('[DEV] Supabase URL or Key is missing or invalid. Using in-memory mock database.');
       supabaseInstance = createMockSupabase();
       return supabaseInstance;
     }
+
+    if (process.env.NODE_ENV === 'production' && !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) return null;
 
     supabaseInstance = createClient(supabaseUrl, supabaseKey);
   }

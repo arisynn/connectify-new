@@ -83,7 +83,7 @@ const GameplayContent = () => {
         </div>
 
         {/* Center Board Area */}
-        <div className="flex-1 w-full h-full flex items-center justify-center relative md:border-r-4 md:border-white/20 md:bg-white/10 md:backdrop-blur-sm">
+        <div className="flex-1 min-h-0 w-full h-full flex items-center justify-center relative md:border-r-4 md:border-white/20 md:bg-white/10 md:backdrop-blur-sm">
           <OnetBoard 
             boardRef={boardRef}
             board={board}
@@ -112,6 +112,8 @@ const GameplayContent = () => {
           <div className="flex items-center justify-between mb-8">
              <h2 className="text-2xl font-black text-theme-text-primary uppercase tracking-tighter drop-shadow-sm">Onet Game</h2>
              <button
+                data-testid="onet-pause-desktop"
+                aria-label="Jeda Onet"
                 onClick={() => setIsPaused(true)}
                 className="bg-white p-2.5 flex items-center justify-center hover:bg-gray-50 border-theme-sm border-theme-border-main shadow-theme-base rounded-[4px] active:translate-y-[2px] active:translate-x-[2px] transition-all"
              >
@@ -125,24 +127,25 @@ const GameplayContent = () => {
           <div className="flex flex-col gap-5 mb-8">
             <div className="bg-white p-4 text-center border-theme-sm border-theme-border-main shadow-theme-base rounded-xl">
                <div className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1">Level</div>
-               <div className="text-4xl font-black text-theme-text-primary leading-none">{currentLevel}</div>
+               <div data-testid="onet-level-desktop" className="text-4xl font-black text-theme-text-primary leading-none">{currentLevel}</div>
             </div>
             <div className="bg-white p-4 text-center border-theme-sm border-theme-border-main shadow-theme-base rounded-xl">
                <div className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1">Skor</div>
-               <div className="text-4xl font-black text-theme-text-primary leading-none">{score}</div>
+               <div data-testid="onet-score-desktop" className="text-4xl font-black text-theme-text-primary leading-none">{score}</div>
             </div>
             <div className={`p-4 text-center border-theme-sm border-theme-border-main shadow-theme-base rounded-xl transition-colors duration-300 ${time <= 10 ? 'bg-rose-300 shadow-[inset_0_0_40px_rgba(239,68,68,0.6)] animate-pulse' : 'bg-sky-200'}`}>
                <div className={`text-xs font-extrabold uppercase tracking-wider mb-1 ${time <= 10 ? 'text-slate-800' : 'text-slate-600'}`}>Waktu</div>
-               <div className="text-4xl font-black text-theme-text-primary leading-none">{time}s</div>
+               <div data-testid="onet-timer-desktop" className="text-4xl font-black text-theme-text-primary leading-none">{time}s</div>
             </div>
           </div>
 
           <div className="mt-auto flex flex-col gap-4">
-            <button onClick={useShuffle} className="bg-indigo-200 w-full py-4 px-5 flex items-center justify-between hover:bg-indigo-300 border-theme-sm border-theme-border-main shadow-theme-base rounded-xl active:translate-y-[2px] active:translate-x-[2px] transition-all">
+            <p data-testid="onet-rules" className="text-xs text-theme-text-secondary leading-relaxed">Hubungkan gambar dan bentuk kelompok yang sama, maksimal 2 belokan. Tile gabungan tetap menempati sel grid asli.</p>
+            <button data-testid="onet-shuffle-desktop" onClick={useShuffle} className="bg-indigo-200 w-full py-4 px-5 flex items-center justify-between hover:bg-indigo-300 border-theme-sm border-theme-border-main shadow-theme-base rounded-xl active:translate-y-[2px] active:translate-x-[2px] transition-all">
                <span className="font-black text-lg tracking-wide text-theme-text-primary">SHUFFLE</span>
                <span className="bg-white border-theme-sm border-theme-border-main rounded-md px-3 py-1 text-base font-black">{profile.shuffles}</span>
             </button>
-            <button onClick={useHint} className="bg-amber-200 w-full py-4 px-5 flex items-center justify-between hover:bg-amber-300 border-theme-sm border-theme-border-main shadow-theme-base rounded-xl active:translate-y-[2px] active:translate-x-[2px] transition-all">
+            <button data-testid="onet-hint-desktop" onClick={useHint} className="bg-amber-200 w-full py-4 px-5 flex items-center justify-between hover:bg-amber-300 border-theme-sm border-theme-border-main shadow-theme-base rounded-xl active:translate-y-[2px] active:translate-x-[2px] transition-all">
                <span className="font-black text-lg tracking-wide text-theme-text-primary">HINT</span>
                <span className="bg-white border-theme-sm border-theme-border-main rounded-md px-3 py-1 text-base font-black">{profile.hints}</span>
             </button>

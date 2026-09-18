@@ -6,8 +6,6 @@ import { CDE } from '../cde/CDE';
 interface ProfileContextType {
   profile: any;
   updateProfile: (updates: any) => void;
-  addCurrency: (amount: number) => void;
-  spendCurrency: (amount: number) => boolean;
   refreshProfileFromEngine: () => void;
   clearProfile: () => void;
   addNotification: (title: string, message: string, type?: string) => void;
@@ -80,15 +78,9 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (CDE.getState().initialized && CDE.getState().account && CDE.getState().profile) {
           const cdeUpdates: any = { ...resolvedUpdates };
           
-          // Separate coins from other updates
-          if (resolvedUpdates.coins !== undefined) {
-              const currentPermen = CDE.getState().profile!.permen || 0;
-              const diff = resolvedUpdates.coins - currentPermen;
-              if (diff !== 0) {
-                  CDE.queueMutation('MUTATE_PERMEN', { amount: diff });
-              }
-              delete cdeUpdates.coins;
-          }
+          // Currency has no generic setter. Only server-priced actions may change it.
+          delete cdeUpdates.coins;
+          delete cdeUpdates.permen;
           
           if (Object.keys(cdeUpdates).length > 0) {
               CDE.queueMutation('UPDATE_PROFILE', cdeUpdates);
@@ -96,23 +88,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
   }, [derivedProfile]);
 
-  const addCurrency = useCallback((amount: number) => {
-    if (CDE.getState().initialized && CDE.getState().account) {
-        CDE.queueMutation('MUTATE_PERMEN', { amount });
-    }
-  }, []);
-
-  const spendCurrency = useCallback((amount: number) => {
-    if (CDE.getState().initialized && CDE.getState().account) {
-        const currentPermen = CDE.getState().profile?.permen || 0;
-        if (currentPermen >= amount) {
-             CDE.queueMutation('MUTATE_PERMEN', { amount: -amount });
-             return true;
-        }
-        return false;
-    }
-    return false;
-  }, []);
 
   const addNotification = useCallback((title: string, message: string, type: string = 'info') => {
       const prev = derivedProfile;
@@ -150,7 +125,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [derivedProfile]);
 
   return (
-    <ProfileContext.Provider value={{ profile: derivedProfile, updateProfile, addCurrency, spendCurrency, refreshProfileFromEngine, clearProfile, addNotification, markNotificationRead }}>
+    <ProfileContext.Provider value={{ profile: derivedProfile, updateProfile, refreshProfileFromEngine, clearProfile, addNotification, markNotificationRead }}>
       {children}
     </ProfileContext.Provider>
   );

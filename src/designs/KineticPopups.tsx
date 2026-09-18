@@ -24,6 +24,8 @@ export const KineticBackdrop = ({ children, onClick, isOpen }: { children: React
 
 export const KineticCloseButton = ({ onClick, className = "" }: { onClick: () => void, className?: string }) => (
   <motion.button
+    data-testid={`dialog-close-${React.useId().replace(/:/g,'')}`}
+    aria-label="Tutup dialog"
     whileHover={{ scale: 1.1 }}
     whileTap={{ scale: 0.9, y: "var(--geometry-press-translate-y)", boxShadow: "var(--geometry-shadow-active)" }}
     onClick={onClick}
@@ -50,6 +52,9 @@ export const KineticModal = ({
 }) => (
   <KineticBackdrop isOpen={isOpen} onClick={onClose}>
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      data-testid={`dialog-${React.useId().replace(/:/g,'')}`}
       initial={{ scale: 0.9, y: 20, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
       exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -138,6 +143,7 @@ export const KineticDialog = ({
     <p className="font-bold text-theme-text-secondary text-sm leading-tight mb-6">{description}</p>
     <div className="flex flex-col gap-3">
       <motion.button
+        data-testid={`dialog-confirm-${title.toLowerCase().replace(/\W+/g,'-')}`}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.95, y: "var(--geometry-press-translate-y)", x: "var(--geometry-press-translate-x)", boxShadow: "var(--geometry-shadow-active)" }}
         onClick={primaryAction.onClick}
@@ -147,6 +153,7 @@ export const KineticDialog = ({
       </motion.button>
       {secondaryAction && (
         <motion.button
+          data-testid={`dialog-cancel-${title.toLowerCase().replace(/\W+/g,'-')}`}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.95, y: "var(--geometry-press-translate-y)", x: "var(--geometry-press-translate-x)", boxShadow: "var(--geometry-shadow-active)" }}
           onClick={secondaryAction.onClick}

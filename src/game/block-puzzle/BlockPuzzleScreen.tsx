@@ -37,6 +37,8 @@ export const BlockPuzzleScreen = () => {
 const BlockPuzzleContent = () => {
   const { navigate } = useGame();
   const [isPaused, setIsPaused] = useState(false);
+  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+  const touchOffset = useRef(0);
   const {
     board,
     obstacles,
@@ -67,9 +69,12 @@ const BlockPuzzleContent = () => {
   } = useBlockPuzzle();
 
   const powerups = usePowerups();
+  const pauseGame=()=>{setDragState(null);setPreviewPlacement(null);setIsPaused(true);};
+  const restart=()=>{setSelectedPiece(null);powerups.reset();initGame();};
+  useEffect(()=>{const hide=()=>{if(document.hidden)pauseGame();};document.addEventListener('visibilitychange',hide);return()=>document.removeEventListener('visibilitychange',hide);},[]);
 
   const handleShuffle = () => {
-    if (gameState === 'playing' || gameState === 'gameover') {
+    if (!isPaused && !isAnimating && gameState === 'playing') {
       if (powerups.requestShuffle()) {
         shuffleTray();
       }
@@ -77,6 +82,11 @@ const BlockPuzzleContent = () => {
   };
 
   const handleCellClick = (r: number, c: number) => {
+    if(isPaused || isAnimating || gameState !== 'playing') return;
+    if(!powerups.activePowerup && selectedPiece !== null) {
+      if(placePiece(r,c,selectedPiece)) setSelectedPiece(null);
+      return;
+    }
     if (powerups.activePowerup === 'hammer') {
       if (board[r][c] !== '') {
         const success = useHammerAt(r, c);
@@ -105,7 +115,9 @@ const BlockPuzzleContent = () => {
   };
 
   const handlePointerDown = (e: React.PointerEvent, piece: Piece, index: number) => {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' || isPaused || isAnimating) return;
+    setSelectedPiece(index);
+    touchOffset.current = e.pointerType === 'touch' ? 80 : 0;
     e.preventDefault();
     setDragState({
       piece,
@@ -131,7 +143,7 @@ const BlockPuzzleContent = () => {
         const totalCellStep = cellSize + 2; // size + 1 gap
         
         // Offset the touch point so the piece floats above finger
-        const touchYOffset = -80;
+        const touchYOffset = -touchOffset.current;
         const adjustedY = e.clientY + touchYOffset;
         const adjustedX = e.clientX;
 
@@ -169,6 +181,7 @@ const BlockPuzzleContent = () => {
       
       if (previewPlacement) {
          placePiece(previewPlacement.row, previewPlacement.col);
+         setSelectedPiece(null);
       }
       
       setDragState(null);
@@ -178,11 +191,13 @@ const BlockPuzzleContent = () => {
     if (dragState && dragState.isDragging) {
       window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointercancel', handlePointerUp);
     }
 
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
     };
   }, [dragState, previewPlacement, board, placePiece]);
 
@@ -193,12 +208,13 @@ const BlockPuzzleContent = () => {
         {/* Mobile Header */}
         <div className="w-full md:hidden flex justify-center bg-[#f8fafc]">
           <BlockPuzzleHeader 
+            testIdPrefix="block-mobile"
             score={score} 
             currentLevel={currentLevel}
             moves={moves}
             missions={currentLevelConfig.missions}
             missionResults={missionResults}
-            onPause={() => setIsPaused(true)}
+            onPause={pauseGame}
           />
         </div>
 
@@ -209,6 +225,7 @@ const BlockPuzzleContent = () => {
           <div className="flex-1 w-full max-w-md md:max-w-2xl flex flex-col items-center justify-center p-4">
             <div 
               ref={boardRef}
+              data-testid="block-board"
               className={`w-full max-w-[350px] md:max-w-[450px] aspect-square bg-theme-surface-card-soft border-theme-lg border-theme-border-main rounded-xl shadow-theme-lg grid relative transition-all ${powerups.activePowerup === 'hammer' ? 'ring-4 ring-amber-400 opacity-90' : ''}`}
               style={{ 
                   gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
@@ -237,8 +254,11 @@ const BlockPuzzleContent = () => {
                     }
 
                     return (
-                        <div 
+                        <button
                           key={`${r}-${c}`}
+                          data-testid={`block-cell-${r}-${c}`}
+                          aria-label={`Taruh balok baris ${r+1}, kolom ${c+1}`}
+                          data-filled={cellColor !== ''}
                           onClick={() => handleCellClick(r, c)}
                           className={`relative w-full h-full rounded-sm transition-colors duration-150 border-theme-sm 
                               ${clearingCells.some(cell => cell.r === r && cell.c === c) ? 'bg-white brightness-150 scale-105 border-white shadow-[0_0_10px_rgba(255,255,255,0.8)] z-10' :
@@ -250,7 +270,7 @@ const BlockPuzzleContent = () => {
                           `}
                         >
                           <ObstacleOverlay type={obstacles[r][c]} />
-                        </div>
+                        </button>
                     );
                   })
               )}
@@ -275,13 +295,18 @@ const BlockPuzzleContent = () => {
           </div>
 
           {/* TRAY */}
+          <p data-testid="block-controls-help" className="text-xs text-theme-text-secondary px-4 text-center font-bold">{selectedPiece !== null ? 'Pilih sel kiri atas untuk menaruh balok.' : 'Geser balok, atau pilih balok lalu ketuk papan.'}</p>
           <div className={`w-full max-w-md h-40 flex items-center justify-around px-4 pb-8 transition-opacity ${powerups.activePowerup === 'hammer' ? 'opacity-30 pointer-events-none' : ''}`}>
             {tray.map((piece, i) => (
                 <div key={i} className="w-24 h-24 flex items-center justify-center">
                   {piece && !(dragState?.trayIndex === i) && (
-                      <div 
+                      <button
+                        data-testid={`block-piece-${i}`}
+                        aria-label={`Pilih balok ${i+1}`}
+                        aria-pressed={selectedPiece===i}
                         onPointerDown={(e) => handlePointerDown(e, piece, i)}
-                        className="grid cursor-grab active:cursor-grabbing hover:scale-105 transition-transform"
+                        onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSelectedPiece(i);}}}
+                        className={`grid cursor-grab active:cursor-grabbing hover:scale-105 transition-transform rounded-lg p-2 ${selectedPiece===i?'ring-4 ring-sky-400 bg-sky-100':''}`}
                         style={{
                             gridTemplateColumns: `repeat(${piece.shape[0].length}, 20px)`,
                             gridTemplateRows: `repeat(${piece.shape.length}, 20px)`,
@@ -296,7 +321,7 @@ const BlockPuzzleContent = () => {
                               />
                             ))
                         )}
-                      </div>
+                      </button>
                   )}
                 </div>
             ))}
@@ -320,12 +345,13 @@ const BlockPuzzleContent = () => {
         {/* Desktop Sidebar Panel */}
         <div className="hidden md:flex flex-col w-96 h-full bg-white/40 backdrop-blur-md p-8 z-20 shrink-0 border-l-4 border-white/40 overflow-y-auto">
           <BlockPuzzleHeader 
+            testIdPrefix="block-desktop"
             score={score} 
             currentLevel={currentLevel}
             moves={moves}
             missions={currentLevelConfig.missions}
             missionResults={missionResults}
-            onPause={() => setIsPaused(true)}
+            onPause={pauseGame}
           />
           <div className="mt-auto pt-8">
             <BlockPuzzleFooter 
@@ -347,7 +373,7 @@ const BlockPuzzleContent = () => {
             className="fixed pointer-events-none z-[100]"
             style={{
                left: dragState.x,
-               top: dragState.y - 80,
+               top: dragState.y - touchOffset.current,
                transform: 'translate(-50%, -50%)', // Center horizontally over touch
             }}
          >
@@ -373,12 +399,12 @@ const BlockPuzzleContent = () => {
 
       {/* PAUSE MODAL */}
       <KineticModal isOpen={isPaused} onClose={() => setIsPaused(false)} colorClass="bg-theme-surface-card-white" widthClass="w-full max-w-xs" className="text-center">
-        <h2 className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter mb-8">PAUSED</h2>
+        <h2 data-testid="block-paused-title" className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter mb-8">Jeda</h2>
         <div className="flex flex-col gap-3">
-          <KineticButton onClick={() => setIsPaused(false)} colorClass="bg-green-400" className="w-full py-3 flex items-center justify-center gap-2">
+          <KineticButton data-testid="block-resume" onClick={() => setIsPaused(false)} colorClass="bg-green-400" className="w-full py-3 flex items-center justify-center gap-2">
              <Play size={24} className="fill-gray-900" /> Lanjutkan
           </KineticButton>
-          <KineticButton onClick={() => navigate('levels')} colorClass="bg-theme-surface-card-white" className="w-full py-3 text-red-500 shadow-theme-sm">Kembali</KineticButton>
+          <KineticButton data-testid="block-pause-exit" onClick={() => navigate('levels')} colorClass="bg-theme-surface-card-white" className="w-full py-3 text-red-500 shadow-theme-sm">Kembali</KineticButton>
         </div>
       </KineticModal>
 
@@ -401,7 +427,7 @@ const BlockPuzzleContent = () => {
         
         <div className="flex gap-3">
            <KineticButton onClick={() => navigate('levels')} colorClass="bg-theme-surface-card-white" className="flex-1 py-3 text-sm">Kembali</KineticButton>
-           <KineticButton onClick={initGame} colorClass="bg-theme-primary-coral-pink" className="flex-1 py-3 text-sm border-white">Main Lagi</KineticButton>
+           <KineticButton data-testid="block-retry" onClick={restart} colorClass="bg-theme-primary-coral-pink" className="flex-1 py-3 text-sm border-white">Main Lagi</KineticButton>
         </div>
       </KineticModal>
 
@@ -429,8 +455,8 @@ const BlockPuzzleContent = () => {
 
         <div data-testid="block-win-rewards" className="flex gap-3 mb-8">
            <div className="flex-1 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl py-2 flex flex-col items-center shadow-theme-sm">
-              <span className="font-black text-lg text-theme-currency-candy-purple">+{winReward?.permen ?? 0}</span>
-              <span className="font-black text-[9px] text-theme-text-secondary uppercase tracking-widest mt-0.5">Permen</span>
+              <span className="font-black text-lg text-theme-primary-tropical-green">Tercatat</span>
+              <span className="font-black text-[9px] text-theme-text-secondary uppercase tracking-widest mt-0.5">Progres Misi</span>
            </div>
            <div className="flex-1 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl py-2 flex flex-col items-center shadow-theme-sm">
               <span className="font-black text-lg text-blue-500">+{winReward?.chestPoints ?? 0}</span>
@@ -440,7 +466,7 @@ const BlockPuzzleContent = () => {
         
         <div className="flex gap-3">
            <KineticButton onClick={() => navigate('levels')} colorClass="bg-gray-200" className="flex-1 py-3 text-sm border-gray-300 shadow-none">Kembali</KineticButton>
-           <KineticButton onClick={initGame} colorClass="bg-theme-primary-tropical-green" className="flex-1 py-3 text-sm border-white">Lanjut Level Berikutnya</KineticButton>
+           <KineticButton data-testid="block-next-level" onClick={restart} colorClass="bg-theme-primary-tropical-green" className="flex-1 py-3 text-sm border-white">Lanjut Level Berikutnya</KineticButton>
         </div>
       </KineticModal>
 

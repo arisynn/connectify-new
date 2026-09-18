@@ -7,6 +7,7 @@ import { KineticButton, ProgressBar } from '../designs/KineticComponents';
 import { useProfile } from '../core/profile/ProfileContext';
 import { DynamicIcon } from '../components/theme/DynamicIcon';
 import { CHEST_TYPES, openChestAction, calculateDynamicSpeedUpCost, CHEST_POINTS_REQUIRED } from '../core/chest';
+import { EconomyMeter } from '../components/EconomyMeter';
 
 const ChestItem = ({ 
   state, 
@@ -85,6 +86,7 @@ export const ChestScreen = () => {
   const { profile, updateProfile } = useProfile();
   const cde = useCDE();
   const [rewardModal, setRewardModal] = useState<any>(null);
+  const [message,setMessage]=useState('');
 
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -114,6 +116,7 @@ export const ChestScreen = () => {
 
   const handleOpenChest = (slotIndex: number) => {
     const result = openChestAction(profile, slotIndex);
+    if(result.rewards?.error) {setMessage('Batas income hari ini tidak cukup. Peti tetap aman; buka lagi setelah reset 00.00 WIB.');return;}
     if (result.rewards && result.rewards.chestType) {
        audio.playSfx('uiReward', () => audio.playMatch());
        // The authoritative roll happens on the server; the preview shows the local roll.
@@ -188,12 +191,13 @@ export const ChestScreen = () => {
             </div>
             
             {/* Next chest progress */}
+            <div className="px-5 pt-4"><EconomyMeter compact id="chest-income"/>{message&&<p role="status" data-testid="chest-limit-message" className="text-sm text-theme-text-secondary mt-3">{message}</p>}</div>
             <div className="px-5 pt-4 flex items-center gap-3">
                <span className="font-black text-[10px] uppercase tracking-widest text-theme-text-secondary shrink-0">Peti Berikutnya</span>
                <div className="flex-1"><ProgressBar progress={(chestProgress / CHEST_POINTS_REQUIRED) * 100} label={`${chestProgress} / ${CHEST_POINTS_REQUIRED} PTS`} /></div>
             </div>
             <div className="px-5 pt-2 flex items-center justify-between">
-               <span className="font-bold text-[10px] text-theme-text-muted">Menang level = +2 PTS (bonus: flawless, combo, cepat)</span>
+               <span data-testid="chest-reward-policy" className="font-bold text-[10px] text-theme-text-muted">Biasa 5 · Langka 8 · Epik 10 Permen + booster. Setiap peti ke-7 dijamin Epik.</span>
                <div className="flex items-center gap-1 font-black text-xs text-theme-text-primary"><DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain" /> {cde.permen}</div>
             </div>
 
@@ -214,7 +218,8 @@ export const ChestScreen = () => {
                   } else {
                      const h = Math.floor(remainingMs / 3600000);
                      const m = Math.floor((remainingMs % 3600000) / 60000);
-                     const timeLabel = h > 0 ? `${h}j ${m}m` : `${m}m`;
+                    const seconds = Math.floor((remainingMs % 60000)/1000);
+                    const timeLabel = h > 0 ? `${h}j ${m}m` : `${m}m ${seconds}d`;
                      const progressPct = Math.min(100, (elapsed / typeConfig.durationMs) * 100);
                      
                      const cost = calculateDynamicSpeedUpCost(chest.type, chest.startTime, now);

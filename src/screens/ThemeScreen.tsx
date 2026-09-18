@@ -116,7 +116,7 @@ export const ThemeScreen = () => {
                price={theme.price}
                color1={theme.colors.bg || theme.colors['bg-main']} 
                color2={theme.colors.primary || theme.colors['primary-coral-pink']} 
-               onEquip={() => setTheme(theme.id)}
+               onEquip={() => { setTheme(theme.id); updateProfile({activeTheme:theme.id}); }}
                onBuy={() => setPurchaseModal({ id: theme.id, name: theme.name, price: theme.price })}
              />
            );

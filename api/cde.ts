@@ -1,5 +1,8 @@
 import type { Request, Response } from 'express';
 import { getSupabase } from './supabase.js';
+import { verifiedMultiplayerResult } from './multiplayer.js';
+import { unlockAvatars, AVATARS, isAvatarUnlocked } from '../src/core/avatars.js';
+import { recordTransaction, TRANSACTION_LABELS } from '../src/core/economy.js';
 
 
 async function getUserWithRetry(supabase, token) {
@@ -42,6 +45,7 @@ export default async function handler(req: Request, res: Response) {
     }
 
     const action = req.query.action as string;
+    if (action === 'mutate_permen' || action === 'migrate_v2') return res.status(403).json({ error: 'DIRECT_CURRENCY_MUTATION_DISABLED' });
     const supabase = getSupabase();
     
     if (!supabase) {
@@ -67,7 +71,8 @@ export default async function handler(req: Request, res: Response) {
             }
 
             const { data: userData } = await getUserWithRetry(supabase, token);
-            const accountId = userData?.user?.id || 'mock-uuid-1234';
+            const accountId = userData?.user?.id;
+            if (!accountId) return res.status(401).json({ error: 'INVALID_TOKEN' });
 
             // Check Idempotency
             const { data: existingOp, error: existingOpError } = await supabase.from('cde_operations_log')
@@ -307,7 +312,8 @@ export default async function handler(req: Request, res: Response) {
             const { data: userData, error: authError } = await getUserWithRetry(supabase, token);
             
             // For testing purposes when Supabase is mocked
-            const accountId = userData?.user?.id || 'mock-uuid-1234';
+            const accountId = userData?.user?.id;
+            if (!accountId) return res.status(401).json({ error: 'INVALID_TOKEN' });
 
             const { data, error } = await supabase
                 .from('cde_profiles')
@@ -328,7 +334,8 @@ export default async function handler(req: Request, res: Response) {
             }
 
             const { data: userData } = await getUserWithRetry(supabase, token);
-            const accountId = userData?.user?.id || 'mock-uuid-1234';
+            const accountId = userData?.user?.id;
+            if (!accountId) return res.status(401).json({ error: 'INVALID_TOKEN' });
 
             // Use the RPC for atomic mutation
             const { data, error } = await supabase.rpc('cde_mutate_permen', {
@@ -365,11 +372,17 @@ export default async function handler(req: Request, res: Response) {
             }
 
             const { data: userData } = await getUserWithRetry(supabase, token);
-            const accountId = userData?.user?.id || 'mock-uuid-1234';
+            const accountId = userData?.user?.id;
+            if (!accountId) return res.status(401).json({ error: 'INVALID_TOKEN' });
 
             // Get current profile for server-side validation
             const { data: currentProfile, error: getError } = await supabase.from('cde_profiles').select('*').eq('account_id', accountId).single();
             if (getError) throw getError;
+
+            // Detect retried requests before re-validating an already claimed reward.
+            const { data: seen } = await supabase.from('cde_operations_log').select('id').eq('idempotency_key', opId).eq('account_id', accountId).maybeSingle();
+            if (seen) return res.json({ success: true, idempotent: true, result: currentProfile });
+            if (Number(baseRevision) !== Number(currentProfile.revision)) return res.status(409).json({ error: 'CONFLICT_STALE_REVISION' });
 
             let mergedProfileData = { ...currentProfile.profile_data };
             
@@ -396,7 +409,15 @@ export default async function handler(req: Request, res: Response) {
             const currentProf = () => (mergedProfileData.profile || {});
 
             if (type === 'UPDATE_PROFILE') {
-                 const safePayload = { ...payload };
+                 const writable = ['playerName', 'avatar', 'activeAvatarId', 'activeAvatarBackground', 'activeTheme', 'settings', 'notifications', 'currentLevel', 'blockPuzzleLevel', 'blockPuzzleSkill'];
+                 const safePayload = Object.fromEntries(Object.entries(payload).filter(([key]) => writable.includes(key)));
+                 if (safePayload.activeTheme && !['sweets', ...(currentProf().unlockedThemes || [])].includes(safePayload.activeTheme)) return res.status(400).json({ error: 'THEME_LOCKED' });
+                 for (const key of ['avatar', 'activeAvatarId']) {
+                   if (safePayload[key] && !AVATARS.some(a => a.id === safePayload[key] && isAvatarUnlocked(currentProf(), a))) return res.status(400).json({ error: 'AVATAR_LOCKED' });
+                 }
+                 for (const [key, highest] of [['currentLevel', 'highestLevel'], ['blockPuzzleLevel', 'highestBlockPuzzleLevel']]) {
+                   if (safePayload[key] !== undefined && (!Number.isInteger(safePayload[key]) || Number(safePayload[key]) < 1 || Number(safePayload[key]) > (currentProf()[highest] || 1))) return res.status(400).json({ error: 'LEVEL_LOCKED' });
+                 }
                  const protectedFields = ['hints', 'shuffles', 'hammers', 'bombs', 'chestSlots', 'chestProgress', 'activeMissions', 'activeWeeklyMissions', 'weeklyMissions', 'dailyMissionsDate', 'weeklyMissionsWeek', 'dailyBonusClaimed', 'dailyChallengeDate', 'achievements', 'winStreak', 'statistics', 'coins', 'permen'];
                  for (const f of protectedFields) {
                      delete safePayload[f];
@@ -447,6 +468,15 @@ export default async function handler(req: Request, res: Response) {
                  if (itemId === 'shuffle') nextProf = updateMissions(nextProf, 'useShuffle', 1);
                  applyProfilePatch(nextProf);
             } else if (type === 'PROCESS_WIN') {
+                 if(payload.isMultiplayer){
+                   const {data:owner}=await supabase.from('cde_accounts').select('username').eq('id',accountId).single();
+                   const verified=verifiedMultiplayerResult(payload.runId,owner?.username);
+                   if(!verified||verified.game!==payload.game||verified.isWinner!==payload.isWinner) return res.status(400).json({error:'UNVERIFIED_MULTIPLAYER_RESULT'});
+                 }
+                 if (!['onet', 'block', 'memory', 'triple'].includes(payload.game) || !payload.runId || typeof payload.runId !== 'string') return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
+                 for (const [key, max] of Object.entries({ score: 1000000, matches: 200, highestCombo: 100, timeElapsed: 86400000, blocksCleared: 10000, linesCleared: 1000, stars: 3, level: 10000 })) {
+                   if (payload[key] !== undefined && (!Number.isFinite(payload[key]) || payload[key] < 0 || payload[key] > max)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
+                 }
                  const { RewardEngine } = await import('../src/core/reward.js');
                  const { profile: newProfile, rewardResult } = RewardEngine.processWin(currentProf(), payload);
                  permenDelta = (rewardResult.permen || 0) + (rewardResult.dailyBonus || 0);
@@ -463,6 +493,7 @@ export default async function handler(req: Request, res: Response) {
                  const { updateMissions } = await import('../src/core/misiHarian.js');
                  const { profile: newProfile, rewards } = openChestAction(currentProf(), payload.slotId);
                  if (rewards === null) return res.status(400).json({ error: 'CHEST_NOT_READY' });
+                 if (rewards.error) return res.status(400).json({ error: rewards.error });
                  if (!rewards.chestType) return res.status(400).json({ error: 'CHEST_EMPTY' });
                  permenDelta = rewards.permen || 0;
                  const withMissions = updateMissions(newProfile, 'openChest', 1);
@@ -484,6 +515,10 @@ export default async function handler(req: Request, res: Response) {
                  return res.status(400).json({ error: 'UNKNOWN_OPERATION_TYPE' });
             }
 
+            const label = TRANSACTION_LABELS[type];
+            if (label && permenDelta) applyProfilePatch(recordTransaction(currentProf(), { id: opId, amount: permenDelta, source: type, label: type === 'PURCHASE_ITEM' ? `${label}: ${payload.itemId}` : label, balance: Number(currentProfile.permen || 0) + permenDelta }));
+            applyProfilePatch(unlockAvatars(currentProf()));
+
             // Perform transactional update using RPC
             let updatedProfile;
             const rpcResult = await supabase.rpc('cde_mutate_state', {
@@ -498,6 +533,7 @@ export default async function handler(req: Request, res: Response) {
 
             if (rpcResult.error) {
                 if (rpcResult.error.message?.includes('schema cache') || rpcResult.error.code === 'PGRST202' || rpcResult.error.message?.includes('Could not find the function')) {
+                    if(process.env.NODE_ENV === 'production') return res.status(503).json({error:'DATABASE_MIGRATION_REQUIRED'});
                     console.log("RPC cde_mutate_state with p_permen_delta not found, falling back to manual atomic-like update.");
                     
                     // 1. Check idempotency log

@@ -3,6 +3,8 @@ dist
 .env
 *.local
 *.tmp
+.local/
+test_reports/
 
 __pycache__/
 *.pyc

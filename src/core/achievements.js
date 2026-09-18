@@ -1,3 +1,4 @@
+import { canReceive, creditIncome } from './economy';
 export const ACHIEVEMENTS_DATA = [
     {
         id: 'total_score',
@@ -35,7 +36,7 @@ export const ACHIEVEMENTS_DATA = [
             { target: 500, reward: { permen: 2500 } },
             { target: 1000, reward: { permen: 5000, theme: 'mythic' } }
         ],
-        getProgress: (p) => Math.max(0, (p.highestLevel || 1) - 1) + Math.max(0, (p.highestBlockPuzzleLevel || 1) - 1)
+        getProgress: (p) => p.statistics?.totalWins || 0
     },
     {
         id: 'daily_missions',
@@ -183,7 +184,15 @@ export const ACHIEVEMENTS_DATA = [
         ],
         getProgress: (p) => p.statistics?.nearDeathEscapes || 0
     }
-];
+].filter(a => !['overthinker', 'loyalty'].includes(a.id)).map(a => ({
+    ...a, tiers: a.tiers.map((tier, index) => ({ ...tier, reward: { permen: Math.min(10, 5 + index * 2) } }))
+}));
+ACHIEVEMENTS_DATA.push(
+  { id: 'first_win', category: 'progression', title: 'Langkah Pertama', desc: n => `Menangkan ${n} permainan.`, tiers: [{ target: 1, reward: { permen: 5 } }], getProgress: p => p.statistics?.totalWins || 0 },
+  { id: 'memory_master', category: 'mastery', title: 'Ingatan Tajam', desc: n => `Menangkan ${n} Memory Flip.`, tiers: [1, 5, 20].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.memoryWins || 0 },
+  { id: 'triple_master', category: 'mastery', title: 'Tiga Serangkai', desc: n => `Menangkan ${n} Triple Match.`, tiers: [1, 5, 20].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.tripleWins || 0 },
+  { id: 'block_lines', category: 'mastery', title: 'Arsitek Balok', desc: n => `Bersihkan ${n} garis Block Puzzle.`, tiers: [5, 25, 100].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.blockLines || 0 }
+);
 
 export const getCurrentTier = (profile, achId) => {
     return profile.achievements?.[achId] || 0;
@@ -241,12 +250,13 @@ export const claimAchievement = (profile, achievementId) => {
     if (tierIdx >= ach.tiers.length) return { profile: p, permenDelta: 0, error: 'ACHIEVEMENT_MAXED' };
     const tier = ach.tiers[tierIdx];
     if (ach.getProgress(p) < tier.target) return { profile: p, permenDelta: 0, error: 'ACHIEVEMENT_NOT_COMPLETE' };
+    if (!canReceive(p, tier.reward.permen)) return { profile: p, permenDelta: 0, error: 'DAILY_INCOME_LIMIT' };
     const before = p.permen || 0;
     const next = applyAchievementReward(p, { id: ach.id, tierIdx, tier });
     const permenDelta = (next.permen || 0) - before;
     delete next.permen;
     delete next.coins;
-    return { profile: next, permenDelta, error: null, tier, tierIdx };
+    return { profile: creditIncome(next, permenDelta), permenDelta, error: null, tier, tierIdx };
 };
 
 export const getAchievementRewardSummary = (tier) => {

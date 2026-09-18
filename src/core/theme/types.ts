@@ -52,6 +52,8 @@ export interface ThemeManifest {
 }
 
 export interface ThemeContextType {
+  darkMode: boolean;
+  toggleDarkMode: () => void;
   activeTheme: ThemeManifest;
   setCustomTheme: (theme: Partial<ThemeManifest> | null) => void;
   // Backward compatibility

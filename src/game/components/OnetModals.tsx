@@ -66,20 +66,13 @@ export const OnetModals: React.FC<OnetModalsProps> = ({
               <span className="font-black text-xl text-theme-text-primary">{score}</span>
            </div>
            <div className="flex justify-between items-center mb-2 border-b-theme-sm border-gray-200 pb-2">
-              <span className="font-black text-sm text-theme-text-secondary uppercase">Permen</span>
-              <span className="font-black text-lg text-theme-currency-candy-purple flex items-center gap-1">
-                 +{winReward ? winReward.permen || 0 : 0}
-                 <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-5 h-5 object-contain" />
+              <span className="font-black text-sm text-theme-text-secondary uppercase">Progres misi</span>
+              <span data-testid="onet-mission-updated" className="font-black text-sm text-theme-text-primary flex items-center gap-1">
+                 Tercatat
               </span>
            </div>
-           {isDailyChallenge && (
-             <div className="flex justify-between items-center mb-2 border-b-theme-sm border-gray-200 pb-2">
-                <span className="font-black text-sm text-theme-text-secondary uppercase flex items-center gap-1"><Flame size={14} /> Bonus Harian</span>
-                <span className="font-black text-lg text-orange-500">{winReward && winReward.dailyBonus ? `+${winReward.dailyBonus}` : 'Sudah diklaim'}</span>
-             </div>
-           )}
            <div className="flex justify-between items-center">
-              <span className="font-black text-sm text-theme-text-secondary uppercase">Chest Progress</span>
+              <span className="font-black text-sm text-theme-text-secondary uppercase">Progres peti</span>
               <span className="font-black text-lg text-blue-500">+{winReward ? winReward.chestPoints : 0} PTS</span>
            </div>
         </div>

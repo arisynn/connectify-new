@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch as fetch } from '../lib/api';
 import { motion } from 'motion/react';
 import { useOnetGame } from './hooks/useOnetGame';
 import { OnetHeader } from './components/OnetHeader';
@@ -19,11 +20,11 @@ export const MultiplayerGameplay = (props: any) => {
   return <MultiplayerGameplayContent {...props} />;
 };
 
-const MultiplayerGameplayContent = ({ room, user, profile, completeMatch, onAttemptLeave }: any) => {
+const MultiplayerGameplayContent = ({ room, user, profile, completeMatch, reportTimeUp, onAttemptLeave }: any) => {
   const handleProgress = (remaining: number) => {
     // Send progress to server (e.g. via an API call or just rely on standard polling in useMultiplayer)
     // Actually, we can use a sync method if available, or just fetch directly.
-    fetch(`/api/multiplayer?action=sync&roomId=${room.id}&name=${encodeURIComponent(user.name)}&progress=${remaining}`);
+    fetch(`/api/multiplayer?action=sync&roomId=${room.id}&name=${encodeURIComponent(user.name)}&matchId=${room.matchId}&progress=${remaining}`);
   };
 
   const {
@@ -44,6 +45,7 @@ const MultiplayerGameplayContent = ({ room, user, profile, completeMatch, onAtte
     useHint,
     useShuffle
   } = useOnetGame(room.board, true, completeMatch, handleProgress);
+  useEffect(()=>{if(gameState==='lost' && room.status==='PLAYING')reportTimeUp?.();},[gameState]);
 
   const opponent = room.players.find((p: any) => p.name !== user.name);
   const me = room.players.find((p: any) => p.name === user.name);

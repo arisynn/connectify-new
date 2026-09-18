@@ -7,7 +7,8 @@ import cdeHandler from "./api/cde.js";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT);
+  if (!PORT) throw new Error('PORT is required');
 
   app.use(express.json());
 
@@ -39,6 +40,7 @@ async function startServer() {
           window.ENV = {
             VITE_SUPABASE_URL: ${JSON.stringify(process.env.SUPABASE_URL || '')},
             VITE_SUPABASE_ANON_KEY: ${JSON.stringify(process.env.SUPABASE_ANON_KEY || '')}
+            ,REACT_APP_BACKEND_URL: ${JSON.stringify(process.env.REACT_APP_BACKEND_URL)}
           };
         </script>`;
         

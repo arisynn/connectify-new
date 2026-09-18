@@ -1,16 +1,18 @@
+import { canReceive, creditIncome } from './economy';
+
 export const CHEST_TYPES = {
-    common: { name: 'Peti Biasa', durationMs: 30 * 60 * 1000, imgClose: '/assets/chest/closecommon.png', imgOpen: '/assets/chest/opencommon.png' },
-    rare: { name: 'Peti Langka', durationMs: 4 * 60 * 60 * 1000, imgClose: '/assets/chest/closerare.png', imgOpen: '/assets/chest/openrare.png' },
-    epic: { name: 'Peti Epik', durationMs: 24 * 60 * 60 * 1000, imgClose: '/assets/chest/closeepic.png', imgOpen: '/assets/chest/openepic.png' },
+    common: { name: 'Peti Biasa', durationMs: 5 * 60 * 1000 },
+    rare: { name: 'Peti Langka', durationMs: 20 * 60 * 1000 },
+    epic: { name: 'Peti Epik', durationMs: 60 * 60 * 1000 },
 };
 
 export const CHEST_POINTS_REQUIRED = 5;
 
 // Reward tables (single currency: permen)
 export const CHEST_REWARDS = {
-    common: { permen: [150, 300], hints: [1, 1], shuffles: [0, 1], hammers: [0, 0], bombs: [0, 0] },
-    rare:   { permen: [500, 900], hints: [1, 2], shuffles: [1, 1], hammers: [1, 1], bombs: [0, 1] },
-    epic:   { permen: [1500, 2500], hints: [2, 4], shuffles: [1, 2], hammers: [1, 2], bombs: [1, 2] },
+    common: { permen: [5, 5], hints: [1, 1], shuffles: [0, 0], hammers: [0, 0], bombs: [0, 0] },
+    rare:   { permen: [8, 8], hints: [1, 1], shuffles: [1, 1], hammers: [0, 0], bombs: [0, 0] },
+    epic:   { permen: [10, 10], hints: [1, 1], shuffles: [1, 1], hammers: [1, 1], bombs: [1, 1] },
 };
 
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -20,6 +22,11 @@ export const getRandomChestType = () => {
     if (r < 0.1) return 'epic';
     if (r < 0.4) return 'rare';
     return 'common';
+};
+const CHEST_CYCLE = ['common','common','rare','common','rare','common','epic'];
+const nextChest = (profile,slot) => {
+    profile.chestsCreated = (profile.chestsCreated || 0) + 1;
+    return { id:`chest-${profile.chestsCreated}-${slot}`,type:CHEST_CYCLE[(profile.chestsCreated-1)%CHEST_CYCLE.length],startTime:Date.now() };
 };
 
 export const initChestProfile = (profile) => {
@@ -38,11 +45,7 @@ export const addChestProgress = (profile, points = 1) => {
     while (p.chestProgress >= CHEST_POINTS_REQUIRED) {
         const emptyIndex = p.chestSlots.findIndex(slot => slot === null);
         if (emptyIndex !== -1) {
-            p.chestSlots[emptyIndex] = {
-                id: Date.now().toString() + emptyIndex + Math.random().toString(),
-                type: getRandomChestType(),
-                startTime: Date.now()
-            };
+            p.chestSlots[emptyIndex] = nextChest(p,emptyIndex);
             p.chestProgress -= CHEST_POINTS_REQUIRED;
         } else {
             // No empty slot, cap so it's ready when a slot opens
@@ -68,7 +71,7 @@ export const openChestAction = (profile, slotIndex) => {
     let p = { ...profile };
     p.chestSlots = [...(p.chestSlots || [null, null, null])];
     const chest = p.chestSlots[slotIndex];
-    if (!chest) return { profile: p, rewards: {} };
+    if (!chest) return { profile: p, rewards: {error:'CHEST_NOT_FOUND'} };
 
     if (!isChestReady(chest)) {
         return { profile: p, rewards: null };
@@ -79,6 +82,9 @@ export const openChestAction = (profile, slotIndex) => {
     const rewards = { chestType: type };
     
     rewards.permen = randInt(table.permen[0], table.permen[1]);
+    // Keep the unopened chest intact when today's budget cannot fit its reward.
+    if (!canReceive(p, rewards.permen)) return { profile: p, rewards: { error: 'DAILY_INCOME_LIMIT' } };
+    p = creditIncome(p, rewards.permen);
     const hints = randInt(table.hints[0], table.hints[1]);
     const shuffles = randInt(table.shuffles[0], table.shuffles[1]);
     const hammers = randInt(table.hammers[0], table.hammers[1]);
@@ -101,11 +107,7 @@ export const openChestAction = (profile, slotIndex) => {
 
     // slot fill if pending
     if (p.chestProgress >= CHEST_POINTS_REQUIRED) {
-        p.chestSlots[slotIndex] = {
-            id: Date.now().toString() + slotIndex,
-            type: getRandomChestType(),
-            startTime: Date.now()
-        };
+        p.chestSlots[slotIndex] = nextChest(p,slotIndex);
         p.chestProgress -= CHEST_POINTS_REQUIRED;
     }
 

@@ -38,3 +38,7 @@ export const resolveTheme = (customTheme?: Partial<ThemeManifest> | null): Theme
   if (!customTheme) return vanillaTheme;
   return merge({}, vanillaTheme, customTheme);
 };
+
+['fox','frog','cat','space','robot','bunny','lion','owl','penguin'].forEach((name,index)=>{
+  vanillaTheme.assets.logo[`avatar_${name}`]=`/art/avatars/${index}.webp`;
+});

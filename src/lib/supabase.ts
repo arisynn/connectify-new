@@ -22,6 +22,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase env vars are missing. Please ensure they are defined.');
 }
 
+export const hasPublicAuth = !!(supabaseUrl && supabaseAnonKey);
+const unavailableClient = { auth: {
+  getSession: async () => ({ data: { session: null }, error: null }),
+  onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+  signUp: async () => ({ data: null, error: new Error('Koneksi akun publik belum dikonfigurasi.') }),
+  signInWithPassword: async () => ({ data: null, error: new Error('Koneksi akun publik belum dikonfigurasi.') }),
+  signOut: async () => ({ error: null })
+} } as any;
 export const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(
   supabaseUrl,
   supabaseAnonKey,
@@ -34,7 +42,7 @@ export const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(
       detectSessionInUrl: false
     }
   }
-) : createMockClient() as any;
+) : (import.meta.env.DEV ? createMockClient() as any : unavailableClient);
 
 // ---------------------------------------------------------------------------
 // Dev/preview mock (no Supabase keys): persists fake accounts in localStorage

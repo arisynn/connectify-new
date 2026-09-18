@@ -19,6 +19,10 @@ import { BlockPuzzleScreen } from './game/block-puzzle/BlockPuzzleScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { CollectionScreen } from './screens/CollectionScreen';
 import { EditAvatarScreen } from './screens/EditAvatarScreen';
+import { ChallengeScreen } from './screens/ChallengeScreen';
+import { LedgerScreen } from './screens/LedgerScreen';
+import { MemoryGame } from './game/minigames/MemoryGame';
+import { TripleGame } from './game/minigames/TripleGame';
 
 export const DestinationScreen = () => {
   const { screen, navigate } = useGame();
@@ -34,6 +38,10 @@ export const DestinationScreen = () => {
   }, [screen, profile.notifications, markNotificationRead]);
 
   if (screen === 'home') return null;
+  if (screen === 'challenges') return <ChallengeScreen />;
+  if (screen === 'ledger') return <LedgerScreen />;
+  if (screen === 'memory') return <MemoryGame />;
+  if (screen === 'triple') return <TripleGame />;
   
   if (screen === 'profile') return <ProfileScreen />;
   if (screen === 'peti') return <ChestScreen />;

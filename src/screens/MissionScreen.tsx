@@ -9,6 +9,8 @@ import { useAudio } from '../core/audio/AudioEngine';
 import { KineticButton, ProgressBar, CurrencyPill } from '../designs/KineticComponents';
 import { KineticBadge } from '../designs/KineticPopups';
 import { checkDailyMissions } from '../core/misiHarian';
+import { getTodayKey } from '../core/economy';
+import { EconomyMeter } from '../components/EconomyMeter';
 
 const DIFF_COLOR: Record<string, string> = {
   'Mudah': 'bg-theme-primary-tropical-green',
@@ -20,17 +22,13 @@ const DIFF_COLOR: Record<string, string> = {
 const pad = (n: number) => String(n).padStart(2, '0');
 
 const msUntilMidnight = (now: number) => {
-  const d = new Date(now);
-  d.setHours(24, 0, 0, 0);
-  return d.getTime() - now;
+  return 86400000 - ((now + 7*3600000) % 86400000);
 };
 
 const msUntilNextMonday = (now: number) => {
-  const d = new Date(now);
-  const day = d.getDay() || 7; // 1..7 (Mon..Sun)
-  d.setHours(24, 0, 0, 0);
-  d.setDate(d.getDate() + (7 - day));
-  return d.getTime() - now;
+  const d = new Date(now + 7*3600000);
+  const day = d.getUTCDay() || 7;
+  return msUntilMidnight(now) + (7-day)*86400000;
 };
 
 const formatCountdown = (ms: number) => {
@@ -98,7 +96,7 @@ export const MissionScreen = () => {
   const { profile } = useProfile();
   const cde = useCDE();
   const audio = useAudio();
-  const [tab, setTab] = useState<'harian' | 'mingguan'>('harian');
+  const [tab, setTab] = useState<'harian' | 'mingguan' | 'tersimpan'>('harian');
   const [now, setNow] = useState(Date.now());
   const [toast, setToast] = useState<string | null>(null);
 
@@ -108,22 +106,26 @@ export const MissionScreen = () => {
   }, []);
 
   // Missions live on the server profile; before the first win they are only previewed locally.
-  const { daily, weekly, dailyPersisted, weeklyPersisted } = useMemo(() => {
+  const { daily, weekly, saved, dailyPersisted, weeklyPersisted } = useMemo(() => {
     const generated = checkDailyMissions(profile);
-    const dailyPersisted = !!(profile.activeMissions && profile.activeMissions.length > 0 && profile.dailyMissionsDate === new Date().toDateString());
+    const dailyPersisted = !!(profile.activeMissions && profile.activeMissions.length > 0 && profile.dailyMissionsDate === getTodayKey());
     const weeklyPersisted = !!(profile.activeWeeklyMissions && profile.activeWeeklyMissions.length > 0 && generated.weeklyMissionsWeek === profile.weeklyMissionsWeek);
-    return { daily: generated.activeMissions || [], weekly: generated.activeWeeklyMissions || [], dailyPersisted, weeklyPersisted };
-  }, [profile]);
+    return { daily: generated.activeMissions || [], weekly: generated.activeWeeklyMissions || [], saved: (generated.pendingMissions||[]).filter((m:any)=>!m.claimed), dailyPersisted, weeklyPersisted };
+  }, [profile, getTodayKey(now)]);
 
-  const list = tab === 'harian' ? daily : weekly;
-  const persisted = tab === 'harian' ? dailyPersisted : weeklyPersisted;
+  const list = tab === 'harian' ? daily : tab === 'mingguan' ? weekly : saved;
+  const persisted = tab === 'harian' ? dailyPersisted : tab === 'mingguan' ? weeklyPersisted : true;
   const claimableCount = list.filter((m: any) => !m.claimed && (m.progress || 0) >= m.target).length;
   const completedCount = list.filter((m: any) => m.claimed).length;
 
-  const handleClaim = (mission: any) => {
+  const handleClaim = async (mission: any) => {
+    try {
     audio.playSfx('uiReward', () => audio.playUiClick());
-    cde.queueMutation('CLAIM_MISSION_REWARD', { missionId: mission.id });
+    await cde.queueMutation('CLAIM_MISSION_REWARD', { missionId: mission.id });
     setToast(`+${mission.rewardAmount} Permen dari '${mission.title}'`);
+    } catch (error:any) {
+      setToast(error.message==='DAILY_INCOME_LIMIT'?'Batas income hari ini tidak cukup. Hadiah tetap tersimpan untuk nanti.':'Hadiah belum dapat diklaim. Coba lagi setelah sinkronisasi.');
+    }
     setTimeout(() => setToast(null), 2200);
   };
 
@@ -156,6 +158,7 @@ export const MissionScreen = () => {
           {([
             { id: 'harian', label: 'Harian', icon: Target, count: daily.filter((m: any) => !m.claimed && (m.progress || 0) >= m.target).length },
             { id: 'mingguan', label: 'Mingguan', icon: CalendarDays, count: weekly.filter((m: any) => !m.claimed && (m.progress || 0) >= m.target).length },
+            { id: 'tersimpan', label: 'Tersimpan', icon: Gift, count: saved.length },
           ] as const).map(t => (
             <button
               key={t.id}
@@ -188,6 +191,8 @@ export const MissionScreen = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3 pb-10">
+        <EconomyMeter compact id="mission-income"/>
+        {tab==='tersimpan'&&<p data-testid="saved-missions-info" className="text-xs text-theme-text-secondary">Hadiah misi yang selesai tetapi belum diklaim tetap aman di sini setelah reset.</p>}
         {!persisted && (
           <div className="bg-theme-surface-card-white/80 border-theme-sm border-dashed border-theme-border-main rounded-xl px-4 py-2.5 flex items-center gap-2 text-theme-text-muted shrink-0">
             <Lock size={14} />

@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import { apiFetch as fetch } from '../../../lib/api';
 import { CDE } from '../CDE';
 
 export const CDEAuth = {

@@ -12,6 +12,8 @@ import { useCDE } from '../core/cde';
 import { AccountDataPopup } from './AccountDataPopup';
 import { Smartphone, Cloud } from 'lucide-react';
 import { DynamicIcon } from '../components/theme/DynamicIcon';
+import { ModeToggle } from '../components/GameShell';
+import { hasPublicAuth } from '../lib/supabase';
 
 
 export const SettingsScreen = () => {
@@ -85,6 +87,7 @@ export const SettingsScreen = () => {
       <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 pt-8 pb-12">
         
         {/* Audio Settings */}
+        <section className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-2xl p-5 flex items-center justify-between"><div><h3 data-testid="appearance-title" className="font-bold text-theme-text-primary">Tampilan terang / gelap</h3><p data-testid="appearance-description" className="text-xs text-theme-text-secondary mt-1">Gratis, cocok dengan semua koleksi tile.</p></div><ModeToggle id="settings-mode"/></section>
         <section>
           <h3 className="font-black text-lg text-theme-text-primary uppercase tracking-widest mb-3 pl-1">Audio</h3>
           <div className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-5 shadow-theme-lg flex flex-col gap-4">
@@ -158,7 +161,7 @@ export const SettingsScreen = () => {
                       <span className="font-bold text-theme-text-secondary text-sm">Status:</span>
                    </div>
                    <span className={`font-black text-sm ${navigator.onLine ? 'text-theme-primary-tropical-green' : 'text-theme-game-danger'}`}>
-                      {navigator.onLine ? 'Cloud Tersambung' : 'Offline'}
+                      {navigator.onLine ? (hasPublicAuth ? 'Akun terhubung' : 'Pratinjau lokal') : 'Offline'}
                    </span>
                 </div>
              </div>

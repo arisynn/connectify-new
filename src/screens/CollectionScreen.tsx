@@ -9,8 +9,10 @@ import { useAudio } from '../core/audio/AudioEngine';
 import { KineticButton, ProgressBar } from '../designs/KineticComponents';
 import { ACHIEVEMENTS_DATA, getCurrentTier } from '../core/achievements';
 import { CHEST_TYPES } from '../core/chest';
+import { AVATARS, isAvatarUnlocked } from '../core/avatars';
+import { AvatarGallery } from '../components/AvatarGallery';
 
-const ALL_AVATARS = ['avatar_male', 'avatar_female'];
+const ALL_AVATARS = AVATARS.map(a=>a.id);
 
 const SectionTitle = ({ icon: Icon, title, count, colorClass }: { icon: any, title: string, count: string, colorClass: string }) => (
   <div className="flex items-center justify-between mb-3">
@@ -33,8 +35,7 @@ export const CollectionScreen = () => {
 
   const themes = Object.values(availableThemes);
   const unlockedThemes: string[] = profile?.unlockedThemes || ['sweets'];
-  const ownedAvatars: string[] = (profile?.avatarCollection || []).filter((a: string) => ALL_AVATARS.includes(a));
-  const avatarsOwned = ownedAvatars.length > 0 ? ownedAvatars : ALL_AVATARS;
+  const avatarsOwned = AVATARS.filter(a=>isAvatarUnlocked(profile,a)).map(a=>a.id);
 
   const badges = useMemo(() => ACHIEVEMENTS_DATA.map(a => {
     const tier = getCurrentTier(profile, a.id);
@@ -126,26 +127,7 @@ export const CollectionScreen = () => {
         {section === 'avatar' && (
           <div>
             <SectionTitle icon={UserRound} title="Avatar" count={`${avatarsOwned.length}/${ALL_AVATARS.length}`} colorClass="bg-theme-primary-sunny-yellow" />
-            <div className="grid grid-cols-2 gap-4">
-              {ALL_AVATARS.map(av => {
-                const owned = avatarsOwned.includes(av);
-                const active = (profile?.activeAvatarId || profile?.avatar || 'avatar_male') === av;
-                return (
-                  <div key={av} data-testid={`collection-avatar-${av}`} className={`bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-4 shadow-theme-base flex flex-col items-center ${!owned ? 'opacity-60' : ''}`}>
-                    <div className="w-full aspect-square rounded-full border-theme-base border-theme-border-main overflow-hidden mb-3 flex items-center justify-center relative" style={{ backgroundColor: profile?.activeAvatarBackground || '#bde0fe' }}>
-                      <DynamicIcon name={av} type="logo" className="w-[85%] h-[85%] object-contain" />
-                      {!owned && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Lock size={28} className="text-white" /></div>}
-                    </div>
-                    <p className="font-black text-theme-text-primary uppercase tracking-tighter mb-2">{av.replace('avatar_', '')}</p>
-                    {active ? (
-                      <div className="w-full py-2 rounded-xl bg-theme-surface-card-soft border-theme-sm border-theme-border-main flex items-center justify-center gap-1 font-black text-[11px] uppercase text-theme-text-muted"><Check size={14} strokeWidth={3} /> Dipakai</div>
-                    ) : (
-                      <KineticButton onClick={() => handleEquipAvatar(av)} disabled={!owned} colorClass="bg-theme-primary-coral-pink" className="w-full py-2 text-[11px]">Pakai</KineticButton>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <AvatarGallery selected={profile.activeAvatarId||'avatar_male'} onSelect={handleEquipAvatar}/>
           </div>
         )}
 
@@ -159,6 +141,7 @@ export const CollectionScreen = () => {
                 return (
                   <div key={theme.id} data-testid={`collection-theme-${theme.id}`} className={`bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-4 shadow-theme-base ${!unlocked ? 'opacity-70' : ''}`}>
                     <div className="w-full h-20 border-theme-base border-theme-border-main rounded-2xl mb-3 flex items-center justify-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${theme.colors.bg || theme.colors['bg-main']}, ${theme.colors.primary || theme.colors['primary-coral-pink']})` }}>
+                      <div className="flex gap-2 p-2">{Object.values(theme.assets.tiles).slice(0,3).map((src,i)=><img key={i} src={src} alt={`Contoh tile ${theme.name} ${i+1}`} className="w-12 h-12 object-contain bg-white rounded-lg border-2 border-slate-800"/>)}</div>
                       {!unlocked && <Lock size={28} className="text-gray-900/50" />}
                       {equipped && <div className="absolute top-2 right-2 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-full p-1"><Check size={14} className="text-theme-primary-tropical-green" strokeWidth={4} /></div>}
                     </div>

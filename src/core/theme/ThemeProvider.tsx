@@ -8,7 +8,19 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [customTheme, setCustomTheme] = useState<Partial<ThemeManifest> | null>(null);
-  const { profile } = useProfile();
+  const { profile, updateProfile } = useProfile();
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('connectify-dark') === 'true');
+  React.useEffect(() => {
+    if (typeof profile.settings?.darkMode === 'boolean') setDarkMode(profile.settings.darkMode);
+  }, [profile.settings?.darkMode]);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.mode = darkMode ? 'dark' : 'light';
+    localStorage.setItem('connectify-dark', String(darkMode));
+  }, [darkMode]);
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    updateProfile({ settings: { ...profile.settings, darkMode: !darkMode } });
+  };
 
   // Re-apply the player's saved theme whenever the synced profile changes it
   const savedTheme = profile?.activeTheme;
@@ -53,6 +65,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     if (activeTheme.assets?.backgrounds) {
+      root.style.setProperty('--asset-bg-global', 'none');
+      root.style.setProperty('--asset-bg-popup', 'none');
       if (activeTheme.assets.backgrounds.global) {
         root.style.setProperty('--asset-bg-global', `url('${activeTheme.assets.backgrounds.global}')`);
       }
@@ -64,6 +78,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <ThemeContext.Provider value={{ 
+      darkMode, toggleDarkMode,
       activeTheme, 
       setCustomTheme,
       setTheme: (id: string) => { 

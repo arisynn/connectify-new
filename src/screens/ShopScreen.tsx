@@ -15,6 +15,7 @@ const ShopConfig = [
 import { useTheme } from '../core/theme/ThemeProvider';
 import { useCDE } from '../core/cde';
 import { DynamicIcon } from '../components/theme/DynamicIcon';
+import { EconomyMeter } from '../components/EconomyMeter';
 
 const IconMap: Record<string, any> = {
     RefreshCw: RefreshCw,
@@ -24,6 +25,8 @@ const IconMap: Record<string, any> = {
 };
 
 const ThemeCard = ({ 
+  tileImages,
+  themeId,
   title, 
   state, 
   price,
@@ -32,6 +35,8 @@ const ThemeCard = ({
   onEquip,
   onBuy
 }: { 
+  tileImages: string[],
+  themeId: string,
   title: string, 
   state: 'equipped' | 'unlocked' | 'locked', 
   price: number,
@@ -40,9 +45,9 @@ const ThemeCard = ({
   onEquip?: () => void,
   onBuy?: () => void
 }) => (
-  <div className={`bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-4 shadow-theme-lg ${state === 'locked' ? 'opacity-70' : ''}`}>
+  <div data-testid={`shop-theme-${themeId}`} className={`bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-4 shadow-theme-lg`}>
      <div className={`w-full h-24 border-theme-base border-theme-border-main rounded-2xl mb-4 flex items-center justify-center relative overflow-hidden`} style={{ background: `linear-gradient(135deg, ${color1}, ${color2})` }}>
-        {state === 'locked' && <Lock size={32} className="text-gray-900/50" />}
+        <div className="flex gap-2 p-2">{tileImages.slice(0,3).map((src,i)=><img key={i} src={src} alt={`Contoh ${title} ${i+1}`} className="w-12 h-12 object-contain bg-white rounded-lg border-2 border-slate-800"/>)}</div>
         {state === 'equipped' && (
            <div className="absolute top-2 right-2 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-full p-1">
               <Check size={16} className="text-theme-primary-tropical-green" strokeWidth={4} />
@@ -177,6 +182,7 @@ export const ShopScreen = () => {
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5 pt-6 pb-32">
+         <EconomyMeter compact id="shop-income"/>
          {activeTab === 'item' && (
            <>
              {ShopConfig.map((item) => {
@@ -210,6 +216,8 @@ export const ShopScreen = () => {
                return (
                  <ThemeCard 
                    key={theme.id}
+                   tileImages={Object.values(theme.assets.tiles)}
+                   themeId={theme.id}
                    title={theme.name} 
                    state={state} 
                    price={getItemPrice('theme_' + theme.id) || theme.price}

@@ -3,6 +3,12 @@ import { getSupabase } from './supabase.js';
 import { MultiplayerBankEngine } from '../MultiplayerBankEngine.js';
 
 const rooms = new Map<string, any>();
+const finished = new Map<string, any>();
+export const verifiedMultiplayerResult=(matchId:string, name:string)=>{
+  const room=[...rooms.values(),...finished.values()].find(r=>r.matchId===matchId&&r.status==='FINISHED'&&r.players.some((p:any)=>p.name===name));
+  if(!room)return null;
+  return {game:room.gameMode==='block-puzzle'?'block':'onet',isWinner:room.winner===name};
+};
 
 function logMultiplayerEvent(event: string, roomId: string, details: any = {}) {
     console.log(JSON.stringify({
@@ -67,6 +73,21 @@ export default async function handler(req: Request, res: Response) {
         res.setHeader('Expires', '0');
 
         const action = req.query.action || req.body.action;
+        // The launch economy has no wagering or multiplayer currency transfers.
+        if (String(action).includes('wager') || (action === 'change_mode' && req.body.mode !== 'Friendly Match')) return res.status(403).json({error:'WAGER_DISABLED: Permen hanya berasal dari peti, misi, dan pencapaian.'});
+        const token=req.headers.authorization?.split(' ')[1];
+        if(!token) return res.status(401).json({error:'UNAUTHORIZED'});
+        const db=getSupabase();
+        if(!db) return res.status(503).json({error:'ACCOUNT_SERVICE_UNAVAILABLE'});
+        const {data:auth}=await db.auth.getUser(token);
+        if(!auth?.user?.id) return res.status(401).json({error:'INVALID_TOKEN'});
+        const {data:account}=await db.from('cde_accounts').select('username').eq('id',auth.user.id).maybeSingle();
+        if(!account) return res.status(401).json({error:'ACCOUNT_NOT_FOUND'});
+        const claimedName=req.body.name || req.body.host || req.query.name;
+        if(claimedName && claimedName !== account.username) return res.status(403).json({error:'PLAYER_IDENTITY_MISMATCH'});
+        const requestedRoom=rooms.get(String(req.body.roomId || req.query.roomId || '').trim().toUpperCase());
+        if(requestedRoom?.status==='FINISHED' && requestedRoom.matchId){finished.set(requestedRoom.matchId,structuredClone(requestedRoom));if(finished.size>500)finished.delete(finished.keys().next().value);}
+        if(requestedRoom && !['join','create'].includes(String(action)) && !requestedRoom.players.some((p:any)=>p.name===account.username)) return res.status(403).json({error:'NOT_A_ROOM_MEMBER'});
         
         if (action === 'create') {
             const { host, level, theme, gameMode } = req.body;
@@ -391,9 +412,10 @@ export default async function handler(req: Request, res: Response) {
                 let winnerName = null;
                 
                 if (me && opponent) {
-                    if ((me.progress || 0) > (opponent.progress || 0)) {
+                    const myProgress=me.progress||0, theirProgress=opponent.progress||0;
+                    if (room.gameMode==='onet' ? myProgress < theirProgress : myProgress > theirProgress) {
                         winnerName = me.name;
-                    } else if ((opponent.progress || 0) > (me.progress || 0)) {
+                    } else if (myProgress !== theirProgress) {
                         winnerName = opponent.name;
                     } else {
                         winnerName = 'DRAW';
@@ -632,7 +654,7 @@ export default async function handler(req: Request, res: Response) {
             room.payoutProcessed = null;
             room.revision += 1;
             room.players.forEach((p: any) => {
-                p.progress = 0;
+                p.progress = room.gameMode==='onet' ? (board?.flat().filter(Boolean).length || 60) : 0;
                 p.readyForGame = false;
             });
             if (board) room.board = board;

@@ -1,0 +1,3 @@
+export const BEACH_TILES = ['beach_ball','beach_hat','camera','coconut','crab','ice_cream','sandal','seagull','seashell','summer_shirt','summer_shorts','sunglasses','swim_ring','tropical_fish','tropical_juice'];
+export const TILE_SETS = Object.fromEntries(['candy','ocean','forest','space'].map(id => [id, Array.from({length:16}, (_,i) => `${id}_${i}`)]));
+export const tileIdsFor = theme => TILE_SETS[theme] || BEACH_TILES;

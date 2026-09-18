@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, Star } from 'lucide-react';
 
 interface BlockPuzzleHeaderProps {
+  testIdPrefix?: string;
   score: number;
   currentLevel: number;
   moves: number;
@@ -11,6 +12,7 @@ interface BlockPuzzleHeaderProps {
 }
 
 export const BlockPuzzleHeader: React.FC<BlockPuzzleHeaderProps> = ({ 
+  testIdPrefix='block',
   score, 
   currentLevel, 
   moves,
@@ -22,6 +24,8 @@ export const BlockPuzzleHeader: React.FC<BlockPuzzleHeaderProps> = ({
     <div className="w-full max-w-md flex flex-col items-center z-10 pt-2 px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
       <header className="w-full flex items-center justify-between gap-1.5 pb-2">
         <button 
+           data-testid={`${testIdPrefix}-pause`}
+           aria-label="Jeda Block Puzzle"
            onClick={onPause}
            className="bg-theme-surface-card-white p-2.5 flex items-center justify-center hover:bg-gray-50 border-theme-sm border-theme-border-main shadow-theme-base rounded-[4px] active:translate-y-[2px] active:translate-x-[2px] active:shadow-[var(--geometry-shadow-active)] transition-all flex-shrink-0"
         >
@@ -32,13 +36,13 @@ export const BlockPuzzleHeader: React.FC<BlockPuzzleHeaderProps> = ({
         </button>
 
         <div className="bg-theme-surface-card-white px-3 py-1 flex-[2] text-center border-theme-sm border-theme-border-main shadow-theme-base rounded-[4px] flex flex-col items-center">
-          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">LEVEL {currentLevel}</div>
-          <div className="text-lg sm:text-xl font-black text-theme-text-primary leading-none">{score}</div>
+          <div data-testid={`${testIdPrefix}-level`} className="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">LEVEL {currentLevel}</div>
+          <div data-testid={`${testIdPrefix}-score`} className="text-lg sm:text-xl font-black text-theme-text-primary leading-none">{score}</div>
         </div>
 
         <div className="bg-theme-surface-card-white px-3 py-1 flex-1 text-center border-theme-sm border-theme-border-main shadow-theme-base rounded-[4px]">
           <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">MOVES</div>
-          <div className="text-lg sm:text-xl font-black text-theme-text-primary leading-none">{moves}</div>
+          <div data-testid={`${testIdPrefix}-moves`} className="text-lg sm:text-xl font-black text-theme-text-primary leading-none">{moves}</div>
         </div>
       </header>
 
@@ -47,7 +51,7 @@ export const BlockPuzzleHeader: React.FC<BlockPuzzleHeaderProps> = ({
          {missions.map((mission, index) => {
             const isCompleted = missionResults[index];
             return (
-               <div key={index} className={`flex-1 p-1 rounded-[4px] border-theme-sm border-theme-border-main flex flex-col items-center justify-center shadow-[var(--geometry-shadow-sm)] ${isCompleted ? 'bg-theme-primary-canary-yellow' : 'bg-theme-surface-card-white'}`}>
+               <div data-testid={`${testIdPrefix}-objective-${index}`} key={index} className={`flex-1 p-1 rounded-[4px] border-theme-sm border-theme-border-main flex flex-col items-center justify-center shadow-[var(--geometry-shadow-sm)] ${isCompleted ? 'bg-theme-primary-canary-yellow' : 'bg-theme-surface-card-white'}`}>
                   <Star size={14} className={isCompleted ? 'fill-theme-primary-coral-pink text-theme-primary-coral-pink' : 'fill-gray-300 text-gray-400'} />
                   <div className="text-[9px] font-bold text-center leading-tight mt-0.5 text-theme-text-primary line-clamp-2">{mission.description}</div>
                </div>

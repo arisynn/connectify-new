@@ -9,6 +9,7 @@ import { useAudio } from '../core/audio/AudioEngine';
 import { KineticButton, ProgressBar, CurrencyPill } from '../designs/KineticComponents';
 import { KineticBadge } from '../designs/KineticPopups';
 import { ACHIEVEMENTS_DATA, getCurrentTier, getAchievementRewardSummary } from '../core/achievements';
+import { EconomyMeter } from '../components/EconomyMeter';
 
 const CATEGORIES = [
   { id: 'all', label: 'Semua' },
@@ -133,13 +134,15 @@ export const AchievementScreen = () => {
     });
   }, [category, profile]);
 
-  const handleClaim = (ach: any) => {
+  const handleClaim = async (ach: any) => {
     const tierIdx = getCurrentTier(profile, ach.id);
     const tier = ach.tiers[tierIdx];
     audio.playSfx('uiReward', () => audio.playUiClick());
-    cde.queueMutation('CLAIM_ACHIEVEMENT_REWARD', { achievementId: ach.id, tierIdx, tier });
+    try {
+    await cde.queueMutation('CLAIM_ACHIEVEMENT_REWARD', { achievementId: ach.id });
     const permen = tier.reward.permen || tier.reward.coins || 0;
     setToast(`${ach.title} Tier ${tierIdx + 1} diklaim! +${permen} Permen`);
+    } catch(error:any) { setToast(error.message==='DAILY_INCOME_LIMIT'?'Batas income hari ini tidak cukup. Pencapaian tetap bisa diklaim nanti.':'Pencapaian belum bisa diklaim. Tunggu sinkronisasi.'); }
     setTimeout(() => setToast(null), 2200);
   };
 
@@ -202,6 +205,7 @@ export const AchievementScreen = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3 pb-10">
+        <EconomyMeter compact id="achievement-income"/>
         {list.map((a, i) => (
           <AchievementCard key={a.id} index={i} ach={a} profile={profile} onClaim={() => handleClaim(a)} />
         ))}

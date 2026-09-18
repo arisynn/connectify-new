@@ -23,14 +23,21 @@ export const useBlockPuzzle = () => {
   const [winReward, setWinReward] = useState<{ chestPoints: number, permen: number } | null>(null);
   const blocksClearedRef = useRef<number>(0);
   const highestComboRef = useRef<number>(0);
+  const runId = useRef(crypto.randomUUID());
+  const resultSent = useRef(false);
+  const actionLock = useRef(false);
+  const delayed=useRef<any[]>([]);
+  const schedule=(fn:()=>void,ms:number)=>{delayed.current.push(setTimeout(fn,ms));};
+  const [needsGameOver,setNeedsGameOver]=useState(false);
+  useEffect(()=>()=>delayed.current.forEach(clearTimeout),[]);
   const [board, setBoard] = useState<string[][]>(Array(BOARD_SIZE).fill(Array(BOARD_SIZE).fill('')));
   const [obstacles, setObstacles] = useState<ObstacleType[][]>(Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill('')));
   const [tray, setTray] = useState<(Piece | null)[]>([null, null, null]);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
-  const [highScore, setHighScore] = useState(profile.blockPuzzleHighScore || 0);
+  const [highScore, setHighScore] = useState(profile.statistics?.blockPuzzleHighScore || 0);
   const [gameState, setGameState] = useState<'playing' | 'gameover' | 'won'>('playing');
-  const currentLevel = profile.blockPuzzleLevel || 1;
+  const [currentLevel, setCurrentLevel] = useState(profile.blockPuzzleLevel || 1);
   
   const [moves, setMoves] = useState(0);
   const [linesClearedTotal, setLinesClearedTotal] = useState(0);
@@ -79,7 +86,7 @@ export const useBlockPuzzle = () => {
 
   // Evaluate Missions
   useEffect(() => {
-    if (gameState === 'playing') {
+    if (gameState === 'playing' && !isAnimating && !resultSent.current) {
       const evaluateMission = (mission: any, finalCheck: boolean = false) => {
          switch(mission.type) {
             case 'score': return score >= mission.target;
@@ -96,6 +103,7 @@ export const useBlockPuzzle = () => {
       const mainMet = evaluateMission(mainMission, false);
 
       if (mainMet) {
+         resultSent.current = true;
          const results = currentLevelConfig.missions.map(m => evaluateMission(m, true));
          setMissionResults(results);
          setGameState('won');
@@ -112,13 +120,13 @@ export const useBlockPuzzle = () => {
          const nextLevel = currentLevel + 1;
          updateProfile({
             blockPuzzleSkill: newSkill,
-            blockPuzzleLevel: Math.max(profile.blockPuzzleLevel || 1, nextLevel),
-            highestBlockPuzzleLevel: Math.max(profile.highestBlockPuzzleLevel || 1, nextLevel),
-            blockPuzzleHighScore: Math.max(profile.blockPuzzleHighScore || 0, score)
          });
 
          // Rewards: permen + chest progress + missions + achievements (server authoritative)
          const winPayload = {
+            runId: runId.current,
+            level: currentLevel,
+            linesCleared: linesClearedTotal,
             game: 'block',
             isMultiplayer: false,
             isWinner: true,
@@ -134,21 +142,30 @@ export const useBlockPuzzle = () => {
          const { rewardResult } = RewardEngine.processWin(JSON.parse(JSON.stringify(profile)), winPayload);
          setWinReward({ chestPoints: rewardResult.chestPoints, permen: rewardResult.permen });
          cde.queueMutation('PROCESS_WIN', winPayload);
-      }
+      } else if(needsGameOver) setGameState('gameover');
     }
-  }, [score, linesClearedTotal, gemsDestroyed, iceDestroyed, woodDestroyed, moves, gameState, currentLevelConfig, currentLevel, updateProfile]);
+  }, [score, linesClearedTotal, gemsDestroyed, iceDestroyed, woodDestroyed, moves, gameState, currentLevelConfig, currentLevel, updateProfile, isAnimating, needsGameOver]);
 
   useEffect(() => {
     if (gameState === 'gameover' && score > highScore) {
       setHighScore(score);
       updateProfile({ blockPuzzleHighScore: score });
     }
-    if (gameState === 'gameover') {
+    if (gameState === 'gameover' && !resultSent.current) {
+      resultSent.current = true;
+      cde.queueMutation('PROCESS_WIN', { game: 'block', runId: runId.current, level: currentLevel, isWinner: false, score, timeElapsed: Date.now()-levelStartTime.current, linesCleared: linesClearedTotal, blocksCleared: blocksClearedRef.current, highestCombo: highestComboRef.current });
       cde.queueMutation('UPDATE_PROFILE', { blockPuzzleSkill: skillScore });
     }
   }, [gameState, score, highScore, updateProfile]);
 
   const initGame = () => {
+    delayed.current.forEach(clearTimeout);delayed.current=[];setNeedsGameOver(false);
+    runId.current = crypto.randomUUID();
+    resultSent.current = false;
+    actionLock.current = false;
+    const levelToPlay = gameState === 'won' ? currentLevel + 1 : currentLevel;
+    setCurrentLevel(levelToPlay);
+    if (gameState === 'won') updateProfile({ blockPuzzleLevel: levelToPlay });
     if (lastPlayedLevel.current === currentLevel && gameState !== 'playing') {
         retryCount.current += 1;
     } else if (lastPlayedLevel.current !== currentLevel) {
@@ -164,10 +181,10 @@ export const useBlockPuzzle = () => {
     const bracket = getBracket(skillScore, retryCount.current);
     setCurrentBracket(bracket);
     // Use retryCount in seed so it generates a new level if they fail
-    const seed = `${profile?.id || 'guest'}_${currentLevel}_${retryCount.current}`;
-    const baseConfig = getLevelConfig(currentLevel, bracket, seed);
+    const seed = `${profile?.id || 'guest'}_${levelToPlay}_${retryCount.current}`;
+    const baseConfig = getLevelConfig(levelToPlay, bracket, seed);
     // Only apply DDA post-processing for manual levels (<= 20)
-    const config = currentLevel <= 20 ? applyDDAToLevel(baseConfig, bracket) : baseConfig;
+    const config = levelToPlay <= 20 ? applyDDAToLevel(baseConfig, bracket) : baseConfig;
     setCurrentLevelConfig(config);
     const emptyBoard = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(''));
     const initialObstacles = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill('')) as ObstacleType[][];
@@ -214,7 +231,7 @@ export const useBlockPuzzle = () => {
       if (canPlaceAny) break;
     }
     if (!canPlaceAny && currentTray.some(p => p !== null)) {
-      setGameState('gameover');
+      setNeedsGameOver(true);
       
       const durationSec = Math.floor((Date.now() - levelStartTime.current) / 1000);
       const clearRate = placementCount.current > 0 ? totalClears.current / placementCount.current : 0;
@@ -272,6 +289,7 @@ export const useBlockPuzzle = () => {
       setObstacles(currentObstacles);
       setClearingCells([]);
       setIsAnimating(false);
+      actionLock.current = false;
       
       if (currentTray.every(p => p === null)) {
         const freshTray = getRandomPieces(3, currentBoard, (p, r, c, b) => canPlace(p, r, c, b, currentObstacles));
@@ -313,16 +331,16 @@ export const useBlockPuzzle = () => {
     if (isPerfectClear) {
        finalAddedScore += 2000;
        setComboText({ text: "PERFECT CLEAR!", id: Date.now() });
-       setTimeout(() => setComboText(null), 2000);
+       schedule(() => setComboText(null), 2000);
     } else if (newCombo > 1) {
        setComboText({ text: `${newCombo} COMBO!`, id: Date.now() });
-       setTimeout(() => setComboText(null), 1500);
+       schedule(() => setComboText(null), 1500);
     } else if (linesCleared >= 2) {
        setComboText({ text: `+${finalAddedScore}`, id: Date.now() });
-       setTimeout(() => setComboText(null), 1000);
+       schedule(() => setComboText(null), 1000);
     } else {
        setComboText({ text: `+${finalAddedScore}`, id: Date.now() });
-       setTimeout(() => setComboText(null), 1000);
+       schedule(() => setComboText(null), 1000);
     }
 
     setScore(s => s + finalAddedScore);
@@ -331,7 +349,7 @@ export const useBlockPuzzle = () => {
     setBoard(currentBoard);
     setObstacles(currentObstacles);
 
-    setTimeout(() => {
+    schedule(() => {
        const nextBoard = currentBoard.map(r => [...r]);
        const nextObstacles = currentObstacles.map(r => [...r]);
        let gemsCleared = 0, iceCleared = 0, woodCleared = 0;
@@ -377,7 +395,7 @@ export const useBlockPuzzle = () => {
        setClearingCells([]);
 
        if (currentLevelConfig.gravity) {
-           setTimeout(() => {
+           schedule(() => {
                executeClearAndCascade(nextBoard, nextObstacles, currentTray, newCombo, iteration + 1);
            }, 250);
        } else {
@@ -386,14 +404,16 @@ export const useBlockPuzzle = () => {
     }, 400);
   };
 
-  const placePiece = (row: number, col: number) => {
-    if (isAnimating) return;
-    if (!dragState || !canPlace(dragState.piece, row, col, board, obstacles)) return;
+  const placePiece = (row: number, col: number, selectedIndex?: number) => {
+    if (isAnimating || actionLock.current || gameState !== 'playing') return false;
+    const currentDrag = selectedIndex !== undefined && tray[selectedIndex] ? {piece:tray[selectedIndex]!,trayIndex:selectedIndex} : dragState;
+    if (!currentDrag || !tray[currentDrag.trayIndex] || !canPlace(currentDrag.piece, row, col, board, obstacles)) return false;
+    actionLock.current = true;
 
     setMoves(m => m + 1);
     
     let newBoard = board.map(r => [...r]);
-    const piece = dragState.piece;
+    const piece = currentDrag.piece;
     let cellsPlaced = 0;
 
     for (let r = 0; r < piece.shape.length; r++) {
@@ -409,21 +429,24 @@ export const useBlockPuzzle = () => {
     setScore(s => s + baseScore);
     
     const newTray = [...tray];
-    newTray[dragState.trayIndex] = null;
+    newTray[currentDrag.trayIndex] = null;
     setTray(newTray);
     
     setIsAnimating(true);
     
     executeClearAndCascade(newBoard, obstacles, newTray, combo, 0);
+    return true;
   };
 
   const shuffleTray = () => {
+    if(isAnimating || actionLock.current || gameState !== 'playing') return;
     const freshTray = getRandomPieces(3, board, (p, r, c, b, obs) => canPlace(p, r, c, b, obs || obstacles), 0, obstacles);
     setTray(freshTray);
     checkGameOver(board, freshTray, obstacles);
   };
 
   const useHammerAt = (row: number, col: number) => {
+    if(isAnimating || gameState === 'won') return false;
     if (board[row][col] === '') return false;
     
     const newBoard = board.map(r => [...r]);
@@ -456,6 +479,7 @@ export const useBlockPuzzle = () => {
   };
 
   const useBombAt = (row: number, col: number) => {
+    if(isAnimating || gameState === 'won') return false;
     let cellsCleared = 0;
     const newBoard = board.map(r => [...r]);
     

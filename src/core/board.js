@@ -1,305 +1,107 @@
-import { ROWS, COLS } from "./config.js";
-import { getTileVarietyCount } from "./difficulty.js";
-import { DEFAULT_THEMES } from "./theme/registry";
+import { ROWS, COLS } from './config.js';
+import { getTileVarietyCount } from './difficulty.js';
+import { tileIdsFor } from './tileCatalog.js';
 
-// --- PATHFINDING ---
-
+export const groupSize = tile => ({ rows: tile?.groupRows || (tile?.isSplit && tile.splitOrientation === 'vertical' ? 2 : 1), cols: tile?.groupCols || (tile?.isSplit && tile.splitOrientation === 'horizontal' ? 2 : 1) });
+export const getTileCells = (r, c, tile) => {
+  const { rows, cols } = groupSize(tile);
+  return Array.from({ length: rows * cols }, (_, i) => ({ r: r + Math.floor(i / cols), c: c + i % cols }));
+};
+const sameShape = (a,b) => groupSize(a).rows === groupSize(b).rows && groupSize(a).cols === groupSize(b).cols;
+export const canMatch = (a,b) => !!a && !!b && !a.isSlave && !b.isSlave && a.id === b.id && sameShape(a,b);
+const shuffle = (items, rng = Math.random) => {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i+1)); [out[i], out[j]] = [out[j], out[i]]; }
+  return out;
+};
 export const getPath = (board, r1, c1, r2, c2, ignoredTiles = []) => {
-    const t1 = board[r1][c1];
-    const t2 = board[r2][c2];
-    
-    if (t1 === 0 || t2 === 0) return null;
-    if (t1.isSlave || t2.isSlave) return null; // Logic should only be called on master coordinates
-    if (t1.id !== t2.id) return null;
-    if (r1 === r2 && c1 === c2) return null;
-
-    const getCells = (r, c, t) => {
-        const cells = [{r, c, dir: t.openSide}];
-        if (t.isSplit) {
-            if (t.splitOrientation === 'horizontal') cells.push({r, c: c+1, dir: t.openSide});
-            else cells.push({r: r+1, c, dir: t.openSide});
-        }
-        return cells;
-    };
-    
-    const cells1 = getCells(r1, c1, t1);
-    const cells2 = getCells(r2, c2, t2);
-    const allowed = [...cells1, ...cells2];
-    
-    const isClear = (r, c) => {
-        if (board[r][c] === 0) return true;
-        if (allowed.some(a => a.r === r && a.c === c)) return true;
-        if (ignoredTiles.some(ign => ign.r === r && ign.c === c)) return true;
-        const t = board[r][c];
-        if (t.isSlave && ignoredTiles.some(ign => ign.r === t.masterR && ign.c === t.masterC)) return true;
-        return false;
-    };
-    
-    const isPathClear = (r_1, c_1, r_2, c_2) => {
-        if (r_1 === r_2) {
-            const min = Math.min(c_1, c_2); const max = Math.max(c_1, c_2);
-            for (let i = min + 1; i < max; i++) if (!isClear(r_1, i)) return false;
-        } else if (c_1 === c_2) {
-            const min = Math.min(r_1, r_2); const max = Math.max(r_1, r_2);
-            for (let i = min + 1; i < max; i++) if (!isClear(i, c_1)) return false;
-        }
-        return true;
-    };
-
-    let hasDirectionMismatch = false;
-    
-    const validatePath = (path, startCell, endCell) => {
-        const p0 = path[0], p1 = path[1];
-        const dr1 = p1.r - p0.r, dc1 = p1.c - p0.c;
-        const dir1 = dr1 < 0 ? 'up' : dr1 > 0 ? 'down' : dc1 < 0 ? 'left' : 'right';
-        if (startCell.dir && startCell.dir !== dir1) return false;
-        
-        const len = path.length;
-        const pL = path[len-1], pL1 = path[len-2];
-        const dr2 = pL.r - pL1.r, dc2 = pL.c - pL1.c;
-        const dir2 = dr2 > 0 ? 'up' : dr2 < 0 ? 'down' : dc2 > 0 ? 'left' : 'right';
-        if (endCell.dir && endCell.dir !== dir2) return false;
-        
-        return true;
-    };
-
-    for (const s of cells1) {
-        for (const e of cells2) {
-            const tryPath = (path) => {
-                if (validatePath(path, s, e)) return path;
-                hasDirectionMismatch = true;
-                return null;
-            };
-
-            // 0 Turns
-            if ((s.r === e.r || s.c === e.c) && isPathClear(s.r, s.c, e.r, e.c)) {
-                let p = tryPath([{r: s.r, c: s.c}, {r: e.r, c: e.c}]); if (p) return {path: p};
-            }
-            // 1 Turn
-            if (isClear(s.r, e.c) && isPathClear(s.r, s.c, s.r, e.c) && isPathClear(s.r, e.c, e.r, e.c)) {
-                let p = tryPath([{r: s.r, c: s.c}, {r: s.r, c: e.c}, {r: e.r, c: e.c}]); if (p) return {path: p};
-            }
-            if (isClear(e.r, s.c) && isPathClear(s.r, s.c, e.r, s.c) && isPathClear(e.r, s.c, e.r, e.c)) {
-                let p = tryPath([{r: s.r, c: s.c}, {r: e.r, c: s.c}, {r: e.r, c: e.c}]); if (p) return {path: p};
-            }
-            // 2 Turns Horiz
-            for (let dir of [1, -1]) {
-                let c = s.c + dir;
-                while (c >= 0 && c < COLS + 2 && isClear(s.r, c)) {
-                    if (isClear(e.r, c) && isPathClear(s.r, c, e.r, c) && isPathClear(e.r, c, e.r, e.c)) {
-                        let p = tryPath([{r: s.r, c: s.c}, {r: s.r, c}, {r: e.r, c}, {r: e.r, c: e.c}]); if (p) return {path: p};
-                    }
-                    c += dir;
-                }
-            }
-            // 2 Turns Vert
-            for (let dir of [1, -1]) {
-                let r = s.r + dir;
-                while (r >= 0 && r < ROWS + 2 && isClear(r, s.c)) {
-                    if (isClear(r, e.c) && isPathClear(r, s.c, r, e.c) && isPathClear(r, e.c, e.r, e.c)) {
-                        let p = tryPath([{r: s.r, c: s.c}, {r, c: s.c}, {r, c: e.c}, {r: e.r, c: e.c}]); if (p) return {path: p};
-                    }
-                    r += dir;
-                }
-            }
-        }
+  const a = board?.[r1]?.[c1], b = board?.[r2]?.[c2];
+  if (!canMatch(a,b) || (r1 === r2 && c1 === c2)) return null;
+  const starts = getTileCells(r1,c1,a), ends = getTileCells(r2,c2,b);
+  const endpoint = new Set(ends.map(p => `${p.r},${p.c}`));
+  const allowed = new Set([...starts,...ends,...ignoredTiles.flatMap(p => getTileCells(p.r,p.c,board[p.r][p.c]))].map(p => `${p.r},${p.c}`));
+  const dirs = [[-1,0,'up','down'],[0,1,'right','left'],[1,0,'down','up'],[0,-1,'left','right']];
+  for (const start of starts) {
+    const queue = [{...start, dir:-1, turns:0, points:[start]}], seen = new Map();
+    for (let index = 0; index < queue.length; index++) {
+      const cur = queue[index];
+      for (let dir=0; dir<4; dir++) {
+        const [dr,dc,name,opposite] = dirs[dir];
+        if (cur.dir === -1 && a.openSide && a.openSide !== name) continue;
+        const turns = cur.turns + (cur.dir !== -1 && cur.dir !== dir ? 1 : 0);
+        if (turns > 2) continue;
+        const r=cur.r+dr, c=cur.c+dc;
+        if (r<0 || c<0 || r>=board.length || c>=board[0].length || (board[r][c] !== 0 && !allowed.has(`${r},${c}`))) continue;
+        const points = cur.dir === dir ? [...cur.points.slice(0,-1),{r,c}] : [...cur.points,{r,c}];
+        if (endpoint.has(`${r},${c}`) && (!b.openSide || b.openSide === opposite)) return {path: points};
+        const key = `${r},${c},${dir}`;
+        if ((seen.get(key) ?? 3) <= turns) continue;
+        seen.set(key,turns); queue.push({r,c,dir,turns,points});
+      }
     }
-    
-    if (hasDirectionMismatch) return { error: 'DIRECTION_MISMATCH' };
-    return { error: 'NO_PATH' }; 
+  }
+  return { error:'NO_PATH' };
 };
-
-export const findHint = (board) => {
-    for (let i = 1; i <= ROWS; i++) {
-        for (let j = 1; j <= COLS; j++) {
-            const t1 = board[i][j];
-            if (t1 !== 0 && !t1.isSlave) {
-                for (let k = 1; k <= ROWS; k++) {
-                    for (let l = 1; l <= COLS; l++) {
-                        const t2 = board[k][l];
-                        if ((i !== k || j !== l) && t2 !== 0 && !t2.isSlave && t1.id === t2.id) {
-                            const result = getPath(board, i, j, k, l);
-                            if (result && result.path) return {p1: {r: i, c: j}, p2: {r: k, c: l}, path: result.path};
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return null;
+export const findHint = board => {
+  const tiles=[];
+  for (let r=1;r<=ROWS;r++) for(let c=1;c<=COLS;c++) if(board[r][c] && !board[r][c].isSlave) tiles.push({r,c});
+  for(let i=0;i<tiles.length;i++) for(let j=i+1;j<tiles.length;j++) {
+    const a=tiles[i],b=tiles[j];
+    if(!canMatch(board[a.r][a.c],board[b.r][b.c])) continue;
+    const result=getPath(board,a.r,a.c,b.r,b.c);
+    if(result?.path) return {p1:a,p2:b,path:result.path};
+  }
+  return null;
 };
-
-export const countRemaining = (b) => { let count = 0; if (b) for (let r = 1; r <= ROWS; r++) for (let c = 1; c <= COLS; c++) if (b[r][c] !== 0) count++; return count; };
-
-// --- SMART BOARD GENERATION ---
-
-// We keep placeTilesSmartly simpler now since split tiles pre-occupy spots
-export const placeTilesSmartly = (tiles, currentBoard = null, positions = null) => {
-    const newBoard = currentBoard ? [...currentBoard.map(row => [...row])] : Array.from({ length: ROWS + 2 }, () => Array(COLS + 2).fill(0));
-    const posList = positions || [];
-    if (!positions) {
-        for (let r = 1; r <= ROWS; r++) for (let c = 1; c <= COLS; c++) posList.push({r, c});
-    }
-
-    for (let attempt = 0; attempt < 50; attempt++) {
-        let currentTiles = [...tiles].sort(() => Math.random() - 0.5);
-        let boardTemp = [...newBoard.map(row => [...row])];
-
-        for (let i = 0; i < posList.length; i++) {
-            const { r, c } = posList[i];
-            if (boardTemp[r][c] !== 0) continue; // Skip if already filled (e.g. split tiles)
-
-            let selectedIdx = -1;
-            for (let tIdx = 0; tIdx < currentTiles.length; tIdx++) {
-                const tile = currentTiles[tIdx];
-                let sameNeighbors = 0;
-                
-                if (r > 1 && boardTemp[r-1][c] !== 0 && boardTemp[r-1][c].id === tile.id) sameNeighbors++;
-                if (c > 1 && boardTemp[r][c-1] !== 0 && boardTemp[r][c-1].id === tile.id) sameNeighbors++;
-                if (r > 1 && c > 1 && boardTemp[r-1][c-1] !== 0 && boardTemp[r-1][c-1].id === tile.id) sameNeighbors++;
-                if (r > 1 && c < COLS && boardTemp[r-1][c+1] !== 0 && boardTemp[r-1][c+1].id === tile.id) sameNeighbors++;
-                
-                let countInRow = 0;
-                for (let tc = 1; tc < c; tc++) if (boardTemp[r][tc] !== 0 && boardTemp[r][tc].id === tile.id) countInRow++;
-                let countInCol = 0;
-                for (let tr = 1; tr < r; tr++) if (boardTemp[tr][c] !== 0 && boardTemp[tr][c].id === tile.id) countInCol++;
-
-                if (sameNeighbors === 0 && countInRow < 3 && countInCol < 3) {
-                    selectedIdx = tIdx;
-                    break;
-                }
-            }
-
-            if (selectedIdx === -1) selectedIdx = 0;
-            boardTemp[r][c] = currentTiles.splice(selectedIdx, 1)[0];
-        }
-
-        if (findHint(boardTemp)) return boardTemp;
-    }
-
-    // Fallback
-    let fallbackTiles = [...tiles].sort(() => Math.random() - 0.5);
-    let fallbackIdx = 0;
-    for (let i = 0; i < posList.length; i++) {
-        if (newBoard[posList[i].r][posList[i].c] === 0) {
-            newBoard[posList[i].r][posList[i].c] = fallbackTiles[fallbackIdx++];
-        }
-    }
-    
-    // Force solvable fallback - clear openSide on the first identical pair we find
-    const emptyPos = posList.filter(p => !newBoard[p.r][p.c].isSplit && !newBoard[p.r][p.c].isSlave);
-    if (emptyPos.length >= 2) {
-       for (let i = 0; i < emptyPos.length; i++) {
-           for (let j = i + 1; j < emptyPos.length; j++) {
-               const p1 = emptyPos[i], p2 = emptyPos[j];
-               if (newBoard[p1.r][p1.c].id === newBoard[p2.r][p2.c].id) {
-                   newBoard[p1.r][p1.c].openSide = null;
-                   newBoard[p2.r][p2.c].openSide = null;
-                   if (findHint(newBoard)) return newBoard;
-               }
-           }
-       }
-    }
-
-    return newBoard;
+export const countRemaining = board => board?.flat().filter(Boolean).length || 0;
+export const clearMatchedGroups = (board,a,b) => {
+  const next = board.map(row => [...row]);
+  for(const p of [a,b]) for(const cell of getTileCells(p.r,p.c,board[p.r][p.c])) next[cell.r][cell.c]=0;
+  return next;
 };
-
-export const generateBoard = (themeKey, level) => {
-    let themeObj = DEFAULT_THEMES[themeKey] || DEFAULT_THEMES['sweets'];
-    let fullThemeData = themeObj.data;
-    
-    if (!fullThemeData || fullThemeData.length === 0) {
-        if (themeObj.assets && themeObj.assets.tiles && Object.keys(themeObj.assets.tiles).length > 0) {
-            fullThemeData = Object.keys(themeObj.assets.tiles);
-        } else {
-            fullThemeData = Object.keys(DEFAULT_THEMES['sweets'].assets.tiles);
-        }
-    }
-    
-    const varietyCount = getTileVarietyCount(level || 1, fullThemeData.length);
-    const themeData = [...fullThemeData].sort(() => Math.random() - 0.5).slice(0, Math.max(1, varietyCount));
-    
-    let selectedIds = []; 
-    const requiredPairs = (ROWS * COLS) / 4;
-    while (selectedIds.length < requiredPairs) selectedIds.push(...[...themeData].sort(() => Math.random() - 0.5));
-    selectedIds = selectedIds.slice(0, requiredPairs);
-    
-    let numSplitPairs = 0;
-    if (level >= 3) numSplitPairs = 1;
-    if (level >= 6) numSplitPairs = 2;
-    if (level >= 9) numSplitPairs = 3;
-    
-    const splitIds = selectedIds.splice(0, numSplitPairs);
-    const normalIds = selectedIds;
-    
-    let initialBoard = Array.from({ length: ROWS + 2 }, () => Array(COLS + 2).fill(0));
-    
-    const placeSplitTile = (id) => {
-        const orientation = Math.random() < 0.5 ? 'horizontal' : 'vertical';
-        for (let attempts = 0; attempts < 200; attempts++) {
-            let r = Math.floor(Math.random() * ROWS) + 1;
-            let c = Math.floor(Math.random() * COLS) + 1;
-            if (orientation === 'horizontal' && c < COLS && initialBoard[r][c] === 0 && initialBoard[r][c+1] === 0) {
-                const openSide = (level > 4 && Math.random() < 0.3) ? ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)] : null;
-                initialBoard[r][c] = { id, isSplit: true, splitOrientation: 'horizontal', openSide };
-                initialBoard[r][c+1] = { isSlave: true, masterR: r, masterC: c, id };
-                return true;
-            }
-            if (orientation === 'vertical' && r < ROWS && initialBoard[r][c] === 0 && initialBoard[r+1][c] === 0) {
-                const openSide = (level > 4 && Math.random() < 0.3) ? ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)] : null;
-                initialBoard[r][c] = { id, isSplit: true, splitOrientation: 'vertical', openSide };
-                initialBoard[r+1][c] = { isSlave: true, masterR: r, masterC: c, id };
-                return true;
-            }
-        }
-        return false;
-    };
-
-    // We must place 2 of each splitId so they match
-    splitIds.forEach(id => {
-        placeSplitTile(id);
-        placeSplitTile(id);
-    });
-
-    let normalTiles = []; 
-    normalIds.forEach(id => {
-        const makeTile = () => {
-           let openSide = null;
-           if (level > 2 && Math.random() < 0.2) { 
-               const sides = ['up', 'down', 'left', 'right'];
-               openSide = sides[Math.floor(Math.random() * sides.length)];
-           }
-           return { id, openSide };
-        };
-        normalTiles.push(makeTile(), makeTile(), makeTile(), makeTile());
-    }); 
-    
-    // The positions that are still empty will be filled
-    let emptyPos = [];
-    for (let r = 1; r <= ROWS; r++) {
-        for (let c = 1; c <= COLS; c++) {
-            if (initialBoard[r][c] === 0) emptyPos.push({r, c});
-        }
-    }
-    
-    return placeTilesSmartly(normalTiles, initialBoard, emptyPos);
+export const generateBoard = (themeKey, level = 1, rng = Math.random) => {
+  const board=Array.from({length:ROWS+2},()=>Array(COLS+2).fill(0));
+  const ids=shuffle(tileIdsFor(themeKey),rng).slice(0,getTileVarietyCount(level,tileIdsFor(themeKey).length));
+  const placeGroup=(r,c,id,rows,cols) => {
+    const tile={id,groupRows:rows,groupCols:cols,isSplit:rows*cols>1,openSide:null};
+    for(const cell of getTileCells(r,c,tile)) board[cell.r][cell.c]=cell.r===r && cell.c===c ? tile : {id,isSlave:true,masterR:r,masterC:c};
+  };
+  // Reserve paired adjacent footprints first; placing both is atomic, never an orphan group.
+  if(level>=3) { const r=level>=6 ? 4 : 2; const rows=level>=6 ? 2 : 1; placeGroup(r,1,ids[0],rows,2);placeGroup(r,4,ids[0],rows,2); }
+  if(level>=9) {placeGroup(7,2,ids[1],2,1);placeGroup(7,5,ids[1],2,1);}
+  const positions=[];
+  for(let r=1;r<=ROWS;r++) for(let c=1;c<=COLS;c++) if(!board[r][c]) positions.push({r,c});
+  const tiles=[];
+  for(let i=0;i<positions.length/2;i++) {const id=ids[i%ids.length];tiles.push({id,openSide:null},{id,openSide:null});}
+  const mixed=shuffle(tiles,rng);
+  positions.forEach((p,i)=>board[p.r][p.c]=mixed[i]);
+  return findHint(board) ? board : guaranteedShuffle(board);
 };
-
-export const guaranteedShuffle = (currentBoard) => {
-    let boardCopy = currentBoard.map(row => [...row]);
-    let tiles = []; let pos = [];
-    
-    // We only shuffle normal tiles, keeping split tiles in place to avoid breaking layout logic
-    for (let r = 1; r <= ROWS; r++) {
-        for (let c = 1; c <= COLS; c++) {
-            if (boardCopy[r][c] !== 0 && !boardCopy[r][c].isSplit && !boardCopy[r][c].isSlave) {
-                tiles.push(boardCopy[r][c]);
-                pos.push({r, c});
-                boardCopy[r][c] = 0; // Clear them for placeTilesSmartly
-            }
-        }
-    }
-    if (tiles.length === 0) return currentBoard; 
-    
-    return placeTilesSmartly(tiles, boardCopy, pos);
+export const placeTilesSmartly = (tiles, currentBoard, positions) => {
+  const b=currentBoard ? currentBoard.map(row=>[...row]) : Array.from({length:ROWS+2},()=>Array(COLS+2).fill(0));
+  const pos=positions || Array.from({length:ROWS*COLS},(_,i)=>({r:Math.floor(i/COLS)+1,c:i%COLS+1}));
+  shuffle(tiles).forEach((tile,i)=>{if(pos[i]) b[pos[i].r][pos[i].c]=tile;});
+  return guaranteedShuffle(b);
+};
+export const guaranteedShuffle = currentBoard => {
+  let board=currentBoard.map(row=>row.map(t=>t ? {...t,openSide:null} : 0));
+  const pos=[];
+  for(let r=1;r<=ROWS;r++) for(let c=1;c<=COLS;c++) if(board[r][c] && !board[r][c].isSlave && !board[r][c].isSplit) pos.push({r,c});
+  const tiles=pos.map(p=>board[p.r][p.c]);
+  for(let attempt=0;attempt<20;attempt++) {
+    const mixed=shuffle(tiles);pos.forEach((p,i)=>board[p.r][p.c]=mixed[i]);
+    if(findHint(board) || !countRemaining(board)) return board;
+  }
+  // Pathologically blocked footprints: dissolve groups into paired unit tiles, preserving every cell.
+  const all=[];
+  for(let r=1;r<=ROWS;r++) for(let c=1;c<=COLS;c++) if(board[r][c]) all.push({r,c});
+  const counts={};for(const p of all) counts[board[p.r][p.c].id]=(counts[board[p.r][p.c].id]||0)+1;
+  const pairs=Object.entries(counts).flatMap(([id,n])=>Array(Math.floor(n/2)).fill(id));
+  let simulation=board.map(row=>row.map(t=>t?{id:'path-probe',openSide:null}:0));
+  for(const id of pairs){
+    const hint=findHint(simulation);if(!hint)break;
+    for(const p of [hint.p1,hint.p2])board[p.r][p.c]={id,openSide:null};
+    simulation=clearMatchedGroups(simulation,hint.p1,hint.p2);
+  }
+  return board;
 };

@@ -3,332 +3,77 @@ import { useGame } from '../../GameContext';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useProfile } from '../../core/profile/ProfileContext';
 import { useCDE, CDE } from '../../core/cde';
-import { generateBoard, getPath, findHint, countRemaining, guaranteedShuffle } from '../../core/board';
-import { ROWS, COLS } from '../../core/config';
-
+import { generateBoard, getPath, findHint, countRemaining, guaranteedShuffle, clearMatchedGroups, canMatch } from '../../core/board';
 import { RewardEngine } from '../../core/reward';
 import { DAILY_CHALLENGE_TIME, getTodayKey } from '../../core/economy';
+import { useAudio } from '../../core/audio/AudioEngine';
 
-// Daily challenge: same level for everyone on a given day, a bit harder than usual.
-export const getDailyChallengeLevel = () => {
-  const dayIndex = Math.floor(Date.now() / 86400000);
-  return 5 + ((dayIndex * 7) % 16); // level 5..20
-};
-
-export const useOnetGame = (initialBoard?: any[][], isMultiplayer?: boolean, onComplete?: () => void, onProgress?: (remaining: number) => void) => {
-  const { navigate, gameMode } = useGame();
-  const isDailyChallenge = gameMode === 'daily' && !isMultiplayer;
-  const LEVEL_TIME = isDailyChallenge ? DAILY_CHALLENGE_TIME : 90;
-  const { activeTheme } = useTheme();
-  const { profile, updateProfile, addCurrency } = useProfile();
-  const cde = useCDE();
-  
-  const [board, setBoard] = useState<any[][]>(initialBoard || []);
-  const [selected, setSelected] = useState<{r: number, c: number} | null>(null);
-  const [activePaths, setActivePaths] = useState<{id: number, path: {r: number, c: number}[]}[]>([]);
-  const pathIdCounter = useRef(0);
-  const [hintTiles, setHintTiles] = useState<{p1: {r: number, c: number}, p2: {r: number, c: number}} | null>(null);
-  const [directionErrorTiles, setDirectionErrorTiles] = useState<{r: number, c: number}[]>([]);
-  const [matchingTiles, setMatchingTiles] = useState<{r: number, c: number}[]>([]);
-  
-  const [score, setScore] = useState(0);
-  const [combo, setCombo] = useState(0);
-  const comboRef = useRef(0);
-  const comboTimerRef = useRef<any>(null);
-  const highestComboRef = useRef(0);
-  const mistakesRef = useRef(0);
-  const matchesRef = useRef(0);
-  const floatingTextIdRef = useRef(0);
-  const [floatingTexts, setFloatingTexts] = useState<{id: number, text: string, x: number, y: number}[]>([]);
-  const [time, setTime] = useState(LEVEL_TIME);
-  const [isPaused, setIsPaused] = useState(false);
-  const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>('playing');
-  const [toastMsg, setToastMsg] = useState('');
-  const [winReward, setWinReward] = useState<{chestPoints: number, permen: number, dailyBonus: number} | null>(null);
-
-  const boardRef = useRef<HTMLDivElement>(null);
-
-  const showToast = (msg: string) => {
-     setToastMsg(msg);
-     setTimeout(() => setToastMsg(''), 2000);
+export const getDailyChallengeLevel = () => 6 + (Math.floor(Date.now()/86400000)%10);
+export const useOnetGame = (initialBoard?:any[][], isMultiplayer?:boolean, onComplete?:()=>void, onProgress?:(n:number)=>void) => {
+  const {navigate,gameMode}=useGame(); const {activeTheme}=useTheme();
+  const {profile,updateProfile}=useProfile(); const cde=useCDE(); const audio=useAudio();
+  const isDailyChallenge=gameMode==='daily' && !isMultiplayer, levelTime=isDailyChallenge?DAILY_CHALLENGE_TIME:120;
+  const [board,setBoard]=useState<any[][]>([]),[selected,setSelected]=useState<any>(null);
+  const [activePaths,setActivePaths]=useState<any[]>([]),[hintTiles,setHintTiles]=useState<any>(null);
+  const [directionErrorTiles,setErrors]=useState<any[]>([]),[matchingTiles,setMatching]=useState<any[]>([]);
+  const [score,setScore]=useState(0),[combo,setCombo]=useState(0),[time,setTime]=useState(levelTime);
+  const [isPaused,setIsPaused]=useState(false),[gameState,setGameState]=useState<'playing'|'won'|'lost'>('playing');
+  const [toastMsg,setToast]=useState(''),[winReward,setWinReward]=useState<any>(null),[floatingTexts,setFloating]=useState<any[]>([]);
+  const boardRef=useRef<HTMLDivElement>(null),lock=useRef(false),processed=useRef(false),epoch=useRef(0);
+  const run=useRef(crypto.randomUUID()),lastMatch=useRef(0),bestCombo=useRef(0),matches=useRef(0),mistakes=useRef(0);
+  const level=useRef(isDailyChallenge?getDailyChallengeLevel():(profile.currentLevel||1));
+  const timers=useRef<any[]>([]);
+  const later=(fn:()=>void,delay:number)=>{const version=epoch.current;timers.current.push(setTimeout(()=>{if(version===epoch.current)fn();},delay));};
+  const showToast=(msg:string)=>{setToast(msg);later(()=>setToast(''),2600);};
+  const initGame=()=>{
+    epoch.current++;timers.current.forEach(clearTimeout);timers.current=[];
+    lock.current=false;processed.current=false;run.current=crypto.randomUUID();matches.current=0;mistakes.current=0;bestCombo.current=0;lastMatch.current=0;
+    level.current=isDailyChallenge?getDailyChallengeLevel():(profile.currentLevel||1);
+    setBoard(initialBoard?structuredClone(initialBoard):generateBoard(activeTheme.id,level.current));
+    setScore(0);setCombo(0);setTime(levelTime);setSelected(null);setHintTiles(null);setMatching([]);setActivePaths([]);setErrors([]);setFloating([]);setGameState('playing');setIsPaused(false);setWinReward(null);
   };
-
-  const profileRef = useRef(profile);
-  useEffect(() => {
-      profileRef.current = profile;
-  }, [profile]);
-
-  const initGame = () => {
-    const level = isDailyChallenge ? getDailyChallengeLevel() : (profile.currentLevel || 1);
-    const newBoard = initialBoard ? JSON.parse(JSON.stringify(initialBoard)) : generateBoard(activeTheme.id, level);
-    setBoard(newBoard);
+  useEffect(()=>{initGame();return()=>{epoch.current++;timers.current.forEach(clearTimeout);};},[]);
+  useEffect(()=>{const hide=()=>{if(document.hidden&&!isMultiplayer)setIsPaused(true);};document.addEventListener('visibilitychange',hide);return()=>document.removeEventListener('visibilitychange',hide);},[isMultiplayer]);
+  useEffect(()=>{if(gameState!=='playing'||isPaused)return;const t=setInterval(()=>setTime(v=>Math.max(0,v-1)),1000);return()=>clearInterval(t);},[gameState,isPaused]);
+  useEffect(()=>{
+    if(!board.length||processed.current||gameState!=='playing'||lock.current)return;
+    const remaining=countRemaining(board);onProgress?.(remaining);
+    if(remaining===0 || time===0){
+      processed.current=true;const won=remaining===0;setGameState(won?'won':'lost');
+      if(isMultiplayer){if(won)onComplete?.();return;}
+      const payload={game:'onet',runId:run.current,level:level.current,isWinner:won,isFlawless:won&&mistakes.current===0,timeElapsed:(levelTime-time)*1000,remainingTime:time,progress:time/levelTime*100,highestCombo:bestCombo.current,score,matches:matches.current,isDailyChallenge};
+      setWinReward(RewardEngine.processWin(profile,payload).rewardResult);
+      cde.queueMutation('PROCESS_WIN',payload).catch(()=>showToast('Hasil belum tersimpan. Periksa koneksi.'));
+    } else if(!findHint(board)){
+      lock.current=true;showToast('Jalur habis. Papan diacak gratis!');
+      later(()=>{lock.current=false;setSelected(null);setBoard(b=>guaranteedShuffle(b));},700);
+    }
+  },[board,time,gameState]);
+  const handleTileClick=(r:number,c:number)=>{
+    if(gameState!=='playing'||isPaused||lock.current||!board[r]?.[c])return;
+    const t=board[r][c];if(t.isSlave){r=t.masterR;c=t.masterC;}
+    if(!selected){setSelected({r,c});return;}
+    if(selected.r===r&&selected.c===c){setSelected(null);return;}
+    if(!canMatch(board[selected.r][selected.c],board[r][c])){setSelected({r,c});return;}
+    const a=selected,b={r,c},result=getPath(board,a.r,a.c,r,c);
     setSelected(null);
-    setActivePaths([]);
-    setHintTiles(null);
-    setScore(0);
-    setCombo(0);
-    comboRef.current = 0;
-    highestComboRef.current = 0;
-    mistakesRef.current = 0;
-    matchesRef.current = 0;
-    setWinReward(null);
-    if (comboTimerRef.current) clearTimeout(comboTimerRef.current);
-    setTime(LEVEL_TIME);
-    setGameState('playing');
-    setIsPaused(false);
+    if(!result?.path){mistakes.current++;setErrors([a,b]);later(()=>setErrors([]),400);return;}
+    lock.current=true;const chain=Date.now()-lastMatch.current<4000?combo+1:1;
+    lastMatch.current=Date.now();bestCombo.current=Math.max(bestCombo.current,chain);matches.current++;setCombo(chain);
+    audio.playMatch();if(profile.settings?.haptics!==false)navigator.vibrate?.(8);
+    setMatching([a,b]);setActivePaths([{id:Date.now(),path:result.path}]);setHintTiles(null);
+    if(chain>1)setFloating([{id:Date.now(),text:`Combo ×${chain}`,x:40,y:40}]);
+    later(()=>{lock.current=false;setBoard(prev=>clearMatchedGroups(prev,a,b));setScore(s=>s+100+(chain-1)*10);setMatching([]);setActivePaths([]);setFloating([]);},420);
   };
-
-  // Initialize board
-  useEffect(() => {
-    initGame();
-  }, []);
-
-  // Timer
-  useEffect(() => {
-    if (gameState !== 'playing' || isPaused) return;
-    
-    const timer = setInterval(() => {
-      setTime(t => t <= 1 ? 0 : t - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [gameState, isPaused]);
-
-  useEffect(() => {
-    if (time === 0 && gameState === 'playing' && !isMultiplayer) {
-      setGameState('lost');
-      cde.queueMutation('UPDATE_PROFILE', { winStreak: 0 });
-    }
-  }, [time, gameState, updateProfile, isMultiplayer]);
-
-
-  // Handle win condition and auto-shuffle if deadlock
-  useEffect(() => {
-     if (gameState === 'playing' && board.length > 0) {
-        const remaining = countRemaining(board);
-        if (onProgress) onProgress(remaining);
-        
-        if (remaining === 0) {
-           setGameState('won');
-           if (isMultiplayer && onComplete) {
-               onComplete();
-               return;
-           }
-           const timeElapsed = (LEVEL_TIME - time) * 1000;
-           const isFlawless = mistakesRef.current === 0;
-           const progress = (time / LEVEL_TIME) * 100; // Survivor bar percentage
-
-           const winPayload = {
-               game: 'onet',
-               isMultiplayer: false,
-               isFlawless,
-               timeElapsed,
-               progress,
-               highestCombo: highestComboRef.current,
-               isWinner: true,
-               score,
-               matches: matchesRef.current,
-               isDailyChallenge
-           };
-           const currentProfile = JSON.parse(JSON.stringify(profileRef.current));
-           const { rewardResult } = RewardEngine.processWin(currentProfile, winPayload);
-           setWinReward(rewardResult);
-           cde.queueMutation('PROCESS_WIN', winPayload);
-
-        } else {
-           const hint = findHint(board);
-           if (!hint) {
-              showToast("Tidak ada langkah! Mengacak papan...");
-              setTimeout(() => {
-                 setBoard(prev => guaranteedShuffle(prev));
-              }, 1000);
-           }
-        }
-     }
-  }, [board, gameState, addCurrency]);
-
-  const handleTileClick = (r: number, c: number) => {
-    if (gameState !== 'playing' || isPaused) return;
-    if (board[r][c] === 0 || board[r][c].isSlave) return;
-    if (matchingTiles.some(t => t.r === r && t.c === c) || directionErrorTiles.some(t => t.r === r && t.c === c)) return;
-
-    if (!selected) {
-      setSelected({ r, c });
-      return;
-    }
-
-    if (selected.r === r && selected.c === c) {
-      setSelected(null);
-      return;
-    }
-
-    if (board[r][c].id !== board[selected.r][selected.c].id) {
-      setSelected({ r, c });
-      return;
-    }
-
-    // Same icon, check path
-    const result = getPath(board, selected.r, selected.c, r, c, matchingTiles);
-      if (result && result.path) {
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-         navigator.vibrate(8);
-      }
-      const pathId = pathIdCounter.current++;
-      setActivePaths(prev => [...prev, { id: pathId, path: result.path }]);
-      
-      if (comboTimerRef.current) clearTimeout(comboTimerRef.current);
-      comboRef.current += 1;
-      matchesRef.current += 1;
-      highestComboRef.current = Math.max(highestComboRef.current, comboRef.current);
-      const currentCombo = comboRef.current;
-      setCombo(currentCombo);
-
-      comboTimerRef.current = setTimeout(() => {
-         comboRef.current = 0;
-         setCombo(0);
-      }, 4000);
-
-      if (currentCombo > 1) {
-         const id = floatingTextIdRef.current++;
-         const x = ((c - 1 + 0.5) / COLS) * 100;
-         const y = ((r - 1 + 0.5) / ROWS) * 100;
-         setFloatingTexts(prev => [...prev, { id, text: `Combo x${currentCombo}!`, x, y }]);
-         setTimeout(() => {
-            setFloatingTexts(prev => prev.filter(ft => ft.id !== id));
-         }, 600);
-      }
-      
-      const s_r = selected.r;
-      const s_c = selected.c;
-      
-      setMatchingTiles(prev => [...prev, {r: s_r, c: s_c}, {r, c}]);
-      setSelected(null); // Release selection immediately for snappy feel
-      
-      setTimeout(() => {
-         setBoard(prev => {
-            const next = prev.map(row => [...row]);
-            const t1 = prev[s_r][s_c];
-            const t2 = prev[r][c];
-            
-            if (t1 && t1.isSplit) {
-                const cells1 = t1.splitOrientation === 'horizontal' ? [{r: s_r, c: s_c}, {r: s_r, c: s_c+1}] : [{r: s_r, c: s_c}, {r: s_r+1, c: s_c}];
-                const cells2 = t2.splitOrientation === 'horizontal' ? [{r, c}, {r, c: c+1}] : [{r, c}, {r: r+1, c}];
-                
-                const idCounts = {};
-                for(let ir=1; ir<=ROWS; ir++) {
-                    for(let ic=1; ic<=COLS; ic++) {
-                        const tb = prev[ir][ic];
-                        if (tb !== 0 && !tb.isSlave && tb.id !== t1.id) {
-                            idCounts[tb.id] = (idCounts[tb.id] || 0) + 1;
-                        }
-                    }
-                }
-                const validIds = Object.keys(idCounts).filter(id => idCounts[id] >= 2);
-                
-                let spawnIds = [];
-                if (validIds.length >= 2) {
-                    const shuffled = validIds.sort(() => Math.random() - 0.5);
-                    spawnIds = [shuffled[0], shuffled[0], shuffled[1], shuffled[1]];
-                } else if (validIds.length === 1) {
-                    spawnIds = [validIds[0], validIds[0], validIds[0], validIds[0]];
-                } else {
-                    const fallback = ['🍎', '🍊', '🍇', '🍉'].sort(() => Math.random() - 0.5);
-                    spawnIds = [fallback[0], fallback[0], fallback[1], fallback[1]];
-                }
-                spawnIds.sort(() => Math.random() - 0.5);
-                
-                const allCells = [...cells1, ...cells2];
-                allCells.forEach((cell, idx) => {
-                    next[cell.r][cell.c] = { id: spawnIds[idx], openSide: null };
-                });
-            } else {
-                next[r][c] = 0;
-                next[s_r][s_c] = 0;
-            }
-            return next;
-         });
-
-         setScore(s => s + 100 + ((currentCombo - 1) * 10));
-         setHintTiles(null);
-         setActivePaths(prev => prev.filter(p => p.id !== pathId));
-         setMatchingTiles(prev => prev.filter(t => !(t.r === s_r && t.c === s_c) && !(t.r === r && t.c === c)));
-      }, 600); // Path display duration
-    } else if (result && (result.error === 'DIRECTION_MISMATCH' || result.error === 'NO_PATH')) {
-      mistakesRef.current += 1;
-      setDirectionErrorTiles([{r: selected.r, c: selected.c}, {r, c}]);
-      setTimeout(() => setDirectionErrorTiles([]), 500);
-      setSelected(null); // deselect to force player to think
-    } else {
-      setSelected({ r, c });
-    }
+  const useHint=()=>{
+    if(lock.current||isPaused||gameState!=='playing')return;
+    if((CDE.getState().profile?.profile_data?.profile?.hints??3)<=0){showToast('Hint habis. Dapatkan dari peti atau toko.');return;}
+    const hint=findHint(board);if(hint){cde.queueMutation('USE_ITEM',{itemId:'hint'});setHintTiles(hint);}
   };
-
-  const useHint = () => {
-     if (gameState !== 'playing' || isPaused) return;
-     
-     const currentHints = Number(CDE.getState().profile?.profile_data?.profile?.hints ?? profile.hints ?? 3);
-     if (isNaN(currentHints) || currentHints <= 0) {
-        showToast("Item Hint habis! Beli di Toko.");
-        return;
-     }
-     
-     const hint = findHint(board);
-     if (hint) {
-        cde.queueMutation('USE_ITEM', { itemId: 'hint' });
-        setHintTiles(hint);
-        showToast("Petunjuk ditemukan!");
-     } else {
-        showToast("Tidak ada pasangan, tunggu acak otomatis!");
-     }
+  const useShuffle=()=>{
+    if(lock.current||isPaused||gameState!=='playing')return;
+    if((CDE.getState().profile?.profile_data?.profile?.shuffles??3)<=0){showToast('Shuffle habis. Dapatkan dari peti atau toko.');return;}
+    cde.queueMutation('USE_ITEM',{itemId:'shuffle'});setBoard(b=>guaranteedShuffle(b));setSelected(null);setHintTiles(null);showToast('Papan diacak!');
   };
-
-  const useShuffle = () => {
-     if (gameState !== 'playing' || isPaused) return;
-
-     const currentShuffles = Number(CDE.getState().profile?.profile_data?.profile?.shuffles ?? profile.shuffles ?? 3);
-     if (isNaN(currentShuffles) || currentShuffles <= 0) {
-        showToast("Item Shuffle habis! Beli di Toko.");
-        return;
-     }
-     
-     const newBoard = guaranteedShuffle(board);
-     if (newBoard !== board) {
-         setBoard(newBoard);
-         cde.queueMutation('USE_ITEM', { itemId: 'shuffle' });
-         setHintTiles(null);
-         setSelected(null);
-         showToast("Papan diacak!");
-     } else {
-         showToast("Tidak ada yang bisa diacak!");
-     }
-  };
-
-  return {
-    board,
-    selected,
-    activePaths,
-    hintTiles,
-    directionErrorTiles,
-    matchingTiles,
-    score,
-    combo,
-    floatingTexts,
-    time,
-    isPaused,
-    setIsPaused,
-    gameState,
-    toastMsg,
-    winReward,
-    isDailyChallenge,
-    dailyChallengeDone: profile.dailyChallengeDate === getTodayKey(),
-    levelTime: LEVEL_TIME,
-    currentLevel: isDailyChallenge ? getDailyChallengeLevel() : (profile.currentLevel || 1),
-    boardRef,
-    handleTileClick,
-    useHint,
-    useShuffle,
-    initGame,
-    profile,
-    updateProfile,
-    navigate
-  };
+  return {board,selected,activePaths,hintTiles,directionErrorTiles,matchingTiles,score,combo,floatingTexts,time,isPaused,setIsPaused,gameState,toastMsg,winReward,isDailyChallenge,dailyChallengeDone:profile.dailyChallengeDate===getTodayKey(),levelTime,currentLevel:level.current,boardRef,handleTileClick,useHint,useShuffle,initGame,profile,updateProfile,navigate};
 };

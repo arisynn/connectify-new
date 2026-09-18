@@ -113,6 +113,9 @@ export const LoginScreen = () => {
                     <div className="flex flex-col gap-1.5">
                       <label className="font-black text-theme-text-primary text-[10px] uppercase tracking-widest pl-1">Nickname</label>
                       <input 
+                        data-testid="login-nickname"
+                        aria-label="Nickname"
+                        autoComplete="username"
                         type="text" 
                         value={nickname}
                         onChange={(e) => setNickname(e.target.value)}
@@ -128,6 +131,7 @@ export const LoginScreen = () => {
                       <div className="flex justify-between items-center px-1">
                           <label className="font-black text-theme-text-primary text-[10px] uppercase tracking-widest">Kata Sandi</label>
                           <button 
+                              data-testid="login-change-name"
                               type="button" 
                               onClick={() => { setStage('nickname'); setPassword(''); setError(''); }}
                               className="font-bold text-theme-primary-coral-pink hover:text-pink-600 text-[10px] uppercase"
@@ -136,6 +140,9 @@ export const LoginScreen = () => {
                           </button>
                       </div>
                       <input 
+                        data-testid="login-password"
+                        aria-label="Kata sandi"
+                        autoComplete={isNewAccount?'new-password':'current-password'}
                         type="password" 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -156,13 +163,14 @@ export const LoginScreen = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="bg-theme-bg-soft-pink border-theme-sm border-red-500 rounded-lg px-3 py-2"
               >
-                <span className="font-bold text-red-600 text-[10px] uppercase tracking-wider block text-center">{error}</span>
+                <span data-testid="login-error" role="alert" className="font-bold text-red-600 text-[10px] uppercase tracking-wider block text-center">{error}</span>
               </motion.div>
             )}
           </AnimatePresence>
           
           <div className="flex flex-col gap-2 mt-2">
               <button 
+                data-testid="login-submit"
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-theme-primary-tropical-green hover:bg-green-300 active:bg-green-500 border-theme-base border-theme-border-main rounded-xl py-3.5 font-black text-theme-text-primary uppercase tracking-widest shadow-theme-base hover:translate-y-[-2px] hover:shadow-theme-lg active:translate-y-[2px] active:shadow-theme-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"

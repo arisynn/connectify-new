@@ -15,12 +15,14 @@ export const RADIUS_LG = "rounded-theme-lg";
 // --- COMPONENTS ---
 
 export const KineticButton = ({ 
+  'data-testid': testId,
   children, 
   onClick, 
   className = "", 
   colorClass = "bg-theme-primary-coral-pink",
   disabled = false
 }: { 
+  'data-testid'?: string,
   children: React.ReactNode, 
   onClick?: () => void, 
   className?: string,
@@ -28,6 +30,8 @@ export const KineticButton = ({
   disabled?: boolean
 }) => (
   <motion.button
+    data-testid={`action-${typeof children==='string'?children.toLowerCase().replace(/\W+/g,'-'):'button'}-${React.useId().replace(/:/g,'')}`}
+    {...(testId ? {'data-testid':testId} : {})}
     whileHover={!disabled ? { scale: 1.02 } : {}}
     whileTap={!disabled ? { scale: 0.95 } : {}}
     onClick={!disabled ? onClick : undefined}
@@ -79,6 +83,7 @@ export const CurrencyPill = ({ type, value, onClick }: { type: 'gem' | 'coin' | 
   const isCandy = type === 'candy';
   return (
     <motion.div 
+      data-testid={`currency-${type}-${React.useId().replace(/:/g,'')}`}
       whileHover={onClick ? { scale: 1.05 } : {}}
       whileTap={onClick ? { scale: 0.92 } : {}}
       onClick={onClick}
@@ -143,6 +148,7 @@ export const IconTile = ({
 }) => {
   return (
     <motion.button
+      data-testid={`nav-${ariaLabel.toLowerCase().replace(/\W+/g,'-')}`}
       aria-label={ariaLabel}
       title={ariaLabel}
       whileHover={{ scale: 1.05 }}

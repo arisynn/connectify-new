@@ -64,6 +64,11 @@ export const StartupScreen = () => {
 
   return (
     <motion.div 
+      data-testid="startup-play"
+      role="button"
+      tabIndex={0}
+      aria-label="Ketuk untuk bermain"
+      onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();handleTap(e as any);}}}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -109,6 +114,8 @@ export const StartupScreen = () => {
         </div>
         
         <button 
+          data-testid="startup-mute"
+          aria-label={isMuted?'Aktifkan suara':'Matikan suara'}
           className="mute-toggle pointer-events-auto w-12 h-12 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-full flex items-center justify-center shadow-theme-sm active:translate-y-1 active:shadow-[1px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
           onClick={toggleMute}
         >

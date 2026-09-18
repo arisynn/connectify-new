@@ -12,6 +12,8 @@ export const OnetHeader: React.FC<OnetHeaderProps> = ({ level, score, time, onPa
     <div className="w-full max-w-md flex flex-col items-center z-10 pt-2 px-3 sm:px-4">
       <header className="w-full flex items-center justify-between gap-1.5 pb-2">
         <button 
+           data-testid="onet-pause-mobile"
+           aria-label="Jeda Onet"
            onClick={onPause}
            className="bg-theme-surface-card-white p-2.5 flex items-center justify-center hover:bg-gray-50 border-theme-sm border-theme-border-main shadow-theme-base rounded-[4px] active:translate-y-[2px] active:translate-x-[2px] active:shadow-[var(--geometry-shadow-active)] transition-all flex-shrink-0"
         >
