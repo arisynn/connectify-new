@@ -113,93 +113,108 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
 
   return (
     <motion.div 
-      initial={isEmbedded ? { opacity: 0, scale: 0.95 } : { opacity: 0, y: '100%' }} 
+      initial={isEmbedded ? { opacity: 0, scale: 0.95 } : { opacity: 0, y: 20 }} 
       animate={isEmbedded ? { opacity: 1, scale: 1 } : { opacity: 1, y: 0 }} 
-      exit={isEmbedded ? { opacity: 0, scale: 0.95 } : { opacity: 0, y: '100%' }}
+      exit={isEmbedded ? { opacity: 0, scale: 0.95 } : { opacity: 0, y: 20 }} 
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className={isEmbedded ? "flex-1 w-full flex flex-col font-sans relative pb-28 pt-24" : "absolute inset-0 bg-theme-bg-main bg-[image:var(--asset-bg-global)] z-[100] flex flex-col font-sans"}
+      className={isEmbedded ? "flex-1 w-full flex flex-col font-sans relative pb-28 pt-24 text-[var(--club-ink)]" : "absolute inset-0 bg-[var(--club-paper)] z-[100] flex flex-col font-sans text-[var(--club-ink)]"}
     >
       {/* Standalone Header (Only if not embedded) */}
       {!isEmbedded && (
-        <div className="flex items-center gap-4 px-5 py-4 z-10 shrink-0 bg-theme-primary-sky-blue border-b-theme-base border-theme-border-main shadow-theme-base">
+        <div className="flex items-center gap-3 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
           <button
               onClick={room ? handleAttemptLeave : (onBack || (() => navigate('levels')))}
-              className="p-3 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] shadow-theme-base active:translate-y-1 active:translate-x-0.5 active:shadow-[var(--geometry-shadow-active)] transition-all"
+              className="round-button"
+              aria-label="Kembali"
           >
-            <DynamicIcon name="back" type="logo" className="w-6 h-6 object-contain text-theme-text-primary" />
+            <DynamicIcon name="back" type="logo" className="w-5 h-5 object-contain text-[var(--club-ink)]" />
           </button>
-          <h2 className="text-2xl font-black text-theme-text-primary uppercase tracking-tighter leading-none">
-            {room ? `Room: ${room.id}` : 'Multiplayer'}
-          </h2>
+          <div>
+            <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">DUEL DARING</span>
+            <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">
+              {room ? `Room #${room.id}` : 'Multiplayer'}
+            </h2>
+          </div>
         </div>
       )}
 
       {!room ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-           <div className="w-24 h-24 bg-theme-primary-sky-blue border-theme-base border-theme-border-main rounded-[2rem] shadow-theme-base flex items-center justify-center mb-6">
-              <Users size={48} className="text-theme-text-primary" />
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto w-full">
+           <div className="w-20 h-20 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl shadow-[4px_4px_0_var(--club-line)] flex items-center justify-center mb-5">
+              <Users size={40} className="text-[var(--club-ink)]" />
            </div>
            
-           <h3 className="text-3xl font-black text-theme-text-primary mb-2 uppercase tracking-tighter">Bermain Bersama</h3>
-           <p className="font-bold text-sm text-theme-text-secondary mb-10">Tantang teman secara real-time.</p>
+           <h3 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] mb-1.5">Bermain Bersama</h3>
+           <p className="font-medium text-xs text-[var(--club-muted)] mb-8 max-w-xs">Tantang teman secara real-time dan buktikan siapa yang tercepat menghubungkan pasangan tile!</p>
            
-           <div className="w-full max-w-sm flex flex-col gap-4">
-              <KineticButton onClick={() => setShowCreateModal(true)} colorClass="bg-theme-primary-sunny-yellow" className="py-4 text-xl" disabled={isLoading}>
-                 BUAT ROOM
-              </KineticButton>
-              <KineticButton onClick={() => setShowJoinModal(true)} colorClass="bg-theme-primary-coral-pink" className="py-4 text-xl" disabled={isLoading}>
-                 GABUNG ROOM
-              </KineticButton>
+           <div className="w-full flex flex-col gap-3">
+              <button 
+                onClick={() => setShowCreateModal(true)} 
+                className="pop-button butter w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2" 
+                disabled={isLoading}
+              >
+                 <Users size={18} />
+                 <span>Buat Ruangan Baru</span>
+              </button>
+              <button 
+                onClick={() => setShowJoinModal(true)} 
+                className="pop-button mint w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2" 
+                disabled={isLoading}
+              >
+                 <Swords size={18} />
+                 <span>Gabung Ruangan</span>
+              </button>
            </div>
         </div>
       ) : (
         <div className="flex-1 flex flex-col p-5 overflow-y-auto max-w-lg mx-auto w-full">
            {room.status === 'PLAYING' ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center">
-                 <Swords size={64} className="text-theme-primary-coral-pink mb-6 animate-pulse" />
-                 <h2 className="font-black text-3xl text-theme-text-primary uppercase mb-2">Game Berlangsung!</h2>
-                 <p className="font-bold text-theme-text-secondary">Semoga beruntung!</p>
+                 <Swords size={56} className="text-[#e11d48] mb-4 animate-bounce" />
+                 <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] mb-1">Game Sedang Berlangsung!</h2>
+                 <p className="font-medium text-xs text-[var(--club-muted)]">Hubungkan ubin secepat mungkin!</p>
               </div>
            ) : (
              <>
-               <div className="flex items-center justify-between mb-6 bg-theme-surface-card-white border-theme-base border-theme-border-main p-4 rounded-2xl shadow-theme-sm">
+               <div className="flex items-center justify-between mb-5 bg-[var(--club-card)] border-2 border-[var(--club-line)] p-4 rounded-2xl shadow-[3px_3px_0_var(--club-line)]">
                   <div>
-                    <h2 className="font-black text-xs text-theme-text-muted uppercase tracking-widest mb-1">KODE RUANGAN</h2>
-                    <h1 className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter leading-none">{room.id}</h1>
+                    <span className="font-bold text-[9px] text-[var(--club-muted)] uppercase tracking-wider block mb-0.5">KODE RUANGAN</span>
+                    <h1 className="font-['Fredoka'] font-semibold text-3xl text-[var(--club-ink)] tracking-wider leading-none">{room.id}</h1>
                   </div>
-                  <button onClick={handleAttemptLeave} className="p-3 bg-theme-bg-soft-pink border-theme-base border-theme-border-main rounded-xl shadow-theme-sm active:translate-y-1 transition-all">
-                     <LogOut size={20} className="text-theme-game-danger" />
+                  <button onClick={handleAttemptLeave} className="round-button pink" title="Keluar Ruangan">
+                     <LogOut size={18} className="text-[var(--club-ink)]" />
                   </button>
                </div>
 
-               <div className="flex items-center justify-between mb-4 px-2">
-                  <h2 className="font-black text-sm text-theme-text-secondary uppercase tracking-tighter">
-                     {room.mode}
-                  </h2>
-                  <KineticBadge text={`${room.players.length}/2 Pemain`} colorClass="bg-theme-surface-card-white" />
+               <div className="flex items-center justify-between mb-3 px-1">
+                  <span className="font-bold text-xs text-[var(--club-muted)] uppercase tracking-wider">
+                     Mode: {room.mode || 'Klasik'}
+                  </span>
+                  <span className="font-bold text-xs bg-[var(--club-card)] border border-[var(--club-line)] rounded-full px-2.5 py-0.5 shadow-xs">
+                    {room.players.length}/2 Pemain
+                  </span>
                </div>
 
                <div className="flex flex-col gap-3 mb-6">
-                  <div className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl p-3 flex items-center gap-3 shadow-theme-sm">
-                    <div className="w-12 h-12 shrink-0">
+                  <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-3.5 flex items-center gap-3 shadow-[2px_2px_0_var(--club-line)]">
+                    <div className="w-11 h-11 shrink-0">
                       <ProfileComponent avatarStr={profile?.activeAvatarId} avatarBg={profile?.activeAvatarBackground} className="!w-full !h-full" />
                     </div>
-                    <span className="font-black text-sm uppercase flex-1">{me?.name} (Kamu)</span>
-                    <span className={`font-black text-[10px] uppercase tracking-widest ${me?.ready ? 'text-theme-primary-tropical-green' : 'text-theme-text-muted'}`}>{me?.ready ? 'Ready' : 'Menunggu'}</span>
+                    <span className="font-bold text-sm text-[var(--club-ink)] flex-1">{me?.name} (Kamu)</span>
+                    <span className={`font-bold text-xs px-2.5 py-0.5 rounded-full border ${me?.ready ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-gray-100 border-gray-300 text-gray-500'}`}>{me?.ready ? 'Ready' : 'Menunggu'}</span>
                   </div>
                   
                   {opponent ? (
-                     <div className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl p-3 flex items-center gap-3 shadow-theme-sm">
-                       <div className="w-12 h-12 shrink-0">
-                         {/* We don't have opponent avatar data yet in the multiplayer system, so fallback */}
+                     <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-3.5 flex items-center gap-3 shadow-[2px_2px_0_var(--club-line)]">
+                       <div className="w-11 h-11 shrink-0">
                          <ProfileComponent avatarStr="avatar_male" avatarBg="#bde0fe" className="!w-full !h-full" />
                        </div>
-                       <span className="font-black text-sm uppercase flex-1">{opponent.name}</span>
-                       <span className={`font-black text-[10px] uppercase tracking-widest ${opponent.ready ? 'text-theme-primary-tropical-green' : 'text-theme-text-muted'}`}>{opponent.ready ? 'Ready' : 'Menunggu'}</span>
+                       <span className="font-bold text-sm text-[var(--club-ink)] flex-1">{opponent.name}</span>
+                       <span className={`font-bold text-xs px-2.5 py-0.5 rounded-full border ${opponent.ready ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-gray-100 border-gray-300 text-gray-500'}`}>{opponent.ready ? 'Ready' : 'Menunggu'}</span>
                      </div>
                   ) : (
-                     <div className="bg-white/50 border-theme-sm border-dashed border-gray-400 rounded-xl p-3 flex justify-center items-center h-[76px]">
-                       <span className="font-black text-[10px] text-theme-text-muted uppercase tracking-widest">Slot Kosong</span>
+                     <div className="bg-[var(--club-card)]/50 border-2 border-dashed border-[var(--club-line)]/40 rounded-2xl p-4 flex justify-center items-center h-20">
+                       <span className="font-bold text-xs text-[var(--club-muted)] uppercase tracking-wider">Menunggu Pemain Lain Bergabung...</span>
                      </div>
                   )}
                </div>
@@ -207,17 +222,25 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
                <div className="flex flex-col gap-3 mt-auto">
                  {room.status === 'STARTING' ? (
                      <div className="text-center p-4">
-                        <h3 className="font-black text-2xl text-theme-primary-coral-pink animate-pulse uppercase">Game Segera...</h3>
+                        <h3 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] animate-pulse">Game Segera Dimulai...</h3>
                      </div>
                  ) : (
                      <>
-                        <KineticButton onClick={() => setReady(!me?.ready)} colorClass={me?.ready ? "bg-theme-game-danger" : "bg-theme-primary-tropical-green"} className="w-full py-4 text-xl" disabled={isLoading || (hasPendingWager && !isHost)}>
-                           {me?.ready ? 'Batal Ready' : 'Ready'}
-                        </KineticButton>
+                        <button 
+                          onClick={() => setReady(!me?.ready)} 
+                          className={`pop-button w-full py-3.5 text-sm font-bold ${me?.ready ? 'pink' : 'mint'}`} 
+                          disabled={isLoading || (hasPendingWager && !isHost)}
+                        >
+                           {me?.ready ? 'Batal Siap' : 'Siap Bertanding!'}
+                        </button>
                         {isHost && room.players.length === 2 && room.players.every(p => p.ready) && (
-                           <KineticButton onClick={handleStartMatch} colorClass="bg-theme-primary-coral-pink" className="w-full py-4 text-xl mt-2" disabled={hasPendingWager}>
-                              Mulai Game
-                           </KineticButton>
+                           <button 
+                             onClick={handleStartMatch} 
+                             className="pop-button butter w-full py-3.5 text-sm font-bold" 
+                             disabled={hasPendingWager}
+                           >
+                              Mulai Game Sekarang
+                           </button>
                         )}
                      </>
                  )}
@@ -231,11 +254,11 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
         {(room?.status === 'PLAYING' || room?.status === 'FINISHED') && room?.gameMode === 'onet' && (
            <motion.div 
              key="onet-gameplay" 
-             initial={{ y: '100%', opacity: 0.5 }}
+             initial={{ y: 20, opacity: 0 }}
              animate={{ y: 0, opacity: 1 }}
-             exit={{ y: '100%', opacity: 0 }}
+             exit={{ y: 20, opacity: 0 }}
              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-             className="absolute inset-0 z-50"
+             className="absolute inset-0 z-50 bg-[var(--club-paper)]"
            >
            <MultiplayerGameplay room={room} user={user} profile={profile} completeMatch={completeMatch} reportTimeUp={reportTimeUp} onAttemptLeave={handleAttemptLeave} />
            </motion.div>
@@ -243,32 +266,32 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
         {(room?.status === 'PLAYING' || room?.status === 'FINISHED') && room?.gameMode === 'block-puzzle' && (
            <motion.div 
              key="block-puzzle-gameplay" 
-             initial={{ y: '100%', opacity: 0.5 }}
+             initial={{ y: 20, opacity: 0 }}
              animate={{ y: 0, opacity: 1 }}
-             exit={{ y: '100%', opacity: 0 }}
+             exit={{ y: 20, opacity: 0 }}
              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-             className="absolute inset-0 z-50"
+             className="absolute inset-0 z-50 bg-[var(--club-paper)]"
            >
              <MultiplayerBlockPuzzleGameplay room={room} user={user} profile={profile} reportLoss={reportLoss} reportTimeUp={reportTimeUp} onAttemptLeave={handleAttemptLeave} />
            </motion.div>
         )}
       </AnimatePresence>
 
-      <KineticModal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} colorClass="bg-theme-bg-soft-blue" widthClass="w-full max-w-sm" className="text-center">
+      <KineticModal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} widthClass="w-full max-w-sm" className="text-center">
         <div className="flex flex-col items-center">
-           <div className="w-16 h-16 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] flex items-center justify-center shadow-theme-sm mb-4">
-               <Users size={32} className="text-theme-text-primary" />
+           <div className="w-14 h-14 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] mb-3">
+               <Users size={28} className="text-[var(--club-ink)]" />
            </div>
-           <h2 className="font-black text-2xl text-theme-text-primary uppercase tracking-tighter mb-2">Gabung Ruangan</h2>
-           <p className="font-bold text-sm text-theme-text-secondary mb-6">Masukkan kode ruangan untuk bergabung bersama teman.</p>
+           <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] mb-1">Gabung Ruangan</h2>
+           <p className="font-medium text-xs text-[var(--club-muted)] mb-5">Masukkan kode ruangan yang diberikan temanmu.</p>
            
-           <div className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl p-4 shadow-[inset_2px_3px_0px_rgba(0,0,0,0.05)] mb-6 w-full">
-              <input type="text" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} placeholder="KODE ROOM" className="w-full font-black text-2xl text-center text-theme-text-primary uppercase outline-none placeholder:text-gray-300 bg-transparent" />
+           <div className="bg-[var(--club-paper)] border-2 border-[var(--club-line)] rounded-xl p-3 shadow-inner mb-5 w-full">
+              <input type="text" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} placeholder="KODE RUANGAN" className="w-full font-['Fredoka'] font-semibold text-2xl text-center text-[var(--club-ink)] uppercase outline-none placeholder:text-[var(--club-muted)]/50 bg-transparent" />
            </div>
            
-           <div className="flex flex-col gap-3 w-full">
-               <KineticButton onClick={handleJoin} colorClass="bg-theme-primary-sky-blue" className="w-full py-4 text-xl" disabled={isLoading || !joinCode}>GABUNG</KineticButton>
-               <KineticButton onClick={() => setShowJoinModal(false)} colorClass="bg-gray-200" className="w-full py-4 text-xl">BATAL</KineticButton>
+           <div className="flex flex-col gap-2.5 w-full">
+               <button onClick={handleJoin} className="pop-button mint w-full py-2.5 font-bold text-xs" disabled={isLoading || !joinCode}>GABUNG</button>
+               <button onClick={() => setShowJoinModal(false)} className="pop-button w-full py-2.5 font-bold text-xs">BATAL</button>
            </div>
         </div>
       </KineticModal>
@@ -276,40 +299,36 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
       <KineticModal 
         isOpen={showCreateModal} 
         onClose={() => setShowCreateModal(false)}
-        colorClass="bg-theme-bg-soft-blue"
         widthClass="w-full max-w-sm"
       >
         <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] flex items-center justify-center shadow-theme-sm mb-4">
-                <Users size={32} className="text-theme-primary-sky-blue" />
+            <div className="w-14 h-14 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] mb-3">
+                <Users size={28} className="text-[var(--club-ink)]" />
             </div>
-            <h2 className="font-black text-xl text-theme-text-primary uppercase mb-1">Buat Ruangan</h2>
-            <p className="font-bold text-sm text-theme-text-secondary mb-6">Pilih mode permainan.</p>
+            <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] mb-1">Buat Ruangan</h2>
+            <p className="font-medium text-xs text-[var(--club-muted)] mb-5">Pilih mode permainan yang ingin kamu mainkan.</p>
             
-            <div className="flex flex-col gap-3 w-full">
-                <KineticButton 
+            <div className="flex flex-col gap-2.5 w-full">
+                <button 
                     onClick={() => handleCreate('onet')} 
-                    colorClass="bg-theme-primary-sunny-yellow" 
-                    className="w-full py-4 text-xl" 
+                    className="pop-button butter w-full py-3 text-xs font-bold" 
                     disabled={isLoading}
                 >
-                    Main Onet
-                </KineticButton>
-                <KineticButton 
+                    Main Connect Onet
+                </button>
+                <button 
                     onClick={() => handleCreate('block-puzzle')} 
-                    colorClass="bg-theme-primary-coral-pink" 
-                    className="w-full py-4 text-xl" 
+                    className="pop-button pink w-full py-3 text-xs font-bold" 
                     disabled={isLoading}
                 >
                     Main Block Puzzle
-                </KineticButton>
-                <KineticButton 
+                </button>
+                <button 
                     onClick={() => setShowCreateModal(false)} 
-                    colorClass="bg-gray-200" 
-                    className="w-full py-4 text-xl"
+                    className="pop-button w-full py-2.5 text-xs font-bold mt-1"
                 >
                     BATAL
-                </KineticButton>
+                </button>
             </div>
         </div>
       </KineticModal>
@@ -319,37 +338,37 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
         onClose={() => setShowLeaveWarning(false)}
         icon={AlertTriangle}
         title="Keluar Permainan?"
-        description="Kamu sedang dalam permainan aktif. Keluar sekarang akan dihitung sebagai kekalahan atau forfeit. Yakin ingin keluar?"
-        primaryAction={{ label: 'Ya, Keluar', onClick: () => { setShowLeaveWarning(false); handleLeave(); }, colorClass: 'bg-theme-game-danger' }}
+        description="Kamu sedang dalam permainan aktif. Keluar sekarang akan dihitung sebagai kekalahan. Yakin ingin keluar?"
+        primaryAction={{ label: 'Ya, Keluar', onClick: () => { setShowLeaveWarning(false); handleLeave(); } }}
         secondaryAction={{ label: 'Batal', onClick: () => setShowLeaveWarning(false) }}
       />
 
-      <KineticModal isOpen={showResultModal} onClose={() => { setShowResultModal(false); handleLeave(); }} colorClass="bg-theme-primary-sunny-yellow" widthClass="w-full max-w-sm" className="text-center pt-10 border-theme-lg border-theme-border-main">
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-theme-surface-card-white border-theme-lg border-theme-border-main rounded-[2rem] flex items-center justify-center shadow-theme-base z-10 ">
-           <Trophy size={48} className="text-yellow-500 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" />
+      <KineticModal isOpen={showResultModal} onClose={() => { setShowResultModal(false); handleLeave(); }} widthClass="w-full max-w-sm" className="text-center pt-8">
+        <div className="w-16 h-16 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] mx-auto mb-4">
+           <Trophy size={36} className="text-[var(--club-ink)]" />
         </div>
         
         {room?.winner === 'DRAW' ? (
             <>
-               <h2 className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter mt-4 mb-2">Seri!</h2>
-               <p className="font-black text-theme-text-primary text-sm mb-6 uppercase tracking-widest">Waktu Habis</p>
+               <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] mb-1">Pertandingan Seri!</h2>
+               <p className="font-medium text-xs text-[var(--club-muted)] mb-6">Waktu pertandingan habis</p>
             </>
         ) : room?.winner === user.name ? (
             <>
-               <h2 className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter mt-4 mb-2">Menang!</h2>
-               <p className="font-black text-theme-text-primary text-sm mb-6 uppercase tracking-widest">Juara 1</p>
+               <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] mb-1">Kamu Menang!</h2>
+               <p className="font-medium text-xs text-[#16a34a] font-bold mb-6">Juara 1 Ronde Ini 🎉</p>
                {room?.finishReason === 'DISCONNECT' && (
-                  <p className="text-xs font-bold text-theme-game-danger mt-[-10px] mb-4 px-2 py-1 bg-theme-game-danger/10 rounded-full">Lawan Menyerah/Keluar</p>
+                  <p className="text-[11px] font-bold text-[#e11d48] -mt-4 mb-4 px-3 py-1 bg-red-50 border border-red-200 rounded-full inline-block">Lawan Keluar dari Pertandingan</p>
                )}
             </>
         ) : (
             <>
-               <h2 className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter mt-4 mb-2">Kalah!</h2>
-               <p className="font-black text-theme-text-primary text-sm mb-6 uppercase tracking-widest">Tetap semangat!</p>
+               <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] mb-1">Kamu Kalah!</h2>
+               <p className="font-medium text-xs text-[var(--club-muted)] mb-6">Tetap semangat, coba tanding lagi!</p>
             </>
         )}
         
-        <KineticButton onClick={() => { setShowResultModal(false); handleLeave(); }} colorClass="bg-theme-surface-card-white" className="w-full py-4 text-xl">Tutup</KineticButton>
+        <button onClick={() => { setShowResultModal(false); handleLeave(); }} className="pop-button mint w-full py-2.5 font-bold text-xs">Tutup</button>
       </KineticModal>
     </motion.div>
   );

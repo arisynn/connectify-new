@@ -45,27 +45,29 @@ const ThemeCard = ({
   onEquip?: () => void,
   onBuy?: () => void
 }) => (
-  <div data-testid={`shop-theme-${themeId}`} className={`bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-4 shadow-theme-lg`}>
-     <div className={`w-full h-24 border-theme-base border-theme-border-main rounded-2xl mb-4 flex items-center justify-center relative overflow-hidden`} style={{ background: `linear-gradient(135deg, ${color1}, ${color2})` }}>
-        <div className="flex gap-2 p-2">{tileImages.slice(0,3).map((src,i)=><img key={i} src={src} alt={`Contoh ${title} ${i+1}`} className="w-12 h-12 object-contain bg-white rounded-lg border-2 border-slate-800"/>)}</div>
-        {state === 'equipped' && (
-           <div className="absolute top-2 right-2 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-full p-1">
-              <Check size={16} className="text-theme-primary-tropical-green" strokeWidth={4} />
-           </div>
-        )}
+  <div data-testid={`shop-theme-${themeId}`} className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-3.5 shadow-[3px_3px_0_var(--club-line)] flex flex-col justify-between text-[var(--club-ink)]">
+     <div>
+       <div className="w-full h-22 border-2 border-[var(--club-line)] rounded-xl mb-3 flex items-center justify-center relative overflow-hidden shadow-[1px_1px_0_var(--club-line)]" style={{ background: `linear-gradient(135deg, ${color1}, ${color2})` }}>
+          <div className="flex gap-1.5 p-1.5">{tileImages.slice(0,3).map((src,i)=><img key={i} src={src} alt={`Contoh ${title} ${i+1}`} className="w-10 h-10 object-contain bg-white rounded-lg border-2 border-[var(--club-line)] shadow-xs"/>)}</div>
+          {state === 'equipped' && (
+             <div className="absolute top-2 right-2 bg-white border-2 border-[var(--club-line)] rounded-full p-1 shadow-sm">
+                <Check size={14} className="text-[#16a34a]" strokeWidth={3} />
+             </div>
+          )}
+       </div>
+       <h3 className="font-['Fredoka'] font-semibold text-base text-[var(--club-ink)] text-center mb-3">{title}</h3>
      </div>
-     <h3 className="font-black text-theme-text-primary text-[15px] uppercase tracking-wider text-center mb-3">{title}</h3>
      
      {state === 'equipped' && (
-       <KineticButton colorClass="bg-theme-surface-card-soft" className="w-full py-2.5 text-sm !shadow-none opacity-50 cursor-default">Sedang Dipakai</KineticButton>
+       <button disabled className="pop-button w-full py-2 text-xs !shadow-none opacity-50 cursor-default">Sedang Dipakai</button>
      )}
      {state === 'unlocked' && (
-       <KineticButton onClick={onEquip} colorClass="bg-theme-primary-coral-pink" className="w-full py-2.5 text-sm">Pakai Tema</KineticButton>
+       <button onClick={onEquip} className="pop-button pink w-full py-2 text-xs font-bold">Pakai Tema</button>
      )}
      {state === 'locked' && (
-       <KineticButton onClick={onBuy} colorClass="bg-theme-currency-candy-purple" className="w-full py-2.5 text-sm flex items-center justify-center gap-1.5">
-          <span className="font-black text-xs">{price}</span> <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain drop-shadow-sm" />
-       </KineticButton>
+       <button onClick={onBuy} className="pop-button butter w-full py-2 text-xs font-bold flex items-center justify-center gap-1.5">
+          <span>{price}</span> <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-3.5 h-3.5 object-contain" />
+       </button>
      )}
   </div>
 );
@@ -76,8 +78,8 @@ const ShopItem = ({
   title, 
   description, 
   price, 
-  colorClass = "bg-theme-primary-tropical-green", 
-  iconColorClass = "text-green-600",
+  colorClass = "bg-[var(--club-paper)]", 
+  iconColorClass = "text-[var(--club-ink)]",
   ownedCount,
   onBuy
 }: { 
@@ -91,23 +93,23 @@ const ShopItem = ({
   ownedCount?: number,
   onBuy: () => void 
 }) => (
-  <div data-testid={`shop-item-${iconName}`} className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-5 shadow-theme-lg flex items-center gap-4">
-     <div className={`w-16 h-16 ${colorClass} border-theme-base border-theme-border-main rounded-[1.2rem] flex items-center justify-center shrink-0 shadow-theme-sm relative`}>
+  <div data-testid={`shop-item-${iconName}`} className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex items-center gap-3.5 text-[var(--club-ink)]">
+     <div className={`w-14 h-14 ${colorClass} border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shrink-0 shadow-[2px_2px_0_var(--club-line)] relative`}>
         {ownedCount !== undefined && (
-          <span data-testid={`shop-owned-${iconName}`} className="absolute -top-2 -right-2 min-w-[1.5rem] h-6 px-1.5 bg-theme-surface-card-white rounded-full border-theme-sm border-theme-border-main flex items-center justify-center text-[11px] font-black text-theme-text-primary shadow-theme-sm">x{ownedCount}</span>
+          <span data-testid={`shop-owned-${iconName}`} className="absolute -top-1.5 -right-1.5 min-w-[1.4rem] h-5 px-1 bg-[var(--club-butter)] rounded-full border border-[var(--club-line)] flex items-center justify-center text-[10px] font-bold text-[var(--club-ink)] shadow-xs">x{ownedCount}</span>
         )}
         {iconName ? (
-           <DynamicIcon name={iconName} type="logo" LucideFallback={Icon} className={`w-10 h-10 object-contain drop-shadow-[2px_2px_0px_rgba(0,0,0,0.15)] ${iconColorClass}`} />
+           <DynamicIcon name={iconName} type="logo" LucideFallback={Icon} className={`w-8 h-8 object-contain ${iconColorClass}`} />
         ) : (
-           <Icon size={32} className={iconColorClass} />
+           <Icon size={26} className={iconColorClass} />
         )}
      </div>
-     <div className="flex-1">
-        <h3 className="font-black text-theme-text-primary text-[15px] uppercase tracking-wider leading-none mb-1">{title}</h3>
-        <p className="font-bold text-[10px] text-theme-text-muted leading-tight mb-3 pr-2">{description}</p>
-        <KineticButton onClick={onBuy} colorClass="bg-theme-currency-candy-purple" className="py-2 px-4 w-full flex items-center justify-center gap-1.5 !rounded-xl">
-           <span className="font-black text-xs">{price}</span> <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain drop-shadow-sm" />
-        </KineticButton>
+     <div className="flex-1 min-w-0">
+        <h3 className="font-['Fredoka'] font-semibold text-base text-[var(--club-ink)] leading-tight mb-0.5">{title}</h3>
+        <p className="font-medium text-xs text-[var(--club-muted)] leading-tight mb-2.5 line-clamp-2">{description}</p>
+        <button onClick={onBuy} className="pop-button butter py-1.5 px-3 flex items-center gap-1.5 text-xs font-bold">
+           <span>{price}</span> <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-3.5 h-3.5 object-contain" />
+        </button>
      </div>
   </div>
 );
@@ -145,43 +147,53 @@ export const ShopScreen = () => {
      }
   };
 
-  const TabButton = ({ active, onClick, icon: Icon, colorClass }: { active: boolean, onClick: () => void, icon: any, colorClass: string }) => (
-      <motion.button
-          onClick={onClick}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[1.2rem] border-theme-base border-theme-border-main flex items-center justify-center transition-all duration-200 z-10 relative ${
-              active 
-                  ? `${colorClass} shadow-theme-base -translate-y-2` 
-                  : 'bg-theme-surface-card-white shadow-theme-sm hover:bg-gray-50'
-          }`}
-      >
-          <Icon size={26} strokeWidth={active ? 3 : 2.5} className={active ? 'text-theme-text-primary' : 'text-theme-text-muted'} />
-      </motion.button>
-  );
-
   return (
     <motion.div 
-      initial={{ opacity: 0, y: '100%' }} 
+      initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: '100%' }}
+      exit={{ opacity: 0, y: 20 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute inset-0 bg-green-50 z-[100] flex flex-col font-sans"
+      className="absolute inset-0 bg-[var(--club-paper)] z-[100] flex flex-col font-sans text-[var(--club-ink)]"
     >
-      <div className="flex items-center justify-between gap-4 px-5 py-4 z-10 shrink-0 bg-theme-primary-tropical-green border-b-theme-base border-theme-border-main shadow-theme-base">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-4 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
+        <div className="flex items-center gap-3">
           <button 
              onClick={() => navigate('home')} 
-             className="p-3 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] shadow-theme-base active:translate-y-1 active:translate-x-0.5 active:shadow-[var(--geometry-shadow-active)] transition-all"
+             className="round-button"
+             aria-label="Kembali ke lobby"
           >
-            <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-6 h-6 object-contain text-theme-text-primary" />
+            <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-5 h-5 object-contain" />
           </button>
-          <h2 className="text-2xl font-black text-theme-text-primary uppercase tracking-tighter leading-none">Toko</h2>
+          <div>
+            <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">PASAR</span>
+            <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">Toko Item</h2>
+          </div>
         </div>
-        <CurrencyPill type="candy" value={cde.permen} />
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-full shadow-[2px_2px_0_var(--club-line)]">
+          <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain" />
+          <span className="font-bold text-xs text-[var(--club-ink)]">{cde.permen}</span>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="px-5 pt-4 shrink-0 max-w-xl mx-auto w-full">
+        <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-1 flex gap-1 shadow-[2px_2px_0_var(--club-line)]">
+          <button
+            onClick={() => setActiveTab('item')}
+            className={`flex-1 py-2 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${activeTab === 'item' ? 'bg-[var(--club-butter)] border-1.5 border-[var(--club-line)] text-[var(--club-ink)] shadow-[1px_1px_0_var(--club-line)]' : 'border border-transparent text-[var(--club-muted)] hover:text-[var(--club-ink)]'}`}
+          >
+            <Package size={15} strokeWidth={2.5} /> Item Bantuan
+          </button>
+          <button
+            onClick={() => setActiveTab('tema')}
+            className={`flex-1 py-2 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${activeTab === 'tema' ? 'bg-[var(--club-butter)] border-1.5 border-[var(--club-line)] text-[var(--club-ink)] shadow-[1px_1px_0_var(--club-line)]' : 'border border-transparent text-[var(--club-muted)] hover:text-[var(--club-ink)]'}`}
+          >
+            <Palette size={15} strokeWidth={2.5} /> Tema Papan
+          </button>
+        </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5 pt-6 pb-32">
+      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3.5 max-w-xl mx-auto w-full pb-16">
          <EconomyMeter compact id="shop-income"/>
          {activeTab === 'item' && (
            <>
@@ -202,12 +214,12 @@ export const ShopScreen = () => {
                    />
                  );
              })}
-             <div className="text-center text-xs text-gray-400 mt-4">Semua harga dalam Permen</div>
+             <div className="text-center text-xs text-[var(--club-muted)] mt-2">Semua item dibeli menggunakan Permen</div>
            </>
          )}
 
          {activeTab === 'tema' && (
-           <div className="grid grid-cols-2 gap-4 content-start">
+           <div className="grid grid-cols-2 gap-3.5 content-start">
              {Object.values(availableThemes).map((theme) => {
                const isEquipped = activeTheme.id === theme.id;
                const isUnlocked = profile?.unlockedThemes?.includes(theme.id);
@@ -232,22 +244,6 @@ export const ShopScreen = () => {
          )}
       </div>
 
-      {/* Bottom Navigation Bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-50 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] bg-theme-surface-card-white border-t-theme-lg border-theme-border-main flex justify-center gap-4 sm:gap-8 shadow-[0px_-4px_0px_0px_rgba(0,0,0,0.05)] rounded-t-[2.5rem]">
-          <TabButton 
-              active={activeTab === 'item'} 
-              onClick={() => setActiveTab('item')} 
-              icon={Package} 
-              colorClass="bg-theme-primary-coral-pink"
-          />
-          <TabButton 
-              active={activeTab === 'tema'} 
-              onClick={() => setActiveTab('tema')} 
-              icon={Palette} 
-              colorClass="bg-theme-currency-candy-purple"
-          />
-      </div>
-
       <KineticDialog
         isOpen={purchaseModal !== null}
         onClose={() => setPurchaseModal(null)}
@@ -255,16 +251,16 @@ export const ShopScreen = () => {
         iconName="permen"
         title="Beli Item?"
         description={`Apakah kamu yakin menukar ${purchaseModal?.price} Permen untuk ${purchaseModal?.name}?`}
-        primaryAction={{ label: 'Ya, Beli', onClick: handleBuy, colorClass: 'bg-theme-primary-tropical-green' }}
+        primaryAction={{ label: 'Ya, Beli', onClick: handleBuy, colorClass: 'bg-[#46b995]' }}
         secondaryAction={{ label: 'Batal', onClick: () => setPurchaseModal(null) }}
       />
 
-      <KineticModal isOpen={showSuccess} onClose={() => setShowSuccess(false)} colorClass="bg-theme-bg-soft-mint" widthClass="w-full max-w-xs" className="text-center pt-8">
-        <div className="w-16 h-16 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-full mx-auto flex items-center justify-center shadow-theme-sm mb-4">
-           <Check size={32} className="text-theme-primary-tropical-green" strokeWidth={3}/>
+      <KineticModal isOpen={showSuccess} onClose={() => setShowSuccess(false)} widthClass="w-full max-w-xs" className="text-center pt-8">
+        <div className="w-14 h-14 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl mx-auto flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] mb-4">
+           <Check size={28} className="text-[var(--club-ink)]" strokeWidth={3}/>
         </div>
-        <h2 className="font-black text-xl text-theme-text-primary uppercase tracking-wide mb-6">Pembelian Berhasil</h2>
-        <KineticButton onClick={() => setShowSuccess(false)} colorClass="bg-theme-primary-tropical-green" className="w-full py-3">OK</KineticButton>
+        <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] mb-6">Pembelian Berhasil!</h2>
+        <button onClick={() => setShowSuccess(false)} className="pop-button mint w-full py-2.5 font-bold text-sm">OK</button>
       </KineticModal>
 
       <KineticDialog
@@ -273,19 +269,19 @@ export const ShopScreen = () => {
         icon={AlertTriangle}
         title="Permen Kurang"
         description="Maaf, kamu tidak memiliki cukup Permen untuk membeli item ini."
-        primaryAction={{ label: 'Tutup', onClick: () => setShowError(false), colorClass: 'bg-theme-divider-main' }}
+        primaryAction={{ label: 'Tutup', onClick: () => setShowError(false) }}
       />
 
       {/* TOAST MODAL */}
       <AnimatePresence>
          {toastMsg && (
             <motion.div 
-              initial={{ opacity: 0, y: 50, scale: 0.9 }} 
+              initial={{ opacity: 0, y: 30, scale: 0.95 }} 
               animate={{ opacity: 1, y: 0, scale: 1 }} 
-              exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="absolute bottom-20 left-0 right-0 flex justify-center z-[120] pointer-events-none"
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              className="fixed bottom-20 left-0 right-0 flex justify-center z-[120] pointer-events-none px-4"
             >
-              <div className="bg-theme-primary-navy text-theme-text-white font-bold text-sm px-6 py-3 rounded-full shadow-theme-base border-theme-sm border-theme-border-main">
+              <div className="bg-[var(--club-card)] text-[var(--club-ink)] font-bold text-xs px-5 py-2.5 rounded-full shadow-[4px_4px_0_var(--club-line)] border-2 border-[var(--club-line)]">
                 {toastMsg}
               </div>
             </motion.div>

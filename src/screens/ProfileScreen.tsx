@@ -31,69 +31,86 @@ export const ProfileScreen = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: '100%' }} 
+      initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: '100%' }}
+      exit={{ opacity: 0, y: 20 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute inset-0 bg-pink-50 z-[100] flex flex-col font-sans"
+      className="absolute inset-0 bg-[var(--club-paper)] z-[100] flex flex-col font-sans text-[var(--club-ink)]"
     >
-      <div className="flex items-center gap-4 px-5 py-4 z-10 shrink-0 bg-theme-bg-soft-pink border-b-theme-base border-theme-border-main shadow-theme-base">
+      <div className="flex items-center gap-3 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
         <button 
            onClick={() => navigate('home')} 
-           className="p-3 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] shadow-theme-base active:translate-y-1 active:translate-x-0.5 active:shadow-[var(--geometry-shadow-active)] transition-all"
+           className="round-button"
+           aria-label="Kembali ke lobby"
         >
-          <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-6 h-6 object-contain text-theme-text-primary" />
+          <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-5 h-5 object-contain" />
         </button>
-        <h2 className="text-2xl font-black text-theme-text-primary uppercase tracking-tighter leading-none">Profil Pemain</h2>
+        <div>
+          <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">AKUN</span>
+          <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">Profil Pemain</h2>
+        </div>
       </div>
       
-      <div className="flex-1 flex flex-col p-6 overflow-y-auto">
-         <div className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-6 shadow-theme-lg mb-6 flex flex-col items-center">
+      <div className="flex-1 flex flex-col p-5 overflow-y-auto max-w-xl mx-auto w-full">
+         <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-[26px] p-6 shadow-[4px_4px_0_var(--club-line)] mb-5 flex flex-col items-center">
             
-            <div className="relative mb-4">
-               <ProfileComponent avatarStr={profile?.activeAvatarId || profile?.avatar} avatarBg={profile?.activeAvatarBackground} seed={cde.account?.username || user.name} className="!w-28 !h-28 border-theme-base" />
+            <div className="relative mb-3">
+               <ProfileComponent avatarStr={profile?.activeAvatarId || profile?.avatar} avatarBg={profile?.activeAvatarBackground} seed={cde.account?.username || user.name} className="!w-24 !h-24 border-2 border-[var(--club-line)] rounded-full shadow-[2px_2px_0_var(--club-line)]" />
                <button 
                  onClick={handleEditAvatarClick}
-                 className="absolute bottom-0 -right-2 bg-theme-primary-sunny-yellow w-11 h-11 rounded-full border-theme-base border-theme-border-main flex items-center justify-center shadow-theme-sm active:scale-95 transition-transform"
+                 className="absolute bottom-0 -right-1 bg-[var(--club-butter)] w-9 h-9 rounded-full border-2 border-[var(--club-line)] flex items-center justify-center shadow-[1px_1px_0_var(--club-line)] active:scale-95 transition-transform"
+                 aria-label="Edit avatar"
                >
-                 <Edit3 size={20} className="text-theme-text-primary" strokeWidth={3} />
+                 <Edit3 size={16} className="text-[var(--club-ink)]" strokeWidth={2.5} />
                </button>
             </div>
             
-            <h3 className="text-3xl font-black text-theme-text-primary tracking-tighter uppercase mb-1">{cde.account?.username || user.name}</h3>
-            <span className="bg-theme-primary-navy text-theme-text-white font-black text-[11px] uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">Pemain Reguler</span>
+            <h3 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] leading-tight mb-1">{cde.account?.username || user.name}</h3>
+            <span className="inline-flex items-center px-3 py-0.5 rounded-full border border-[var(--club-line)] bg-[var(--club-paper)] text-[10px] font-bold uppercase tracking-wider text-[var(--club-muted)] mb-5">Pemain Reguler</span>
             
             <div className="w-full">
-               <div className="flex justify-between items-center mb-2">
-                  <span className="font-black text-sm uppercase text-theme-text-secondary">Level {Math.floor((profile.highestLevel || 1) / 5) + 1}</span>
-                  <span className="font-black text-sm uppercase text-theme-primary-coral-pink">{((profile.highestLevel || 1) % 5) * 200} / 1000 EXP</span>
+               <div className="flex justify-between items-center mb-1.5 text-xs font-bold">
+                  <span className="text-[var(--club-ink)]">Level {Math.floor((profile.highestLevel || 1) / 5) + 1}</span>
+                  <span className="text-[#e11d48]">{((profile.highestLevel || 1) % 5) * 200} / 1000 EXP</span>
                </div>
-               <ProgressBar progress={((profile.highestLevel || 1) % 5) * 20} label="" />
+               <div className="w-full h-3 bg-white border-1.5 border-[var(--club-line)] rounded-full overflow-hidden p-0.5">
+                 <div className="h-full bg-[#46b995] rounded-full transition-all duration-300" style={{ width: `${((profile.highestLevel || 1) % 5) * 20}%` }} />
+               </div>
             </div>
          </div>
          
-         <div className="grid grid-cols-2 gap-4 mb-6">
-            <motion.button whileTap={{ scale: 0.95 }} data-testid="profile-achievements-button" onClick={() => navigate('prestasi')} className="bg-theme-primary-sunny-yellow border-theme-base border-theme-border-main rounded-2xl p-4 flex flex-col items-center shadow-theme-base active:shadow-[var(--geometry-shadow-active)] active:translate-y-1 transition-all">
-               <Trophy size={32} className="text-yellow-600 mb-2" />
-               <span className="font-black text-2xl text-theme-text-primary leading-none">{completedAchievements}</span>
-               <span className="font-black text-[10px] uppercase text-theme-text-secondary tracking-widest mt-1">Pencapaian</span>
+         <div className="grid grid-cols-2 gap-3.5 mb-5">
+            <motion.button 
+              whileTap={{ scale: 0.96 }} 
+              data-testid="profile-achievements-button" 
+              onClick={() => navigate('prestasi')} 
+              className="bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl p-4 flex flex-col items-center shadow-[3px_3px_0_var(--club-line)] active:shadow-[1px_1px_0_var(--club-line)] active:translate-y-0.5 transition-all text-[var(--club-ink)] cursor-pointer"
+            >
+               <Trophy size={28} className="text-[#d97706] mb-1.5" />
+               <span className="font-['Fredoka'] font-semibold text-2xl leading-none">{completedAchievements}</span>
+               <span className="font-bold text-[10px] uppercase text-[var(--club-muted)] tracking-wider mt-1">Pencapaian</span>
             </motion.button>
-            <motion.button whileTap={{ scale: 0.95 }} data-testid="profile-statistics-button" onClick={() => navigate('statistik')} className="bg-blue-200 border-theme-base border-theme-border-main rounded-2xl p-4 flex flex-col items-center shadow-theme-base active:shadow-[var(--geometry-shadow-active)] active:translate-y-1 transition-all">
-               <BarChart2 size={32} className="text-blue-600 mb-2" />
-               <span className="font-black text-2xl text-theme-text-primary leading-none">{profile.winStreak || 0}</span>
-               <span className="font-black text-[10px] uppercase text-theme-text-secondary tracking-widest mt-1">Win Streak · Statistik</span>
+            <motion.button 
+              whileTap={{ scale: 0.96 }} 
+              data-testid="profile-statistics-button" 
+              onClick={() => navigate('statistik')} 
+              className="bg-[var(--club-sky)] border-2 border-[var(--club-line)] rounded-2xl p-4 flex flex-col items-center shadow-[3px_3px_0_var(--club-line)] active:shadow-[1px_1px_0_var(--club-line)] active:translate-y-0.5 transition-all text-[var(--club-ink)] cursor-pointer"
+            >
+               <BarChart2 size={28} className="text-[#0284c7] mb-1.5" />
+               <span className="font-['Fredoka'] font-semibold text-2xl leading-none">{profile.winStreak || 0}</span>
+               <span className="font-bold text-[10px] uppercase text-[var(--club-muted)] tracking-wider mt-1">Win Streak</span>
             </motion.button>
          </div>
 
-         <div className="grid grid-cols-3 gap-3 mb-6">
+         <div className="grid grid-cols-3 gap-2.5">
             {[
               { label: 'Total Main', value: profile?.statistics?.totalGames || 0 },
               { label: 'Skor Terbaik', value: profile?.statistics?.highestScore || 0 },
               { label: 'Peti Dibuka', value: profile?.statistics?.totalChestsOpened || 0 },
             ].map(s => (
-              <div key={s.label} className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-2xl p-3 flex flex-col items-center shadow-theme-sm">
-                 <span className="font-black text-xl text-theme-text-primary leading-none">{Number(s.value).toLocaleString('id-ID')}</span>
-                 <span className="font-black text-[9px] uppercase text-theme-text-muted tracking-widest mt-1 text-center">{s.label}</span>
+              <div key={s.label} className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-3 flex flex-col items-center shadow-[2px_2px_0_var(--club-line)] text-[var(--club-ink)]">
+                 <span className="font-['Fredoka'] font-semibold text-xl leading-none">{Number(s.value).toLocaleString('id-ID')}</span>
+                 <span className="font-bold text-[9px] uppercase text-[var(--club-muted)] tracking-wider mt-1.5 text-center">{s.label}</span>
               </div>
             ))}
          </div>

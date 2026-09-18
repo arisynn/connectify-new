@@ -1,9 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { KineticButton } from '../../designs/KineticComponents';
-import { KineticModal } from '../../designs/KineticPopups';
-import { Play, RefreshCw, Star, Candy, Flame } from 'lucide-react';
-import { DynamicIcon } from '../../components/theme/DynamicIcon';
+import { Play, RefreshCw, Star } from 'lucide-react';
 
 interface OnetModalsProps {
   isPaused: boolean;
@@ -24,72 +21,147 @@ export const OnetModals: React.FC<OnetModalsProps> = ({
   return (
     <>
       {/* PAUSE MODAL */}
-      <KineticModal isOpen={isPaused} onClose={onResume} colorClass="bg-theme-surface-card-white" widthClass="w-full max-w-xs" className="text-center">
-        <h2 className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter mb-8">PAUSED</h2>
-        <div className="flex flex-col gap-3">
-          <KineticButton onClick={onResume} colorClass="bg-green-400" className="w-full py-3 flex items-center justify-center gap-2">
-             <Play size={24} className="fill-gray-900" /> Lanjutkan
-          </KineticButton>
-          <KineticButton onClick={onHome} colorClass="bg-theme-surface-card-white" className="w-full py-3 text-red-500 shadow-theme-sm">Kembali</KineticButton>
-        </div>
-      </KineticModal>
+      <AnimatePresence>
+        {isPaused && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-[3px] z-[150] flex items-center justify-center p-5"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 320 }}
+              className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-[26px] p-6 shadow-[6px_6px_0_var(--club-line)] text-[var(--club-ink)] max-w-xs w-full text-center"
+            >
+              <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block mb-1">PERMAINAN DIJEDA</span>
+              <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] leading-tight mb-6">Pause</h2>
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={onResume} 
+                  className="pop-button mint w-full flex items-center justify-center gap-2 font-bold py-3"
+                >
+                   <Play size={18} className="fill-[var(--club-ink)]" /> Lanjutkan
+                </button>
+                <button 
+                  onClick={onHome} 
+                  className="pop-button w-full py-2.5 font-bold text-xs"
+                >
+                  Keluar ke Menu
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* LOSE MODAL */}
-      <KineticModal isOpen={gameState === 'lost'} colorClass="bg-gray-900" widthClass="w-full max-w-sm" className="text-center pt-10">
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-red-500 border-theme-lg border-white rounded-full flex items-center justify-center shadow-theme-base z-10">
-           <RefreshCw size={48} className="text-white" />
-        </div>
-        <h2 className="font-black text-3xl text-white uppercase tracking-tighter mt-4 mb-2">Game Over!</h2>
-        <p className="font-bold text-gray-400 text-sm mb-6">Waktu habis atau gerakan habis.</p>
-        
-        <div className="bg-gray-800 border-theme-sm border-gray-700 rounded-xl p-4 mb-8">
-           <span className="font-black text-xs text-theme-text-muted uppercase tracking-widest block mb-1">Skor Akhir</span>
-           <span className="font-black text-3xl text-white">{score}</span>
-        </div>
-        
-        <div className="flex gap-3">
-           <KineticButton onClick={onHome} colorClass="bg-theme-surface-card-white" className="flex-1 py-3 text-sm">Keluar</KineticButton>
-           <KineticButton onClick={onRetry} colorClass="bg-theme-primary-coral-pink" className="flex-1 py-3 text-sm border-white">Coba Lagi</KineticButton>
-        </div>
-      </KineticModal>
+      <AnimatePresence>
+        {gameState === 'lost' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-[3px] z-[150] flex items-center justify-center p-5"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 320 }}
+              className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-[26px] p-6 pt-9 shadow-[6px_6px_0_var(--club-line)] text-[var(--club-ink)] max-w-xs w-full text-center relative"
+            >
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-[var(--club-pink)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] z-10 text-[var(--club-ink)]">
+                 <RefreshCw size={26} strokeWidth={2.5} />
+              </div>
+              
+              <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block mb-1">KESEMPATAN HABIS</span>
+              <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] leading-tight mb-1">Game Over!</h2>
+              <p className="text-xs text-[var(--club-muted)] mb-5">Waktu habis atau gerakan buntu.</p>
+              
+              <div className="bg-[var(--club-paper)] border-2 border-[var(--club-line)] rounded-2xl p-3.5 mb-6 shadow-[2px_2px_0_var(--club-line)]">
+                 <span className="font-bold text-[10px] text-[var(--club-muted)] uppercase tracking-wider block mb-0.5">Skor Akhir</span>
+                 <span className="font-['Fredoka'] font-semibold text-3xl text-[var(--club-ink)]">{score}</span>
+              </div>
+              
+              <div className="flex gap-2.5">
+                 <button onClick={onHome} className="pop-button flex-1 py-2.5 text-xs font-bold">
+                   Keluar
+                 </button>
+                 <button onClick={onRetry} className="pop-button pink flex-1 py-2.5 text-xs font-bold">
+                   Coba Lagi
+                 </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* WIN MODAL */}
-      <KineticModal isOpen={gameState === 'won'} colorClass="bg-green-400" widthClass="w-full max-w-sm" className="text-center pt-10 border-theme-lg">
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-theme-surface-card-white border-theme-lg border-theme-border-main rounded-[2rem] flex items-center justify-center shadow-theme-base z-10 ">
-           <Star size={56} className="text-green-500" />
-        </div>
-        <h2 className="font-black text-4xl text-theme-text-primary uppercase tracking-tighter mt-4 mb-6 drop-shadow-[2px_2px_0px_rgba(255,255,255,1)]">{isDailyChallenge ? 'Tantangan Selesai!' : 'Level Clear!'}</h2>
-        
-        <div data-testid="onet-win-summary" className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] p-4 mb-8 shadow-[inset_3px_4px_0px_rgba(0,0,0,0.1)]">
-           <div className="flex justify-between items-center mb-2 border-b-theme-sm border-gray-200 pb-2">
-              <span className="font-black text-sm text-theme-text-secondary uppercase">Skor</span>
-              <span className="font-black text-xl text-theme-text-primary">{score}</span>
-           </div>
-           <div className="flex justify-between items-center mb-2 border-b-theme-sm border-gray-200 pb-2">
-              <span className="font-black text-sm text-theme-text-secondary uppercase">Progres misi</span>
-              <span data-testid="onet-mission-updated" className="font-black text-sm text-theme-text-primary flex items-center gap-1">
-                 Tercatat
-              </span>
-           </div>
-           <div className="flex justify-between items-center">
-              <span className="font-black text-sm text-theme-text-secondary uppercase">Progres peti</span>
-              <span className="font-black text-lg text-blue-500">+{winReward ? winReward.chestPoints : 0} PTS</span>
-           </div>
-        </div>
-        
-        <KineticButton onClick={onNextLevel} colorClass="bg-theme-surface-card-white" className="w-full py-4 text-xl">{isDailyChallenge ? 'Kembali' : 'Lanjut'}</KineticButton>
-      </KineticModal>
+      <AnimatePresence>
+        {gameState === 'won' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-[3px] z-[150] flex items-center justify-center p-5"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 320 }}
+              className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-[26px] p-6 pt-9 shadow-[6px_6px_0_var(--club-line)] text-[var(--club-ink)] max-w-sm w-full text-center relative"
+            >
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] z-10 text-[var(--club-ink)]">
+                 <Star size={30} className="fill-[#eab308] text-[var(--club-line)]" />
+              </div>
+              
+              <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block mb-1">LUAR BIASA!</span>
+              <h2 className="font-['Fredoka'] font-semibold text-3xl text-[var(--club-ink)] leading-tight mb-5">
+                {isDailyChallenge ? 'Tantangan Selesai!' : 'Level Selesai!'}
+              </h2>
+              
+              <div data-testid="onet-win-summary" className="bg-[var(--club-paper)] border-2 border-[var(--club-line)] rounded-2xl p-4 mb-6 shadow-[2px_2px_0_var(--club-line)] flex flex-col gap-2.5 text-left">
+                 <div className="flex justify-between items-center pb-2 border-b border-[var(--club-line)]/10">
+                    <span className="font-bold text-xs text-[var(--club-muted)] uppercase tracking-wider">Skor</span>
+                    <span className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)]">{score}</span>
+                 </div>
+                 <div className="flex justify-between items-center pb-2 border-b border-[var(--club-line)]/10">
+                    <span className="font-bold text-xs text-[var(--club-muted)] uppercase tracking-wider">Progres Misi</span>
+                    <span data-testid="onet-mission-updated" className="font-bold text-xs text-[#16a34a] flex items-center gap-1">
+                       ✓ Tercatat
+                    </span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                    <span className="font-bold text-xs text-[var(--club-muted)] uppercase tracking-wider">Poin Peti</span>
+                    <span className="font-bold text-sm text-[#0284c7]">+{winReward ? winReward.chestPoints : 0} PTS</span>
+                 </div>
+              </div>
+              
+              <button 
+                onClick={onNextLevel} 
+                className="pop-button mint w-full py-3 text-base font-bold"
+              >
+                {isDailyChallenge ? 'Kembali' : 'Lanjut Level Berikutnya'}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* TOAST MODAL */}
       <AnimatePresence>
          {toastMsg && (
             <motion.div 
-               initial={{ opacity: 0, y: 50, scale: 0.9 }}
+               initial={{ opacity: 0, y: 30, scale: 0.95 }}
                animate={{ opacity: 1, y: 0, scale: 1 }}
-               exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="absolute bottom-32 left-0 right-0 flex justify-center z-[120] pointer-events-none px-4"
+               exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              className="fixed bottom-24 left-0 right-0 flex justify-center z-[160] pointer-events-none px-4"
             >
-              <div className="bg-gray-900 text-white font-bold text-sm px-6 py-3 rounded-full shadow-theme-base border-theme-sm border-theme-border-main text-center">
+              <div className="bg-[var(--club-card)] text-[var(--club-ink)] font-bold text-xs px-5 py-2.5 rounded-full shadow-[4px_4px_0_var(--club-line)] border-2 border-[var(--club-line)] text-center">
                 {toastMsg}
               </div>
             </motion.div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
-import { BORDER, SHADOW, RADIUS, BORDER_SM, RADIUS_LG, SHADOW_SM } from './KineticComponents';
 import { DynamicIcon } from '../components/theme/DynamicIcon';
 
 // --- BASE MODAL/BACKDROP ---
@@ -13,7 +12,7 @@ export const KineticBackdrop = ({ children, onClick, isOpen }: { children: React
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClick}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-theme-overlay/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0f172a]/60 backdrop-blur-[3px]"
         style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
       >
         {children}
@@ -26,12 +25,12 @@ export const KineticCloseButton = ({ onClick, className = "" }: { onClick: () =>
   <motion.button
     data-testid={`dialog-close-${React.useId().replace(/:/g,'')}`}
     aria-label="Tutup dialog"
-    whileHover={{ scale: 1.1 }}
-    whileTap={{ scale: 0.9, y: "var(--geometry-press-translate-y)", boxShadow: "var(--geometry-shadow-active)" }}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
     onClick={onClick}
-    className={`absolute -top-3 -right-3 w-10 h-10 bg-red-400 ${BORDER} rounded-full flex items-center justify-center ${SHADOW_SM} z-10 ${className}`}
+    className={`absolute top-3.5 right-3.5 w-9 h-9 border-2 border-[var(--club-line)] rounded-full bg-[var(--club-card)] text-[var(--club-ink)] shadow-[2px_2px_0_var(--club-line)] hover:bg-[var(--club-butter)] flex items-center justify-center z-10 transition-colors ${className}`}
   >
-    <X size={24} className="text-theme-text-primary" strokeWidth={3} />
+    <X size={18} strokeWidth={2.5} />
   </motion.button>
 );
 
@@ -40,7 +39,7 @@ export const KineticModal = ({
   onClose, 
   children,
   className = "",
-  colorClass = "bg-theme-surface-card-white",
+  colorClass = "bg-[var(--club-card)]",
   widthClass = "w-full max-w-sm"
 }: { 
   isOpen: boolean, 
@@ -55,12 +54,12 @@ export const KineticModal = ({
       role="dialog"
       aria-modal="true"
       data-testid={`dialog-${React.useId().replace(/:/g,'')}`}
-      initial={{ scale: 0.9, y: 20, opacity: 0 }}
+      initial={{ scale: 0.92, y: 16, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
-      exit={{ scale: 0.9, y: 20, opacity: 0 }}
-      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+      exit={{ scale: 0.92, y: 16, opacity: 0 }}
+      transition={{ type: "spring", damping: 25, stiffness: 320 }}
       onClick={(e) => e.stopPropagation()}
-      className={`relative ${BORDER} ${RADIUS_LG} ${SHADOW} ${colorClass} bg-[image:var(--asset-bg-popup)] bg-cover bg-center ${widthClass} p-5 ${className}`}
+      className={`relative border-2 border-[var(--club-line)] rounded-[24px] shadow-[5px_5px_0_var(--club-line)] ${colorClass} text-[var(--club-ink)] ${widthClass} p-6 ${className}`}
     >
       {onClose && <KineticCloseButton onClick={onClose} />}
       {children}
@@ -73,7 +72,7 @@ export const KineticBottomSheet = ({
   onClose,
   children,
   className = "",
-  colorClass = "bg-theme-surface-card-white"
+  colorClass = "bg-[var(--club-paper)]"
 }: {
   isOpen: boolean,
   onClose?: () => void,
@@ -89,19 +88,19 @@ export const KineticBottomSheet = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-theme-overlay/40 backdrop-blur-sm"
+          className="fixed inset-0 z-40 bg-[#0f172a]/60 backdrop-blur-[3px]"
         />
         <motion.div
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className={`fixed bottom-0 left-0 right-0 z-50 ${BORDER} rounded-t-[2rem] border-b-0 ${SHADOW} ${colorClass} bg-[image:var(--asset-bg-popup)] bg-cover bg-center p-5 pb-8 ${className}`}
+          transition={{ type: "spring", damping: 26, stiffness: 300 }}
+          className={`fixed bottom-0 left-0 right-0 z-50 border-t-2 border-[var(--club-line)] rounded-t-[26px] shadow-[0_-4px_0_var(--club-line)] ${colorClass} text-[var(--club-ink)] p-5 pb-8 ${className}`}
           style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
         >
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-theme-overlay rounded-full opacity-30" />
+          <div className="w-12 h-1.5 bg-[var(--club-muted)]/30 rounded-full mx-auto mb-4" />
           {onClose && <KineticCloseButton onClick={onClose} className="top-4 right-4" />}
-          <div className="mt-4">{children}</div>
+          <div className="mt-2">{children}</div>
         </motion.div>
       </>
     )}
@@ -129,38 +128,34 @@ export const KineticDialog = ({
   icon?: any,
   iconName?: string
 }) => (
-  <KineticModal isOpen={isOpen} onClose={onClose} widthClass="w-full max-w-xs" className="text-center pt-8">
+  <KineticModal isOpen={isOpen} onClose={onClose} widthClass="w-full max-w-sm" className="text-center pt-8">
     {(Icon || iconName) && (
-      <div className={`absolute -top-8 left-1/2 -translate-x-1/2 w-16 h-16 bg-theme-primary-sunny-yellow ${BORDER} rounded-full flex items-center justify-center ${SHADOW} z-10`}>
+      <div className="mx-auto w-16 h-16 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] mb-4 text-[var(--club-ink)]">
         {iconName ? (
-           <DynamicIcon name={iconName} type="logo" LucideFallback={Icon} className="w-10 h-10 object-contain drop-shadow-[2px_3px_0px_rgba(0,0,0,0.15)] text-theme-text-primary" />
+           <DynamicIcon name={iconName} type="logo" LucideFallback={Icon} className="w-9 h-9 object-contain" />
         ) : (
-           <Icon size={32} className="text-theme-text-primary" strokeWidth={2.5} />
+           <Icon size={30} strokeWidth={2.5} />
         )}
       </div>
     )}
-    <h2 className="font-black text-xl text-theme-text-primary uppercase tracking-wide mb-2">{title}</h2>
-    <p className="font-bold text-theme-text-secondary text-sm leading-tight mb-6">{description}</p>
-    <div className="flex flex-col gap-3">
-      <motion.button
+    <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] tracking-tight mb-2">{title}</h2>
+    <p className="text-[var(--club-muted)] text-sm leading-relaxed mb-6 font-medium">{description}</p>
+    <div className="flex flex-col gap-2.5">
+      <button
         data-testid={`dialog-confirm-${title.toLowerCase().replace(/\W+/g,'-')}`}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.95, y: "var(--geometry-press-translate-y)", x: "var(--geometry-press-translate-x)", boxShadow: "var(--geometry-shadow-active)" }}
         onClick={primaryAction.onClick}
-        className={`w-full py-3 ${BORDER} ${RADIUS} font-black uppercase tracking-wider text-theme-text-primary ${SHADOW} transition-colors ${primaryAction.colorClass || 'bg-theme-primary-coral-pink'}`}
+        className={`pop-button ${primaryAction.colorClass?.includes('pink') ? 'pink' : primaryAction.colorClass?.includes('green') || primaryAction.colorClass?.includes('mint') ? 'mint' : 'pink'}`}
       >
         {primaryAction.label}
-      </motion.button>
+      </button>
       {secondaryAction && (
-        <motion.button
+        <button
           data-testid={`dialog-cancel-${title.toLowerCase().replace(/\W+/g,'-')}`}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.95, y: "var(--geometry-press-translate-y)", x: "var(--geometry-press-translate-x)", boxShadow: "var(--geometry-shadow-active)" }}
           onClick={secondaryAction.onClick}
-          className={`w-full py-3 ${BORDER} ${RADIUS} font-black uppercase tracking-wider text-theme-text-primary shadow-theme-sm bg-theme-surface-card-white`}
+          className="pop-button"
         >
           {secondaryAction.label}
-        </motion.button>
+        </button>
       )}
     </div>
   </KineticModal>
@@ -169,7 +164,7 @@ export const KineticDialog = ({
 export const KineticIconButton = ({
   icon: Icon,
   onClick,
-  colorClass = "bg-theme-surface-card-white",
+  colorClass = "bg-[var(--club-card)]",
   className = ""
 }: {
   icon: any,
@@ -179,11 +174,11 @@ export const KineticIconButton = ({
 }) => (
   <motion.button
     whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.9, y: "var(--geometry-press-translate-y)", x: "var(--geometry-press-translate-x)", boxShadow: "var(--geometry-shadow-active)" }}
+    whileTap={{ scale: 0.95 }}
     onClick={onClick}
-    className={`w-12 h-12 flex items-center justify-center ${BORDER} ${RADIUS} ${SHADOW_SM} ${colorClass} ${className}`}
+    className={`round-button ${colorClass} ${className}`}
   >
-    <Icon size={24} className="text-theme-text-primary" strokeWidth={2.5} />
+    <Icon size={20} className="text-[var(--club-ink)]" strokeWidth={2.5} />
   </motion.button>
 );
 
@@ -198,26 +193,26 @@ export const KineticToggle = ({
   label: string,
   icon?: any
 }) => (
-  <div className={`flex items-center justify-between p-3 ${BORDER_SM} ${RADIUS} bg-theme-surface-card-white shadow-[inset_2px_3px_0px_rgba(0,0,0,0.05)]`}>
+  <div className="flex items-center justify-between p-3.5 border-2 border-[var(--club-line)] rounded-2xl bg-[var(--club-card)] shadow-[2px_2px_0_var(--club-line)]">
     <div className="flex items-center gap-3">
-      {Icon && <div className="w-8 h-8 bg-theme-neutral-100 rounded-lg flex items-center justify-center border-theme-sm border-theme-border-main"><Icon size={18} className="text-theme-text-primary" /></div>}
-      <span className="font-black text-theme-text-primary uppercase tracking-wide text-sm">{label}</span>
+      {Icon && <div className="w-8 h-8 bg-[var(--club-butter)] rounded-xl flex items-center justify-center border-2 border-[var(--club-line)] text-[var(--club-ink)]"><Icon size={16} /></div>}
+      <span className="font-bold text-[var(--club-ink)] text-sm">{label}</span>
     </div>
-    <motion.button
+    <button
       onClick={onToggle}
-      className={`relative w-14 h-8 ${BORDER} rounded-full transition-colors ${isOn ? 'bg-green-400' : 'bg-theme-divider-main'} shadow-[inset_1px_2px_0px_rgba(0,0,0,0.2)]`}
+      className={`relative w-14 h-7 border-2 border-[var(--club-line)] rounded-full transition-colors ${isOn ? 'bg-[var(--club-mint)]' : 'bg-[#e2e8f0]'}`}
     >
       <motion.div
         initial={false}
-        animate={{ x: isOn ? 24 : 4 }}
-        className={`absolute top-1 bottom-1 w-5 h-5 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-full shadow-[var(--geometry-shadow-active)]`}
+        animate={{ x: isOn ? 26 : 3 }}
+        className="absolute top-0.5 bottom-0.5 w-5 h-5 bg-white border-1.5 border-[var(--club-line)] rounded-full shadow-sm"
       />
-    </motion.button>
+    </button>
   </div>
 );
 
-export const KineticBadge = ({ text, colorClass = "bg-theme-primary-sunny-yellow" }: { text: string, colorClass?: string }) => (
-  <div className={`inline-block px-2.5 py-1 ${colorClass} ${BORDER_SM} rounded-full text-[10px] font-black uppercase tracking-widest text-theme-text-primary ${SHADOW_SM} `}>
+export const KineticBadge = ({ text, colorClass = "bg-[var(--club-butter)]" }: { text: string, colorClass?: string }) => (
+  <div className={`inline-block px-2.5 py-0.5 ${colorClass} border-1.5 border-[var(--club-line)] rounded-full text-[9px] font-bold uppercase tracking-wider text-[var(--club-ink)] shadow-[1px_1px_0_var(--club-line)]`}>
     {text}
   </div>
 );
@@ -235,12 +230,11 @@ export const KineticRewardCard = ({
       initial={{ scale: 0.8, opacity: 0, y: 10 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
       transition={{ type: "spring", damping: 15, delay }}
-      className={`relative ${BORDER} ${RADIUS} ${reward.colorClass} p-4 flex flex-col items-center justify-center ${SHADOW} overflow-hidden`}
+      className={`relative border-2 border-[var(--club-line)] rounded-2xl ${reward.colorClass} p-4 flex flex-col items-center justify-center shadow-[3px_3px_0_var(--club-line)] overflow-hidden`}
     >
-      <div className="absolute -inset-4 bg-white/20  transform origin-top-left opacity-50" />
-      <Icon size={48} className="text-theme-text-primary drop-shadow-[2px_3px_0px_rgba(255,255,255,0.5)] relative z-10 mb-2" strokeWidth={2} />
-      <div className="relative z-10 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-full px-3 py-1 shadow-theme-sm">
-        <span className="font-black text-theme-text-primary text-sm">+{reward.amount} {reward.type}</span>
+      <Icon size={40} className="text-[var(--club-ink)] relative z-10 mb-2" strokeWidth={2} />
+      <div className="relative z-10 bg-white border-1.5 border-[var(--club-line)] rounded-full px-3 py-0.5 shadow-sm">
+        <span className="font-bold text-[var(--club-ink)] text-xs">+{reward.amount} {reward.type}</span>
       </div>
     </motion.div>
   );

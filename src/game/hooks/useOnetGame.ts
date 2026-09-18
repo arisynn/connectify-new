@@ -3,7 +3,7 @@ import { useGame } from '../../GameContext';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useProfile } from '../../core/profile/ProfileContext';
 import { useCDE, CDE } from '../../core/cde';
-import { generateBoard, getPath, findHint, countRemaining, guaranteedShuffle, clearMatchedGroups, canMatch } from '../../core/board';
+import { generateBoard, getPath, findHint, countRemaining, guaranteedShuffle, clearMatchedGroups, canMatch, getMatchAction } from '../../core/board';
 import { RewardEngine } from '../../core/reward';
 import { DAILY_CHALLENGE_TIME, getTodayKey } from '../../core/economy';
 import { useAudio } from '../../core/audio/AudioEngine';
@@ -60,10 +60,29 @@ export const useOnetGame = (initialBoard?:any[][], isMultiplayer?:boolean, onCom
     if(!result?.path){mistakes.current++;setErrors([a,b]);later(()=>setErrors([]),400);return;}
     lock.current=true;const chain=Date.now()-lastMatch.current<4000?combo+1:1;
     lastMatch.current=Date.now();bestCombo.current=Math.max(bestCombo.current,chain);matches.current++;setCombo(chain);
-    audio.playMatch();if(profile.settings?.haptics!==false)navigator.vibrate?.(8);
+    audio.playMatch();if(profile.settings?.haptics!==false)navigator.vibrate?.(12);
     setMatching([a,b]);setActivePaths([{id:Date.now(),path:result.path}]);setHintTiles(null);
-    if(chain>1)setFloating([{id:Date.now(),text:`Combo ×${chain}`,x:40,y:40}]);
-    later(()=>{lock.current=false;setBoard(prev=>clearMatchedGroups(prev,a,b));setScore(s=>s+100+(chain-1)*10);setMatching([]);setActivePaths([]);setFloating([]);},420);
+
+    const action = getMatchAction(board, a, b);
+    let baseScore = 100;
+    if (action === 'split_to_1x2') {
+      baseScore = 200;
+      setFloating([{ id: Date.now(), text: 'TERBELAH! 1×2 (2×) ✂️', x: 40, y: 40 }]);
+    } else if (action === 'split_to_1x1') {
+      baseScore = 150;
+      setFloating([{ id: Date.now(), text: 'TERBELAH! 1×1 (2×) ✂️', x: 40, y: 40 }]);
+    } else if(chain>1) {
+      setFloating([{id:Date.now(),text:`Combo ×${chain}`,x:40,y:40}]);
+    }
+
+    later(()=>{
+      lock.current=false;
+      setBoard(prev=>clearMatchedGroups(prev,a,b));
+      setScore(s=>s+baseScore+(chain-1)*10);
+      setMatching([]);
+      setActivePaths([]);
+      setFloating([]);
+    },600);
   };
   const useHint=()=>{
     if(lock.current||isPaused||gameState!=='playing')return;

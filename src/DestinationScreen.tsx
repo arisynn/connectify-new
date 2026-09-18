@@ -65,74 +65,82 @@ export const DestinationScreen = () => {
            initial={{ opacity: 0 }} 
            animate={{ opacity: 1 }} 
            exit={{ opacity: 0 }}
-           className="absolute inset-0 bg-black/60 z-[100] flex flex-col justify-end"
+           className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-[3px] z-[120] flex flex-col justify-end sm:justify-center p-0 sm:p-5"
         >
           <div className="absolute inset-0" onClick={() => navigate('home')} />
           <motion.div 
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="bg-theme-surface-card-white border-t-theme-base border-theme-border-main rounded-t-[2.5rem] w-full min-h-[60vh] max-h-[85vh] z-10 flex flex-col pt-4 pb-6"
+            initial={{ y: '100%', scale: 0.95 }}
+            animate={{ y: 0, scale: 1 }}
+            exit={{ y: '100%', scale: 0.95 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+            className="relative w-full max-w-lg mx-auto bg-[var(--club-paper)] border-t-2 sm:border-2 border-[var(--club-line)] rounded-t-[26px] sm:rounded-[26px] shadow-[0_-4px_0_var(--club-line)] sm:shadow-[6px_6px_0_var(--club-line)] z-10 flex flex-col max-h-[85vh] p-6 text-[var(--club-ink)]"
           >
-             <div className="w-16 h-1.5 bg-theme-divider-main rounded-full mx-auto mb-6 shrink-0" />
-             <div className="px-6 flex items-center justify-between mb-6 shrink-0">
-               <h2 className="text-3xl font-black text-theme-text-primary tracking-tighter uppercase">Notifikasi</h2>
-               <div className="w-12 h-12 bg-teal-200 border-theme-base border-theme-border-main rounded-full flex items-center justify-center shadow-theme-base">
-                 <Bell size={24} strokeWidth={2.5} className="text-theme-text-primary" />
+             <div className="w-12 h-1.5 bg-[var(--club-muted)]/30 rounded-full mx-auto mb-4 sm:hidden shrink-0" />
+             
+             <div className="flex items-center justify-between mb-5 shrink-0">
+               <div>
+                 <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">UPDATE & HADIAH</span>
+                 <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] leading-tight">Notifikasi</h2>
                </div>
+               <button 
+                 onClick={() => navigate('home')} 
+                 className="round-button"
+                 aria-label="Tutup notifikasi"
+               >
+                 <span className="text-base font-bold">✕</span>
+               </button>
              </div>
              
-             <div className="flex-1 overflow-y-auto px-6 flex flex-col gap-4">
+             <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3 min-h-0">
                 {(!profile.notifications || profile.notifications.length === 0) ? (
-                   <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-                     <Bell size={48} className="mb-4 opacity-50" />
-                     <p className="font-bold text-lg">Tidak ada notifikasi</p>
+                   <div className="empty-state py-12">
+                     <Bell size={42} className="opacity-40" />
+                     <h2>Belum Ada Notifikasi</h2>
+                     <p>Pemberitahuan reward dan event akan muncul di sini.</p>
                    </div>
                 ) : (
                    profile.notifications.map((n: any) => {
                       const timeStr = Math.floor((Date.now() - n.timestamp) / 60000) + 'm';
                       let icon = Info;
-                      let colorClass = "bg-blue-100";
-                      let accentClass = "bg-blue-400";
-                      let iconColorClass = "text-blue-500";
+                      let bgClass = "bg-[var(--club-sky)]";
                       
                       if (n.type === 'reward' || n.type === 'chest') {
                          icon = Gift;
-                         colorClass = "bg-theme-bg-soft-pink";
-                         accentClass = "bg-theme-primary-coral-pink";
-                         iconColorClass = "text-theme-primary-coral-pink";
+                         bgClass = "bg-[var(--club-pink)]";
                       } else if (n.type === 'achievement' || n.type === 'mission') {
                          icon = Check;
-                         colorClass = "bg-green-100";
-                         accentClass = "bg-green-400";
-                         iconColorClass = "text-green-500";
+                         bgClass = "bg-[var(--club-mint)]";
                       }
+                      const IconComponent = icon;
                       
                       return (
-                         <NotificationCard 
+                         <div 
                            key={n.id}
-                           title={n.title} 
-                           description={n.message} 
-                           time={timeStr} 
-                           icon={icon} 
-                           colorClass={colorClass} 
-                           accentClass={accentClass} 
-                           iconColorClass={iconColorClass} 
-                         />
+                           className="flex items-start gap-3.5 p-3.5 bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl shadow-[2px_2px_0_var(--club-line)] text-left"
+                         >
+                           <div className={`w-10 h-10 ${bgClass} border-2 border-[var(--club-line)] rounded-xl flex items-center justify-center shrink-0 text-[var(--club-ink)] shadow-[1px_1px_0_var(--club-line)]`}>
+                             <IconComponent size={20} strokeWidth={2.5} />
+                           </div>
+                           <div className="flex-1 min-w-0">
+                             <div className="flex items-center justify-between gap-2">
+                               <b className="text-sm font-bold text-[var(--club-ink)] truncate">{n.title}</b>
+                               <span className="text-[10px] text-[var(--club-muted)] font-medium shrink-0">{timeStr} lalu</span>
+                             </div>
+                             <p className="text-xs text-[var(--club-muted)] mt-0.5 leading-relaxed">{n.message}</p>
+                           </div>
+                         </div>
                       );
                    })
                 )}
              </div>
              
-             <div className="px-6 mt-6 shrink-0">
-               <KineticButton 
+             <div className="mt-5 shrink-0 pt-3 border-t border-[var(--club-line)]/15">
+               <button 
                  onClick={() => navigate('home')}
-                 colorClass="bg-gray-900"
-                 className="w-full py-4 !text-white text-lg"
+                 className="pop-button pink"
                >
                  Tutup Panel
-               </KineticButton>
+               </button>
              </div>
           </motion.div>
         </motion.div>

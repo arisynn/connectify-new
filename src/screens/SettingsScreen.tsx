@@ -68,129 +68,133 @@ export const SettingsScreen = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: '100%' }} 
+      initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: '100%' }}
+      exit={{ opacity: 0, y: 20 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute inset-0 bg-blue-50 z-[100] flex flex-col font-sans"
+      className="absolute inset-0 bg-[var(--club-paper)] z-[100] flex flex-col font-sans text-[var(--club-ink)]"
     >
-      <div className="flex items-center gap-4 px-5 py-4 z-10 shrink-0 bg-theme-primary-sky-blue border-b-theme-base border-theme-border-main shadow-theme-base">
+      <div className="flex items-center gap-3 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
         <button 
            onClick={() => navigate('home')} 
-           className="p-3 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] shadow-theme-base active:translate-y-1 active:translate-x-0.5 active:shadow-[var(--geometry-shadow-active)] transition-all"
+           className="round-button"
+           aria-label="Kembali ke lobby"
         >
-          <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-6 h-6 object-contain text-theme-text-primary" />
+          <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-5 h-5 object-contain" />
         </button>
-        <h2 className="text-2xl font-black text-theme-text-primary uppercase tracking-tighter leading-none">Pengaturan</h2>
+        <div>
+          <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">PREFERENSI</span>
+          <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">Pengaturan</h2>
+        </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 pt-8 pb-12">
+      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4 max-w-xl mx-auto w-full pb-12">
         
-        {/* Audio Settings */}
-        <section className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-2xl p-5 flex items-center justify-between"><div><h3 data-testid="appearance-title" className="font-bold text-theme-text-primary">Tampilan terang / gelap</h3><p data-testid="appearance-description" className="text-xs text-theme-text-secondary mt-1">Gratis, cocok dengan semua koleksi tile.</p></div><ModeToggle id="settings-mode"/></section>
-        <section>
-          <h3 className="font-black text-lg text-theme-text-primary uppercase tracking-widest mb-3 pl-1">Audio</h3>
-          <div className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[2rem] p-5 shadow-theme-lg flex flex-col gap-4">
-             
-             {/* SFX Toggle */}
-             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 bg-theme-bg-soft-pink rounded-xl flex items-center justify-center border-theme-sm border-theme-border-main">
-                     {settings.muteSfx ? <VolumeX size={20} className="text-theme-text-muted" /> : <Volume2 size={20} className="text-pink-600" />}
-                   </div>
-                   <span className="font-bold text-theme-text-primary">Efek Suara (SFX)</span>
-                </div>
-                <button 
-                  onClick={() => updateSettings({ muteSfx: !settings.muteSfx })}
-                  className={`w-14 h-8 rounded-full border-theme-base border-theme-border-main relative transition-colors ${!settings.muteSfx ? 'bg-theme-primary-tropical-green' : 'bg-theme-divider-main'}`}
-                >
-                  <motion.div 
-                    layout
-                    className="w-5 h-5 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-full absolute top-0.5"
-                    style={{ left: !settings.muteSfx ? 'calc(100% - 1.5rem)' : '0.25rem' }}
-                  />
-                </button>
-             </div>
-
-             <div className="h-0.5 w-full bg-theme-surface-card-soft rounded-full my-1" />
-
-             {/* Music Toggle */}
-             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 bg-theme-bg-soft-blue rounded-xl flex items-center justify-center border-theme-sm border-theme-border-main">
-                     {settings.muteMusic ? <VolumeX size={20} className="text-theme-text-muted" /> : <Music size={20} className="text-blue-600" />}
-                   </div>
-                   <span className="font-bold text-theme-text-primary">Musik Latar (BGM)</span>
-                </div>
-                <button 
-                  onClick={() => updateSettings({ muteMusic: !settings.muteMusic })}
-                  className={`w-14 h-8 rounded-full border-theme-base border-theme-border-main relative transition-colors ${!settings.muteMusic ? 'bg-theme-primary-tropical-green' : 'bg-theme-divider-main'}`}
-                >
-                  <motion.div 
-                    layout
-                    className="w-5 h-5 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-full absolute top-0.5"
-                    style={{ left: !settings.muteMusic ? 'calc(100% - 1.5rem)' : '0.25rem' }}
-                  />
-                </button>
-             </div>
+        {/* Appearance Settings */}
+        <section className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex items-center justify-between">
+          <div>
+            <h3 data-testid="appearance-title" className="font-bold text-sm text-[var(--club-ink)]">Tampilan Terang / Gelap</h3>
+            <p data-testid="appearance-description" className="text-xs text-[var(--club-muted)] mt-0.5">Menyesuaikan kontras layar.</p>
           </div>
+          <ModeToggle id="settings-mode"/>
+        </section>
+
+        {/* Audio Settings */}
+        <section className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex flex-col gap-3.5">
+          <h3 className="font-bold text-xs uppercase tracking-wider text-[var(--club-muted)]">Pengaturan Audio</h3>
+           
+           {/* SFX Toggle */}
+           <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                 <div className="w-9 h-9 bg-[var(--club-paper)] rounded-xl flex items-center justify-center border-2 border-[var(--club-line)]">
+                   {settings.muteSfx ? <VolumeX size={18} className="text-[var(--club-muted)]" /> : <Volume2 size={18} className="text-[#e11d48]" />}
+                 </div>
+                 <span className="font-bold text-sm text-[var(--club-ink)]">Efek Suara (SFX)</span>
+              </div>
+              <button 
+                onClick={() => updateSettings({ muteSfx: !settings.muteSfx })}
+                className={`w-12 h-7 rounded-full border-2 border-[var(--club-line)] relative transition-colors cursor-pointer ${!settings.muteSfx ? 'bg-[#46b995]' : 'bg-[var(--club-paper)]'}`}
+              >
+                <motion.div 
+                  layout
+                  className="w-4 h-4 bg-white border border-[var(--club-line)] rounded-full absolute top-1"
+                  style={{ left: !settings.muteSfx ? 'calc(100% - 1.25rem)' : '0.25rem' }}
+                />
+              </button>
+           </div>
+
+           <div className="h-px w-full bg-[var(--club-line)]/10" />
+
+           {/* Music Toggle */}
+           <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                 <div className="w-9 h-9 bg-[var(--club-paper)] rounded-xl flex items-center justify-center border-2 border-[var(--club-line)]">
+                   {settings.muteMusic ? <VolumeX size={18} className="text-[var(--club-muted)]" /> : <Music size={18} className="text-[#0284c7]" />}
+                 </div>
+                 <span className="font-bold text-sm text-[var(--club-ink)]">Musik Latar (BGM)</span>
+              </div>
+              <button 
+                onClick={() => updateSettings({ muteMusic: !settings.muteMusic })}
+                className={`w-12 h-7 rounded-full border-2 border-[var(--club-line)] relative transition-colors cursor-pointer ${!settings.muteMusic ? 'bg-[#46b995]' : 'bg-[var(--club-paper)]'}`}
+              >
+                <motion.div 
+                  layout
+                  className="w-4 h-4 bg-white border border-[var(--club-line)] rounded-full absolute top-1"
+                  style={{ left: !settings.muteMusic ? 'calc(100% - 1.25rem)' : '0.25rem' }}
+                />
+              </button>
+           </div>
         </section>
 
         {/* Account Settings */}
-        <section>
-          <h3 className="font-black text-lg text-theme-text-primary uppercase tracking-widest mb-3 pl-1">Akun & Data</h3>
-          <KineticButton
+        <section className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex flex-col gap-3.5">
+          <h3 className="font-bold text-xs uppercase tracking-wider text-[var(--club-muted)]">Akun & Data</h3>
+          
+          <div
              onClick={() => setShowDataPopup(true)}
-             colorClass="bg-theme-surface-card-white"
-             className="w-full text-left p-0 !border-theme-neutral-900 !rounded-[2rem] overflow-hidden block"
+             className="bg-[var(--club-paper)] border-2 border-[var(--club-line)] rounded-xl p-3.5 shadow-[2px_2px_0_var(--club-line)] cursor-pointer active:translate-y-0.5 transition-all flex flex-col gap-2.5"
           >
-             <div className="p-5 flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                   <div className="w-12 h-12 bg-theme-bg-soft-pink border-theme-sm border-theme-border-main rounded-xl flex items-center justify-center shrink-0">
-                     <Smartphone size={24} className="text-theme-text-primary" />
-                   </div>
-                   <div className="flex flex-col min-w-0">
-                     <span className="font-bold text-theme-text-muted text-xs uppercase tracking-widest">ID Pemain</span>
-                     <span className="font-black text-theme-text-primary text-lg truncate">PLAYER-{profile.id || Math.floor(Math.random() * 1000000)}</span>
-                   </div>
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white border border-[var(--club-line)] rounded-xl flex items-center justify-center shrink-0">
+                  <Smartphone size={20} className="text-[var(--club-ink)]" />
                 </div>
-                <div className="h-0.5 w-full bg-theme-neutral-100 rounded-full my-1" />
-                <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                      <Cloud size={16} className={navigator.onLine ? "text-theme-primary-tropical-green" : "text-theme-game-danger"} />
-                      <span className="font-bold text-theme-text-secondary text-sm">Status:</span>
-                   </div>
-                   <span className={`font-black text-sm ${navigator.onLine ? 'text-theme-primary-tropical-green' : 'text-theme-game-danger'}`}>
-                      {navigator.onLine ? (hasPublicAuth ? 'Akun terhubung' : 'Pratinjau lokal') : 'Offline'}
-                   </span>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-bold text-[9px] uppercase tracking-wider text-[var(--club-muted)]">ID Pemain</span>
+                  <span className="font-bold text-sm text-[var(--club-ink)] truncate">PLAYER-{profile.id || Math.floor(Math.random() * 1000000)}</span>
                 </div>
              </div>
-          </KineticButton>
+             <div className="h-px w-full bg-[var(--club-line)]/10" />
+             <div className="flex items-center justify-between text-xs font-bold">
+                <div className="flex items-center gap-1.5 text-[var(--club-muted)]">
+                   <Cloud size={14} className={navigator.onLine ? "text-[#16a34a]" : "text-[#e11d48]"} />
+                   <span>Status:</span>
+                </div>
+                <span className={navigator.onLine ? 'text-[#16a34a]' : 'text-[#e11d48]'}>
+                   {navigator.onLine ? (hasPublicAuth ? 'Akun terhubung' : 'Pratinjau lokal') : 'Offline'}
+                </span>
+             </div>
+          </div>
           
-          <div className="flex flex-col gap-3 mt-4">
-             <KineticButton
+          <div className="flex flex-col gap-2.5 mt-1">
+             <button
                 onClick={handleLogout}
-                colorClass="bg-theme-surface-card-soft"
-                className="w-full py-3 flex items-center justify-center gap-2 !border-theme-neutral-900 text-theme-text-primary"
+                className="pop-button w-full py-2.5 flex items-center justify-center gap-2 font-bold text-xs"
              >
-                <LogOut size={18} />
-                <span className="font-black text-sm uppercase">Keluar dari Akun</span>
-             </KineticButton>
-             <KineticButton
+                <LogOut size={16} />
+                <span>Keluar dari Akun</span>
+             </button>
+             <button
                 onClick={handleReset}
-                colorClass="bg-theme-bg-soft-pink"
-                className="w-full py-3 flex items-center justify-center gap-2 !border-red-900 text-theme-game-danger"
+                className="pop-button pink w-full py-2.5 flex items-center justify-center gap-2 font-bold text-xs"
              >
-                <Trash2 size={18} />
-                <span className="font-black text-sm uppercase">Reset Data Permainan</span>
-             </KineticButton>
+                <Trash2 size={16} />
+                <span>Reset Data Permainan</span>
+             </button>
           </div>
         </section>
-        
 
-
-        <div className="text-center mt-4">
-           <p className="font-bold text-xs text-theme-text-muted">Connectify v1.0.0</p>
+        <div className="text-center mt-2">
+           <p className="font-bold text-[11px] text-[var(--club-muted)]">Connectify Club v1.0.0</p>
         </div>
 
       </div>

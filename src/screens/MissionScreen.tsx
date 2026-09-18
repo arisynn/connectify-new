@@ -13,10 +13,10 @@ import { getTodayKey } from '../core/economy';
 import { EconomyMeter } from '../components/EconomyMeter';
 
 const DIFF_COLOR: Record<string, string> = {
-  'Mudah': 'bg-theme-primary-tropical-green',
-  'Menengah': 'bg-theme-primary-sunny-yellow',
-  'Sulit': 'bg-theme-primary-warm-orange',
-  'Sangat Sulit': 'bg-theme-game-danger',
+  'Mudah': 'bg-[var(--club-mint)] text-[var(--club-ink)]',
+  'Menengah': 'bg-[var(--club-butter)] text-[var(--club-ink)]',
+  'Sulit': 'bg-[var(--club-sky)] text-[var(--club-ink)]',
+  'Sangat Sulit': 'bg-[var(--club-pink)] text-[var(--club-ink)]',
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -48,43 +48,50 @@ const MissionCard = ({ mission, onClaim, isPersisted, index }: { mission: any, o
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, type: 'spring', damping: 20 }}
+      transition={{ delay: index * 0.04, type: 'spring', damping: 20 }}
       data-testid={`mission-card-${mission.id}`}
-      className={`bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] p-4 shadow-theme-base flex flex-col gap-3 relative overflow-hidden shrink-0 ${claimed ? 'opacity-70' : ''}`}
+      className={`bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex flex-col gap-3 relative overflow-hidden shrink-0 text-[var(--club-ink)] ${claimed ? 'opacity-60 bg-[var(--club-card)]/50' : ''}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <KineticBadge text={mission.difficulty} colorClass={DIFF_COLOR[mission.difficulty] || 'bg-theme-primary-sunny-yellow'} />
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full border border-[var(--club-line)] text-[9px] font-bold uppercase tracking-wider ${DIFF_COLOR[mission.difficulty] || 'bg-[var(--club-butter)] text-[var(--club-ink)]'}`}>
+              {mission.difficulty}
+            </span>
           </div>
-          <h3 className="font-black text-theme-text-primary text-[15px] uppercase tracking-wider leading-tight">{mission.title}</h3>
-          <p className="font-bold text-[11px] text-theme-text-muted leading-tight mt-1">{mission.desc}</p>
+          <h3 className="font-bold text-sm text-[var(--club-ink)] tracking-tight leading-snug">{mission.title}</h3>
+          <p className="text-xs text-[var(--club-muted)] mt-0.5 leading-relaxed">{mission.desc}</p>
         </div>
-        <div className="shrink-0 bg-theme-bg-soft-pink border-theme-sm border-theme-border-main rounded-xl px-2.5 py-1.5 flex items-center gap-1 shadow-theme-sm">
-          <span className="font-black text-sm text-theme-text-primary">+{mission.rewardAmount}</span>
-          <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-5 h-5 object-contain" />
+        <div className="shrink-0 bg-[var(--club-paper)] border-2 border-[var(--club-line)] rounded-xl px-2.5 py-1 flex items-center gap-1.5 shadow-[1px_1px_0_var(--club-line)]">
+          <span className="font-bold text-xs text-[var(--club-ink)]">+{mission.rewardAmount}</span>
+          <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain" />
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 pt-1 border-t border-[var(--club-line)]/10">
         <div className="flex-1">
-          <ProgressBar progress={pct} label={`${progress.toLocaleString('id-ID')} / ${mission.target.toLocaleString('id-ID')}`} />
+          <div className="flex items-center justify-between text-[10px] font-bold text-[var(--club-muted)] mb-1">
+            <span>Progres</span>
+            <span>{progress.toLocaleString('id-ID')} / {mission.target.toLocaleString('id-ID')}</span>
+          </div>
+          <div className="w-full h-2.5 bg-white border-1.5 border-[var(--club-line)] rounded-full overflow-hidden p-0.5">
+            <div className="h-full bg-[#46b995] rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
+          </div>
         </div>
         {claimed ? (
-          <div className="w-24 py-2 rounded-xl bg-theme-surface-card-soft border-theme-sm border-theme-border-main flex items-center justify-center gap-1 font-black text-[11px] uppercase text-theme-text-muted">
-            <Check size={14} strokeWidth={3} /> Selesai
+          <div className="w-24 py-1.5 rounded-xl bg-[var(--club-paper)] border-1.5 border-[var(--club-line)] flex items-center justify-center gap-1 font-bold text-xs text-[var(--club-muted)]">
+            <Check size={14} strokeWidth={2.5} /> Selesai
           </div>
         ) : (
-          <KineticButton
+          <button
             onClick={onClaim}
             disabled={!isComplete || !isPersisted}
-            colorClass="bg-theme-primary-tropical-green"
-            className="w-24 py-2 text-[11px]"
+            className={`w-24 py-1.5 px-2 rounded-xl border-2 border-[var(--club-line)] text-xs font-bold transition-transform shadow-[2px_2px_0_var(--club-line)] ${isComplete && isPersisted ? 'bg-[var(--club-mint)] active:translate-y-0.5 active:shadow-[0px_0px_0_var(--club-line)] cursor-pointer text-[var(--club-ink)]' : 'bg-gray-100 opacity-50 cursor-not-allowed text-gray-400'}`}
           >
             <span data-testid={`mission-claim-${mission.id}`}>Klaim</span>
-          </KineticButton>
+          </button>
         )}
       </div>
     </motion.div>
@@ -131,30 +138,38 @@ export const MissionScreen = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: '100%' }} 
+      initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: '100%' }}
+      exit={{ opacity: 0, y: 20 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute inset-0 bg-purple-50 z-[100] flex flex-col font-sans"
+      className="absolute inset-0 bg-[var(--club-paper)] z-[100] flex flex-col font-sans text-[var(--club-ink)]"
       data-testid="mission-screen"
     >
-      <div className="flex items-center justify-between gap-4 px-5 py-4 z-10 shrink-0 bg-theme-primary-coral-pink border-b-theme-base border-theme-border-main shadow-theme-base">
-        <div className="flex items-center gap-4">
+      {/* Top Header */}
+      <div className="flex items-center justify-between gap-4 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
+        <div className="flex items-center gap-3">
           <button
               data-testid="mission-back-button"
               onClick={() => navigate('home')}
-              className="p-3 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] shadow-theme-base active:translate-y-1 active:translate-x-0.5 active:shadow-[var(--geometry-shadow-active)] transition-all"
+              className="round-button"
+              aria-label="Kembali ke lobby"
           >
-            <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-6 h-6 object-contain text-theme-text-primary" />
+            <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-5 h-5 object-contain" />
           </button>
-          <h2 className="text-2xl font-black text-theme-text-primary uppercase tracking-tighter leading-none">Misi</h2>
+          <div>
+            <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">TANTANGAN</span>
+            <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">Misi Harian</h2>
+          </div>
         </div>
-        <CurrencyPill type="candy" value={cde.permen} />
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-full shadow-[2px_2px_0_var(--club-line)]">
+          <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain" />
+          <span className="font-bold text-xs text-[var(--club-ink)]">{cde.permen}</span>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="px-5 pt-5 shrink-0">
-        <div className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-2xl p-1.5 flex gap-1.5 shadow-theme-sm">
+      <div className="px-5 pt-4 shrink-0">
+        <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-1 flex gap-1 shadow-[2px_2px_0_var(--club-line)]">
           {([
             { id: 'harian', label: 'Harian', icon: Target, count: daily.filter((m: any) => !m.claimed && (m.progress || 0) >= m.target).length },
             { id: 'mingguan', label: 'Mingguan', icon: CalendarDays, count: weekly.filter((m: any) => !m.claimed && (m.progress || 0) >= m.target).length },
@@ -164,26 +179,28 @@ export const MissionScreen = () => {
               key={t.id}
               data-testid={`mission-tab-${t.id}`}
               onClick={() => { audio.playUiClick(); setTab(t.id); }}
-              className={`flex-1 py-2.5 rounded-xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-theme-sm ${tab === t.id ? 'bg-theme-currency-candy-purple border-theme-border-main text-theme-text-primary shadow-theme-sm' : 'border-transparent text-theme-text-muted'}`}
+              className={`flex-1 py-2 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${tab === t.id ? 'bg-[var(--club-butter)] border-1.5 border-[var(--club-line)] text-[var(--club-ink)] shadow-[1px_1px_0_var(--club-line)]' : 'border border-transparent text-[var(--club-muted)] hover:text-[var(--club-ink)]'}`}
             >
-              <t.icon size={16} strokeWidth={3} /> {t.label}
-              {t.count > 0 && <span className="w-5 h-5 rounded-full bg-theme-notification text-white text-[10px] flex items-center justify-center border-theme-sm border-theme-border-main">{t.count}</span>}
+              <t.icon size={15} strokeWidth={2.5} /> {t.label}
+              {t.count > 0 && <span className="w-4 h-4 rounded-full bg-[#ef4444] text-white text-[9px] font-bold flex items-center justify-center">{t.count}</span>}
             </button>
           ))}
         </div>
       </div>
 
       {/* Summary */}
-      <div className="px-5 pt-4 shrink-0">
-        <div className="bg-theme-primary-navy border-theme-base border-theme-border-main rounded-[1.5rem] px-5 py-3 shadow-theme-base flex items-center justify-between text-theme-text-white">
+      <div className="px-5 pt-3 shrink-0">
+        <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl px-5 py-3 shadow-[3px_3px_0_var(--club-line)] flex items-center justify-between text-[var(--club-ink)]">
           <div>
-            <span className="font-black text-[10px] uppercase tracking-widest text-indigo-300 block">Progres {tab === 'harian' ? 'Hari Ini' : 'Minggu Ini'}</span>
-            <span className="font-black text-2xl leading-none" data-testid="mission-summary-count">{completedCount}/{list.length}</span>
-            <span className="font-bold text-xs ml-2 text-indigo-200">selesai</span>
+            <span className="font-bold text-[9px] uppercase tracking-wider text-[var(--club-muted)] block">Progres {tab === 'harian' ? 'Hari Ini' : 'Minggu Ini'}</span>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="font-['Fredoka'] font-semibold text-2xl leading-none text-[var(--club-ink)]" data-testid="mission-summary-count">{completedCount}/{list.length}</span>
+              <span className="font-medium text-xs text-[var(--club-muted)]">selesai</span>
+            </div>
           </div>
           <div className="text-right">
-            <span className="font-black text-[10px] uppercase tracking-widest text-indigo-300 flex items-center justify-end gap-1"><Clock size={12} /> Reset dalam</span>
-            <span className="font-black text-lg leading-none tabular-nums" data-testid="mission-reset-timer">
+            <span className="font-bold text-[9px] uppercase tracking-wider text-[var(--club-muted)] flex items-center justify-end gap-1"><Clock size={11} /> Reset Dalam</span>
+            <span className="font-bold text-sm leading-none tabular-nums text-[var(--club-ink)] mt-1 block" data-testid="mission-reset-timer">
               {formatCountdown(tab === 'harian' ? msUntilMidnight(now) : msUntilNextMonday(now))}
             </span>
           </div>
@@ -192,21 +209,21 @@ export const MissionScreen = () => {
 
       <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3 pb-10">
         <EconomyMeter compact id="mission-income"/>
-        {tab==='tersimpan'&&<p data-testid="saved-missions-info" className="text-xs text-theme-text-secondary">Hadiah misi yang selesai tetapi belum diklaim tetap aman di sini setelah reset.</p>}
+        {tab==='tersimpan'&&<p data-testid="saved-missions-info" className="text-xs text-[var(--club-muted)]">Hadiah misi yang selesai tetapi belum diklaim tetap aman di sini setelah reset.</p>}
         {!persisted && (
-          <div className="bg-theme-surface-card-white/80 border-theme-sm border-dashed border-theme-border-main rounded-xl px-4 py-2.5 flex items-center gap-2 text-theme-text-muted shrink-0">
+          <div className="bg-[var(--club-card)] border-2 border-dashed border-[var(--club-line)] rounded-xl px-4 py-2.5 flex items-center gap-2 text-[var(--club-muted)] shrink-0">
             <Lock size={14} />
-            <span className="font-bold text-[11px]">Mainkan 1 level untuk mengaktifkan progres misi {tab === 'harian' ? 'harian' : 'mingguan'}.</span>
+            <span className="font-medium text-xs">Mainkan 1 level untuk mengaktifkan progres misi {tab === 'harian' ? 'harian' : 'mingguan'}.</span>
           </div>
         )}
         {list.map((m: any, i: number) => (
           <MissionCard key={m.id} index={i} mission={m} isPersisted={persisted} onClaim={() => handleClaim(m)} />
         ))}
         {claimableCount === 0 && completedCount === list.length && list.length > 0 && (
-          <div className="flex flex-col items-center py-6 text-theme-text-muted shrink-0">
-            <Gift size={40} className="mb-2 text-theme-primary-coral-pink" />
-            <p className="font-black text-sm uppercase tracking-wider">Semua misi selesai!</p>
-            <p className="font-bold text-xs">Kembali lagi setelah reset.</p>
+          <div className="flex flex-col items-center py-6 text-[var(--club-muted)] shrink-0">
+            <Gift size={36} className="mb-2 text-[#e11d48]" />
+            <p className="font-bold text-sm">Semua misi selesai!</p>
+            <p className="text-xs text-[var(--club-muted)]">Kembali lagi setelah reset.</p>
           </div>
         )}
       </div>
@@ -214,12 +231,12 @@ export const MissionScreen = () => {
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="absolute bottom-8 left-0 right-0 flex justify-center z-[120] pointer-events-none px-4"
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-8 left-0 right-0 flex justify-center z-[120] pointer-events-none px-4"
           >
-            <div data-testid="mission-toast" className="bg-theme-primary-navy text-theme-text-white font-bold text-sm px-6 py-3 rounded-full shadow-theme-base border-theme-sm border-theme-border-main text-center">
+            <div data-testid="mission-toast" className="bg-[var(--club-card)] text-[var(--club-ink)] font-bold text-xs px-5 py-2.5 rounded-full shadow-[4px_4px_0_var(--club-line)] border-2 border-[var(--club-line)] text-center">
               {toast}
             </div>
           </motion.div>

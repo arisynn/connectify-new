@@ -54,11 +54,130 @@ export const findHint = board => {
   return null;
 };
 export const countRemaining = board => board?.flat().filter(Boolean).length || 0;
-export const clearMatchedGroups = (board,a,b) => {
+export const getMatchAction = (board, a, b) => {
+  const tileA = board?.[a?.r]?.[a?.c];
+  if (!tileA) return 'clear';
+  const { rows, cols } = groupSize(tileA);
+  if (rows === 2 && cols === 2) return 'split_to_1x2';
+  if ((rows === 1 && cols === 2) || (rows === 2 && cols === 1)) return 'split_to_1x1';
+  return 'clear';
+};
+
+export const clearMatchedGroups = (board, a, b) => {
   const next = board.map(row => [...row]);
-  for(const p of [a,b]) for(const cell of getTileCells(p.r,p.c,board[p.r][p.c])) next[cell.r][cell.c]=0;
+  const tileA = board[a.r]?.[a.c];
+  const tileB = board[b.r]?.[b.c];
+  if (!tileA || !tileB) return next;
+
+  const { rows, cols } = groupSize(tileA);
+
+  // 1. Tile 2x2 split: masing-masing 2x2 terbelah menjadi dua buah tile 1x2 horizontal!
+  if (rows === 2 && cols === 2) {
+    for (const p of [a, b]) {
+      const origId = board[p.r][p.c].id;
+      const animBase = Date.now() + Math.random();
+      // Tile 1x2 atas (baris p.r, kolom p.c dan p.c+1)
+      next[p.r][p.c] = {
+        id: origId,
+        groupRows: 1,
+        groupCols: 2,
+        isSplit: true,
+        splitOrientation: 'horizontal',
+        openSide: null,
+        splitAnimKey: animBase,
+        justSplit: true,
+      };
+      next[p.r][p.c + 1] = {
+        id: origId,
+        isSlave: true,
+        masterR: p.r,
+        masterC: p.c,
+      };
+
+      // Tile 1x2 bawah (baris p.r+1, kolom p.c dan p.c+1)
+      next[p.r + 1][p.c] = {
+        id: origId,
+        groupRows: 1,
+        groupCols: 2,
+        isSplit: true,
+        splitOrientation: 'horizontal',
+        openSide: null,
+        splitAnimKey: animBase + 1,
+        justSplit: true,
+      };
+      next[p.r + 1][p.c + 1] = {
+        id: origId,
+        isSlave: true,
+        masterR: p.r + 1,
+        masterC: p.c,
+      };
+    }
+    return next;
+  }
+
+  // 2. Tile 1x2 horizontal split: terbelah menjadi dua buah tile 1x1!
+  if (rows === 1 && cols === 2) {
+    for (const p of [a, b]) {
+      const origId = board[p.r][p.c].id;
+      const animBase = Date.now() + Math.random();
+      next[p.r][p.c] = {
+        id: origId,
+        groupRows: 1,
+        groupCols: 1,
+        isSplit: false,
+        openSide: null,
+        splitAnimKey: animBase,
+        justSplit: true,
+      };
+      next[p.r][p.c + 1] = {
+        id: origId,
+        groupRows: 1,
+        groupCols: 1,
+        isSplit: false,
+        openSide: null,
+        splitAnimKey: animBase + 1,
+        justSplit: true,
+      };
+    }
+    return next;
+  }
+
+  // 3. Tile 2x1 vertikal split: terbelah menjadi dua buah tile 1x1!
+  if (rows === 2 && cols === 1) {
+    for (const p of [a, b]) {
+      const origId = board[p.r][p.c].id;
+      const animBase = Date.now() + Math.random();
+      next[p.r][p.c] = {
+        id: origId,
+        groupRows: 1,
+        groupCols: 1,
+        isSplit: false,
+        openSide: null,
+        splitAnimKey: animBase,
+        justSplit: true,
+      };
+      next[p.r + 1][p.c] = {
+        id: origId,
+        groupRows: 1,
+        groupCols: 1,
+        isSplit: false,
+        openSide: null,
+        splitAnimKey: animBase + 1,
+        justSplit: true,
+      };
+    }
+    return next;
+  }
+
+  // 4. Tile 1x1 biasa: hilangkan kedua tile (sel diatur ke 0)
+  for (const p of [a, b]) {
+    for (const cell of getTileCells(p.r, p.c, board[p.r][p.c])) {
+      next[cell.r][cell.c] = 0;
+    }
+  }
   return next;
 };
+
 export const generateBoard = (themeKey, level = 1, rng = Math.random) => {
   const board=Array.from({length:ROWS+2},()=>Array(COLS+2).fill(0));
   const ids=shuffle(tileIdsFor(themeKey),rng).slice(0,getTileVarietyCount(level,tileIdsFor(themeKey).length));
@@ -67,8 +186,17 @@ export const generateBoard = (themeKey, level = 1, rng = Math.random) => {
     for(const cell of getTileCells(r,c,tile)) board[cell.r][cell.c]=cell.r===r && cell.c===c ? tile : {id,isSlave:true,masterR:r,masterC:c};
   };
   // Reserve paired adjacent footprints first; placing both is atomic, never an orphan group.
-  if(level>=3) { const r=level>=6 ? 4 : 2; const rows=level>=6 ? 2 : 1; placeGroup(r,1,ids[0],rows,2);placeGroup(r,4,ids[0],rows,2); }
-  if(level>=9) {placeGroup(7,2,ids[1],2,1);placeGroup(7,5,ids[1],2,1);}
+  if(level>=2) {
+    const is2x2 = level >= 3;
+    const r = level >= 4 ? 4 : 2;
+    const rows = is2x2 ? 2 : 1;
+    placeGroup(r, 1, ids[0], rows, 2);
+    placeGroup(r, 4, ids[0], rows, 2);
+  }
+  if(level>=7) {
+    placeGroup(7, 2, ids[1], 1, 2);
+    placeGroup(7, 4, ids[1], 1, 2);
+  }
   const positions=[];
   for(let r=1;r<=ROWS;r++) for(let c=1;c<=COLS;c++) if(!board[r][c]) positions.push({r,c});
   const tiles=[];

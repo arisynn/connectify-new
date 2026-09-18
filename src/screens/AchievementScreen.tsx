@@ -20,10 +20,10 @@ const CATEGORIES = [
 ];
 
 const CATEGORY_COLOR: Record<string, string> = {
-  progression: 'bg-theme-primary-sky-blue',
-  mastery: 'bg-theme-primary-coral-pink',
-  collection: 'bg-theme-primary-sunny-yellow',
-  secret: 'bg-theme-currency-candy-purple',
+  progression: 'bg-[var(--club-sky)]',
+  mastery: 'bg-[var(--club-pink)]',
+  collection: 'bg-[var(--club-butter)]',
+  secret: 'bg-[#e9d5ff]',
 };
 
 const REWARD_ICON: Record<string, any> = { hints: Search, shuffles: RefreshCw, hammers: Hammer, bombs: Bomb, theme: Palette };
@@ -33,11 +33,11 @@ const RewardChips = ({ tier }: { tier: any }) => (
     {getAchievementRewardSummary(tier).map((r: any, i: number) => {
       const Icon = REWARD_ICON[r.type];
       return (
-        <div key={i} className="bg-theme-bg-soft-pink border-theme-sm border-theme-border-main rounded-lg px-2 py-1 flex items-center gap-1 shadow-theme-sm">
-          <span className="font-black text-xs text-theme-text-primary">+{r.type === 'theme' ? r.theme : r.amount}</span>
+        <div key={i} className="bg-[var(--club-paper)] border border-[var(--club-line)] rounded-xl px-2 py-1 flex items-center gap-1 shadow-xs">
+          <span className="font-['Fredoka'] font-semibold text-xs text-[var(--club-ink)]">+{r.type === 'theme' ? r.theme : r.amount}</span>
           {r.type === 'permen'
-            ? <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain" />
-            : Icon ? <Icon size={12} className="text-theme-text-primary" strokeWidth={3} /> : null}
+            ? <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-3.5 h-3.5 object-contain" />
+            : Icon ? <Icon size={12} className="text-[var(--club-ink)]" strokeWidth={2.5} /> : null}
         </div>
       );
     })}
@@ -59,27 +59,27 @@ const AchievementCard = ({ ach, profile, onClaim, index }: { ach: any, profile: 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, type: 'spring', damping: 20 }}
       data-testid={`achievement-card-${ach.id}`}
-      className={`bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] p-4 shadow-theme-base flex flex-col gap-3 relative overflow-hidden shrink-0 ${maxed ? 'opacity-80' : ''} ${claimable ? 'ring-4 ring-theme-primary-tropical-green/60' : ''}`}
+      className={`bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex flex-col gap-3 relative overflow-hidden shrink-0 ${maxed ? 'opacity-80' : ''} ${claimable ? 'ring-2 ring-[var(--club-mint)]' : ''}`}
     >
       <div className="flex items-start gap-3">
-        <div className={`w-14 h-14 ${CATEGORY_COLOR[ach.category] || 'bg-theme-primary-sky-blue'} border-theme-base border-theme-border-main rounded-2xl flex items-center justify-center shrink-0 shadow-[inset_0px_-2px_0px_rgba(0,0,0,0.2)] relative`}>
-          {isSecret ? <Lock size={24} className="text-theme-text-primary" /> : <Trophy size={26} className="text-theme-text-primary drop-shadow-[2px_2px_0px_rgba(255,255,255,0.5)]" />}
+        <div className={`w-12 h-12 ${CATEGORY_COLOR[ach.category] || 'bg-[var(--club-sky)]'} border-2 border-[var(--club-line)] rounded-xl flex items-center justify-center shrink-0 shadow-[2px_2px_0_var(--club-line)] relative`}>
+          {isSecret ? <Lock size={20} className="text-[var(--club-ink)]" /> : <Trophy size={22} className="text-[var(--club-ink)]" />}
           {maxed && (
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-theme-primary-sunny-yellow rounded-full border-theme-sm border-theme-border-main flex items-center justify-center shadow-theme-sm">
-              <Sparkles size={12} className="text-theme-text-primary" />
+            <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[var(--club-butter)] rounded-full border border-[var(--club-line)] flex items-center justify-center shadow-xs">
+              <Sparkles size={10} className="text-[var(--club-ink)]" />
             </div>
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-black text-theme-text-primary text-[15px] uppercase tracking-wider leading-tight">{isSecret ? '???' : ach.title}</h3>
-          <p className="font-bold text-[11px] text-theme-text-muted leading-tight mt-1">
+          <h3 className="font-['Fredoka'] font-semibold text-[var(--club-ink)] text-base leading-tight">{isSecret ? '???' : ach.title}</h3>
+          <p className="font-medium text-xs text-[var(--club-muted)] leading-tight mt-0.5">
             {isSecret ? 'Pencapaian rahasia. Terus bermain untuk membukanya!' : ach.desc(tier.target)}
           </p>
-          <div className="flex items-center gap-1 mt-2">
+          <div className="flex items-center gap-1 mt-1.5">
             {ach.tiers.map((_: any, i: number) => (
-              <Star key={i} size={14} className={i < tierIdx ? 'fill-amber-400 text-amber-500' : 'fill-gray-200 text-gray-300'} />
+              <Star key={i} size={13} className={i < tierIdx ? 'fill-amber-400 text-amber-500' : 'fill-gray-200 text-gray-300'} />
             ))}
-            <span className="font-black text-[10px] text-theme-text-muted uppercase ml-1">Tier {Math.min(tierIdx + 1, ach.tiers.length)}/{ach.tiers.length}</span>
+            <span className="font-bold text-[10px] text-[var(--club-muted)] uppercase ml-1">Tier {Math.min(tierIdx + 1, ach.tiers.length)}/{ach.tiers.length}</span>
           </div>
         </div>
         {!isSecret && <RewardChips tier={tier} />}
@@ -90,13 +90,17 @@ const AchievementCard = ({ ach, profile, onClaim, index }: { ach: any, profile: 
           <ProgressBar progress={pct} label={maxed ? 'SELESAI' : `${Math.min(progress, tier.target).toLocaleString('id-ID')} / ${tier.target.toLocaleString('id-ID')}`} />
         </div>
         {maxed ? (
-          <div className="w-24 py-2 rounded-xl bg-theme-surface-card-soft border-theme-sm border-theme-border-main flex items-center justify-center gap-1 font-black text-[11px] uppercase text-theme-text-muted">
-            <Check size={14} strokeWidth={3} /> Maks
+          <div className="w-20 py-1.5 rounded-xl bg-[var(--club-paper)] border border-[var(--club-line)] flex items-center justify-center gap-1 font-bold text-xs text-[var(--club-muted)]">
+            <Check size={14} strokeWidth={2.5} /> Selesai
           </div>
         ) : (
-          <KineticButton onClick={onClaim} disabled={!claimable} colorClass="bg-theme-primary-tropical-green" className="w-24 py-2 text-[11px]">
+          <button 
+            onClick={onClaim} 
+            disabled={!claimable} 
+            className={`pop-button py-1.5 px-3 text-xs font-bold ${claimable ? 'mint' : 'opacity-50 cursor-not-allowed'}`}
+          >
             <span data-testid={`achievement-claim-${ach.id}`}>Klaim</span>
-          </KineticButton>
+          </button>
         )}
       </div>
     </motion.div>
@@ -123,7 +127,6 @@ export const AchievementScreen = () => {
 
   const list = useMemo(() => {
     const filtered = category === 'all' ? ACHIEVEMENTS_DATA : ACHIEVEMENTS_DATA.filter(a => a.category === category);
-    // claimable first, then in-progress, maxed last
     return [...filtered].sort((a, b) => {
       const rank = (x: any) => {
         const t = getCurrentTier(profile, x.id);
@@ -139,64 +142,74 @@ export const AchievementScreen = () => {
     const tier = ach.tiers[tierIdx];
     audio.playSfx('uiReward', () => audio.playUiClick());
     try {
-    await cde.queueMutation('CLAIM_ACHIEVEMENT_REWARD', { achievementId: ach.id });
-    const permen = tier.reward.permen || tier.reward.coins || 0;
-    setToast(`${ach.title} Tier ${tierIdx + 1} diklaim! +${permen} Permen`);
-    } catch(error:any) { setToast(error.message==='DAILY_INCOME_LIMIT'?'Batas income hari ini tidak cukup. Pencapaian tetap bisa diklaim nanti.':'Pencapaian belum bisa diklaim. Tunggu sinkronisasi.'); }
+      await cde.queueMutation('CLAIM_ACHIEVEMENT_REWARD', { achievementId: ach.id });
+      const permen = tier.reward.permen || tier.reward.coins || 0;
+      setToast(`${ach.title} Tier ${tierIdx + 1} diklaim! +${permen} Permen`);
+    } catch(error:any) { 
+      setToast(error.message==='DAILY_INCOME_LIMIT'?'Batas income hari ini tidak cukup. Pencapaian tetap bisa diklaim nanti.':'Pencapaian belum bisa diklaim. Tunggu sinkronisasi.'); 
+    }
     setTimeout(() => setToast(null), 2200);
   };
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: '100%' }} 
+      initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: '100%' }}
+      exit={{ opacity: 0, y: 20 }} 
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute inset-0 bg-red-50 z-[100] flex flex-col font-sans"
+      className="absolute inset-0 bg-[var(--club-paper)] z-[100] flex flex-col font-sans text-[var(--club-ink)]"
       data-testid="achievement-screen"
     >
-      <div className="flex items-center justify-between gap-4 px-5 py-4 z-10 shrink-0 bg-theme-primary-warm-orange border-b-theme-base border-theme-border-main shadow-theme-base">
-        <div className="flex items-center gap-4">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
+        <div className="flex items-center gap-3">
           <button
               data-testid="achievement-back-button"
               onClick={() => navigate('home')}
-              className="p-3 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-[1.5rem] shadow-theme-base active:translate-y-1 active:translate-x-0.5 active:shadow-[var(--geometry-shadow-active)] transition-all"
+              className="round-button"
+              aria-label="Kembali ke beranda"
           >
-            <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-6 h-6 object-contain text-theme-text-primary" />
+            <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-5 h-5 object-contain text-[var(--club-ink)]" />
           </button>
-          <h2 className="text-2xl font-black text-theme-text-primary uppercase tracking-tighter leading-none">Pencapaian</h2>
+          <div>
+            <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">PRESTASI & HADIAH</span>
+            <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">Pencapaian</h2>
+          </div>
         </div>
-        <CurrencyPill type="candy" value={cde.permen} />
+        <div className="flex items-center gap-1.5 bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-full px-3 py-1 shadow-[2px_2px_0_var(--club-line)]">
+          <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain" />
+          <span className="font-['Fredoka'] font-semibold text-sm text-[var(--club-ink)]">{cde.permen}</span>
+        </div>
       </div>
 
       {/* Summary */}
-      <div className="px-5 pt-5 shrink-0">
-        <div className="bg-theme-primary-navy border-theme-base border-theme-border-main rounded-[1.5rem] px-5 py-4 shadow-theme-base flex items-center justify-between text-theme-text-white">
+      <div className="px-5 pt-4 shrink-0">
+        <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex items-center justify-between">
           <div>
-            <span className="font-black text-[10px] uppercase tracking-widest text-indigo-300 block">Tier Diraih</span>
-            <span className="font-black text-3xl leading-none" data-testid="achievement-summary">{stats.claimed}<span className="text-lg text-indigo-300">/{stats.total}</span></span>
+            <span className="font-bold text-[9px] uppercase tracking-wider text-[var(--club-muted)] block mb-0.5">Tier Diraih</span>
+            <span className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] leading-none" data-testid="achievement-summary">{stats.claimed}<span className="text-sm text-[var(--club-muted)]">/{stats.total}</span></span>
           </div>
-          <div className="flex-1 mx-5">
+          <div className="flex-1 mx-4">
             <ProgressBar progress={stats.total ? (stats.claimed / stats.total) * 100 : 0} label="" />
           </div>
-          <div className="w-14 h-14 bg-theme-primary-sunny-yellow border-theme-base border-theme-border-main rounded-2xl flex items-center justify-center relative shadow-theme-sm">
-            <DynamicIcon name="achievement" type="logo" LucideFallback={Trophy} className="w-[75%] h-[75%] object-contain text-theme-text-primary" />
+          <div className="w-12 h-12 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-xl flex items-center justify-center relative shadow-[2px_2px_0_var(--club-line)] shrink-0">
+            <DynamicIcon name="achievement" type="logo" LucideFallback={Trophy} className="w-6 h-6 object-contain text-[var(--club-ink)]" />
             {stats.claimable > 0 && (
-              <span data-testid="achievement-claimable-badge" className="absolute -top-2 -right-2 w-6 h-6 bg-theme-notification rounded-full border-theme-sm border-theme-border-main flex items-center justify-center text-[11px] font-black text-white">{stats.claimable}</span>
+              <span data-testid="achievement-claimable-badge" className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#e11d48] rounded-full border border-white flex items-center justify-center text-[10px] font-bold text-white shadow-xs">{stats.claimable}</span>
             )}
           </div>
         </div>
       </div>
 
       {/* Category chips */}
-      <div className="px-5 pt-4 shrink-0 overflow-x-auto no-scrollbar">
-        <div className="flex gap-2 w-max">
+      <div className="px-5 pt-3 shrink-0 overflow-x-auto no-scrollbar">
+        <div className="flex gap-2 w-max pb-1">
           {CATEGORIES.map(c => (
             <button
               key={c.id}
               data-testid={`achievement-filter-${c.id}`}
               onClick={() => { audio.playUiClick(); setCategory(c.id); }}
-              className={`px-4 h-9 rounded-full border-theme-sm border-theme-border-main font-black text-xs uppercase tracking-wider shrink-0 transition-colors ${category === c.id ? 'bg-theme-primary-coral-pink text-theme-text-primary shadow-theme-sm' : 'bg-theme-surface-card-white text-theme-text-muted'}`}
+              className={`px-3.5 py-1.5 rounded-full border-2 border-[var(--club-line)] font-bold text-xs transition-all ${category === c.id ? 'bg-[var(--club-butter)] text-[var(--club-ink)] shadow-[2px_2px_0_var(--club-line)] translate-y-[-1px]' : 'bg-[var(--club-card)] text-[var(--club-muted)] hover:text-[var(--club-ink)]'}`}
             >
               {c.label}
             </button>
@@ -204,7 +217,7 @@ export const AchievementScreen = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3 pb-10">
+      <div className="flex-1 overflow-y-auto px-5 py-3 flex flex-col gap-3 pb-10">
         <EconomyMeter compact id="achievement-income"/>
         {list.map((a, i) => (
           <AchievementCard key={a.id} index={i} ach={a} profile={profile} onClaim={() => handleClaim(a)} />
@@ -214,12 +227,12 @@ export const AchievementScreen = () => {
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="absolute bottom-8 left-0 right-0 flex justify-center z-[120] pointer-events-none px-4"
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="absolute bottom-6 left-0 right-0 flex justify-center z-[120] pointer-events-none px-4"
           >
-            <div data-testid="achievement-toast" className="bg-theme-primary-navy text-theme-text-white font-bold text-sm px-6 py-3 rounded-full shadow-theme-base border-theme-sm border-theme-border-main text-center">
+            <div data-testid="achievement-toast" className="bg-[var(--club-card)] text-[var(--club-ink)] font-bold text-xs px-5 py-2.5 rounded-full shadow-[3px_3px_0_var(--club-line)] border-2 border-[var(--club-line)] text-center">
               {toast}
             </div>
           </motion.div>

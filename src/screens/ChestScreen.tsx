@@ -34,29 +34,37 @@ const ChestItem = ({
 }) => {
   if (state === 'empty') {
     return (
-      <div className="flex-1 bg-white/50 border-theme-base border-dashed border-theme-border-main rounded-[1.25rem] p-3 flex flex-col items-center justify-center opacity-60 min-h-[130px]">
-        <Box size={24} className="text-theme-text-muted mb-2" />
-        <span className="font-black text-[9px] uppercase text-theme-text-secondary tracking-widest text-center">Kosong</span>
+      <div className="flex-1 bg-[var(--club-card)]/60 border-2 border-dashed border-[var(--club-line)]/30 rounded-2xl p-3 flex flex-col items-center justify-center min-h-[140px]">
+        <Box size={24} className="text-[var(--club-muted)]/50 mb-2" />
+        <span className="font-bold text-[10px] uppercase text-[var(--club-muted)] tracking-wider text-center">Slot Kosong</span>
       </div>
     );
   }
   
   if (state === 'opening') {
     return (
-      <div className="flex-1 bg-theme-bg-soft-blue border-theme-base border-theme-border-main rounded-[1.25rem] p-2.5 shadow-theme-base relative flex flex-col items-center justify-between min-h-[130px] text-center">
-         <div className="w-10 h-10 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-lg flex items-center justify-center shrink-0 shadow-theme-sm mb-2 mt-1">
+      <div className="flex-1 bg-[var(--club-sky)] border-2 border-[var(--club-line)] rounded-2xl p-3 shadow-[3px_3px_0_var(--club-line)] relative flex flex-col items-center justify-between min-h-[140px] text-center text-[var(--club-ink)]">
+         <div className="w-11 h-11 bg-white border-2 border-[var(--club-line)] rounded-xl flex items-center justify-center shrink-0 shadow-[1px_1px_0_var(--club-line)] mb-2 mt-0.5">
             <DynamicIcon name={iconName || "collection_chest"} type="logo" LucideFallback={Unlock} className="w-[80%] h-[80%] object-contain" />
          </div>
          <div className="flex-1 flex flex-col w-full items-center justify-end">
-            <h3 className="font-black text-theme-text-primary text-[10px] uppercase tracking-wider leading-tight">{title}</h3>
-            <span className="font-black text-[8px] text-blue-600 uppercase tracking-widest mt-0.5 mb-2">{timeLabel}</span>
+            <h3 className="font-bold text-[var(--club-ink)] text-xs tracking-tight leading-tight">{title}</h3>
+            <span className="font-bold text-[9px] text-[#0284c7] uppercase tracking-wider mt-0.5 mb-1.5">{timeLabel}</span>
             <div className="w-full mt-auto">
-               <ProgressBar progress={progressPct || 0} label="" />
+               <div className="w-full h-2 bg-white/80 border-1.5 border-[var(--club-line)] rounded-full overflow-hidden p-0.5">
+                 <div className="h-full bg-[#46b995] rounded-full transition-all duration-300" style={{ width: `${progressPct || 0}%` }} />
+               </div>
             </div>
             {onSpeedUp && (
-              <KineticButton onClick={onSpeedUp} disabled={!canAfford} colorClass="bg-theme-primary-sunny-yellow" className="py-1.5 px-1 w-full text-[9px] mt-2 flex items-center justify-center gap-1">
-                 <span data-testid={`chest-speedup-${slotIndex}`} className="flex items-center gap-1"><Zap size={10} strokeWidth={3} /> {speedUpCost} <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-3 h-3 object-contain" /></span>
-              </KineticButton>
+              <button 
+                onClick={onSpeedUp} 
+                disabled={!canAfford} 
+                className="pop-button mt-2 py-1 px-1.5 w-full text-[10px] !shadow-[1px_1px_0_var(--club-line)]"
+              >
+                 <span data-testid={`chest-speedup-${slotIndex}`} className="flex items-center justify-center gap-1 font-bold">
+                   <Zap size={11} strokeWidth={2.5} /> {speedUpCost} <DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-3 h-3 object-contain" />
+                 </span>
+              </button>
             )}
          </div>
       </div>
@@ -64,15 +72,20 @@ const ChestItem = ({
   }
 
   return (
-    <div className="flex-1 bg-theme-primary-warm-orange border-theme-base border-theme-border-main rounded-[1.25rem] p-2.5 shadow-theme-base flex flex-col items-center justify-between min-h-[130px] relative text-center">
-       <div className="absolute -top-2 -right-2 w-5 h-5 bg-theme-game-danger border-theme-sm border-theme-border-main rounded-full flex items-center justify-center text-theme-text-white font-black text-[10px] shadow-theme-sm z-10 animate-pulse">!</div>
-       <div className="w-10 h-10 bg-theme-surface-card-white border-theme-sm border-theme-border-main rounded-lg flex items-center justify-center shrink-0 shadow-theme-sm mb-2 mt-1">
+    <div className="flex-1 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl p-3 shadow-[3px_3px_0_var(--club-line)] flex flex-col items-center justify-between min-h-[140px] relative text-center text-[var(--club-ink)]">
+       <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#ef4444] text-white border-1.5 border-[var(--club-line)] rounded-full flex items-center justify-center font-bold text-[10px] shadow-sm z-10 animate-bounce">!</div>
+       <div className="w-11 h-11 bg-white border-2 border-[var(--club-line)] rounded-xl flex items-center justify-center shrink-0 shadow-[1px_1px_0_var(--club-line)] mb-2 mt-0.5">
           <DynamicIcon name={iconName || "collection_chest"} type="logo" LucideFallback={Box} className="w-[80%] h-[80%] object-contain" />
        </div>
        <div className="flex-1 flex flex-col w-full items-center justify-end">
-          <h3 className="font-black text-theme-text-primary text-[10px] uppercase tracking-wider leading-tight">{title}</h3>
-          <span className="font-black text-[8px] text-green-600 uppercase tracking-widest mt-0.5 mb-2">{timeLabel}</span>
-          <KineticButton onClick={onOpen} colorClass="bg-theme-primary-coral-pink" className="py-1.5 px-1 w-full text-[9px] mt-auto"><span data-testid={`chest-open-${slotIndex}`}>BUKA</span></KineticButton>
+          <h3 className="font-bold text-[var(--club-ink)] text-xs tracking-tight leading-tight">{title}</h3>
+          <span className="font-bold text-[9px] text-[#16a34a] uppercase tracking-wider mt-0.5 mb-2">{timeLabel}</span>
+          <button 
+            onClick={onOpen} 
+            className="pop-button pink py-1 px-1.5 w-full text-[10px] mt-auto !shadow-[1px_1px_0_var(--club-line)] font-bold"
+          >
+            <span data-testid={`chest-open-${slotIndex}`}>Buka</span>
+          </button>
        </div>
     </div>
   );
@@ -166,43 +179,52 @@ export const ChestScreen = () => {
           
           {/* Bottom Sheet */}
           <motion.div 
-            className="w-full bg-orange-50 border-t-theme-lg border-theme-border-main rounded-t-[2.5rem] shadow-[0px_-8px_0px_0px_rgba(0,0,0,0.2)] flex flex-col font-sans relative pointer-events-auto max-h-[85vh]"
+            className="w-full max-w-xl mx-auto bg-[var(--club-paper)] border-t-2 sm:border-2 border-[var(--club-line)] rounded-t-[26px] sm:rounded-[26px] shadow-[0_-4px_0_var(--club-line)] sm:shadow-[6px_6px_0_var(--club-line)] flex flex-col font-sans relative pointer-events-auto max-h-[85vh] text-[var(--club-ink)]"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            transition={{ type: "spring", damping: 26, stiffness: 300 }}
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b-theme-base border-gray-900/10">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--club-line)]/15">
               <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 bg-theme-primary-warm-orange border-theme-sm border-theme-border-main rounded-xl flex items-center justify-center shadow-theme-sm">
-                   <DynamicIcon name="collection_chest" type="logo" LucideFallback={Box} className="w-[80%] h-[80%] object-contain text-theme-text-primary drop-shadow-[2px_2px_0px_rgba(255,255,255,0.6)]" />
+                 <div className="w-10 h-10 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-xl flex items-center justify-center shadow-[1px_1px_0_var(--club-line)]">
+                   <DynamicIcon name="collection_chest" type="logo" LucideFallback={Box} className="w-[75%] h-[75%] object-contain" />
                  </div>
-                 <h2 className="text-xl font-black text-theme-text-primary uppercase tracking-tighter leading-none mt-1">Peti Harta Karun</h2>
+                 <div>
+                   <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">KEJUTAN HARIAN</span>
+                   <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">Peti Harta Karun</h2>
+                 </div>
               </div>
               <button
                   data-testid="chest-close-button"
                   onClick={handleClose}
-                  className="p-2 bg-theme-surface-card-soft border-theme-sm border-theme-border-main rounded-full shadow-theme-sm active:translate-y-0.5 active:shadow-[var(--geometry-shadow-active)] transition-all"
+                  className="round-button"
+                  aria-label="Tutup peti"
               >
-                <X size={20} className="text-theme-text-primary" strokeWidth={3}/>
+                <span className="text-base font-bold">✕</span>
               </button>
             </div>
             
             {/* Next chest progress */}
-            <div className="px-5 pt-4"><EconomyMeter compact id="chest-income"/>{message&&<p role="status" data-testid="chest-limit-message" className="text-sm text-theme-text-secondary mt-3">{message}</p>}</div>
-            <div className="px-5 pt-4 flex items-center gap-3">
-               <span className="font-black text-[10px] uppercase tracking-widest text-theme-text-secondary shrink-0">Peti Berikutnya</span>
-               <div className="flex-1"><ProgressBar progress={(chestProgress / CHEST_POINTS_REQUIRED) * 100} label={`${chestProgress} / ${CHEST_POINTS_REQUIRED} PTS`} /></div>
+            <div className="px-6 pt-4"><EconomyMeter compact id="chest-income"/>{message&&<p role="status" data-testid="chest-limit-message" className="text-xs text-[#ef4444] font-medium mt-2">{message}</p>}</div>
+            <div className="px-6 pt-3 flex items-center gap-3">
+               <span className="font-bold text-[10px] uppercase tracking-wider text-[var(--club-muted)] shrink-0">Peti Berikutnya</span>
+               <div className="flex-1">
+                 <div className="w-full h-3 bg-white border-1.5 border-[var(--club-line)] rounded-full overflow-hidden p-0.5">
+                   <div className="h-full bg-[#46b995] rounded-full transition-all duration-300" style={{ width: `${(chestProgress / CHEST_POINTS_REQUIRED) * 100}%` }} />
+                 </div>
+               </div>
+               <span className="text-[11px] font-bold text-[var(--club-ink)] shrink-0">{chestProgress}/{CHEST_POINTS_REQUIRED} PTS</span>
             </div>
-            <div className="px-5 pt-2 flex items-center justify-between">
-               <span data-testid="chest-reward-policy" className="font-bold text-[10px] text-theme-text-muted">Biasa 5 · Langka 8 · Epik 10 Permen + booster. Setiap peti ke-7 dijamin Epik.</span>
-               <div className="flex items-center gap-1 font-black text-xs text-theme-text-primary"><DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain" /> {cde.permen}</div>
+            <div className="px-6 pt-2 flex items-center justify-between">
+               <span data-testid="chest-reward-policy" className="text-[10px] text-[var(--club-muted)]">Biasa 5 · Langka 8 · Epik 10 Permen + booster. Setiap peti ke-7 dijamin Epik.</span>
+               <div className="flex items-center gap-1 font-bold text-xs text-[var(--club-ink)]"><DynamicIcon name="permen" type="logo" LucideFallback={Candy} className="w-4 h-4 object-contain" /> {cde.permen}</div>
             </div>
 
             {/* Content List */}
-            <div className="p-5 flex flex-row gap-3 pb-8 overflow-x-auto min-h-[160px]">
+            <div className="p-6 flex flex-row gap-3 pb-8 overflow-x-auto min-h-[160px]">
                {chestSlots.map((chest: any, idx: number) => {
                   if (!chest) {
                      return <ChestItem key={idx} state="empty" title="" timeLabel="" />;
@@ -238,48 +260,45 @@ export const ChestScreen = () => {
            initial={{ opacity: 0 }}
            animate={{ opacity: 1 }}
            exit={{ opacity: 0 }}
-           className="absolute inset-0 bg-black/80 z-[110] flex items-center justify-center p-6 pointer-events-auto"
+           className="fixed inset-0 bg-[#0f172a]/70 backdrop-blur-[4px] z-[130] flex items-center justify-center p-6 pointer-events-auto"
         >
            <motion.div
-             initial={{ scale: 0.5, y: 50 }}
+             initial={{ scale: 0.85, y: 20 }}
              animate={{ scale: 1, y: 0 }}
-             exit={{ scale: 0.8, opacity: 0 }}
-             transition={{ type: 'spring', damping: 15 }}
-             className="bg-theme-surface-card-white border-theme-lg border-theme-border-main rounded-[2rem] p-6 flex flex-col items-center w-full max-w-[320px] shadow-theme-lg text-center relative overflow-hidden"
+             exit={{ scale: 0.85, opacity: 0 }}
+             transition={{ type: 'spring', damping: 20, stiffness: 320 }}
+             className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-[24px] p-6 flex flex-col items-center w-full max-w-[340px] shadow-[6px_6px_0_var(--club-line)] text-center relative overflow-hidden text-[var(--club-ink)]"
            >
-              <div className="absolute inset-0 bg-theme-bg-soft-pink opacity-50" />
-              <div className="absolute -top-20 -left-20 w-40 h-40 bg-theme-primary-sunny-yellow rounded-full blur-3xl opacity-50" />
+              <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase mb-1">SELAMAT!</span>
+              <h3 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] leading-tight mb-5">Peti Terbuka!</h3>
               
-              <h3 className="font-black text-2xl text-theme-text-primary uppercase tracking-tighter mb-6 relative z-10">Peti Terbuka!</h3>
-              
-              <div className="w-24 h-24 bg-theme-primary-sunny-yellow border-theme-base border-theme-border-main rounded-[1.5rem] flex items-center justify-center shadow-theme-base mb-6 relative z-10 ">
-                 <Gift size={48} className="text-theme-primary-coral-pink" />
+              <div className="w-20 h-20 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] mb-5 text-[var(--club-ink)]">
+                 <Gift size={40} className="text-[#e11d48]" />
               </div>
               
-              <div data-testid="chest-reward-list" className="grid grid-cols-2 gap-3 relative z-10 w-full mb-6">
+              <div data-testid="chest-reward-list" className="grid grid-cols-2 gap-2.5 w-full mb-6">
                  {[
-                   { key: 'permen', label: 'Permen', color: 'text-theme-currency-candy-purple', icon: Candy, iconName: 'permen' },
+                   { key: 'permen', label: 'Permen', color: 'text-[var(--club-ink)]', icon: Candy, iconName: 'permen' },
                    { key: 'hints', label: 'Hint', color: 'text-blue-600', icon: Search, iconName: 'hint' },
                    { key: 'shuffles', label: 'Shuffle', color: 'text-orange-600', icon: RefreshCw, iconName: 'shuffle' },
                    { key: 'hammers', label: 'Hammer', color: 'text-amber-600', icon: Hammer },
                    { key: 'bombs', label: 'Bomb', color: 'text-red-600', icon: Bomb },
                  ].filter(r => rewardModal?.[r.key]).map(r => (
-                   <div key={r.key} className="bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl py-2 px-2 flex items-center justify-center gap-2 shadow-theme-base">
+                   <div key={r.key} className="bg-[var(--club-paper)] border-2 border-[var(--club-line)] rounded-xl py-2 px-2.5 flex items-center justify-center gap-2 shadow-[2px_2px_0_var(--club-line)]">
                       {r.iconName ? <DynamicIcon name={r.iconName} type="logo" LucideFallback={r.icon} className="w-6 h-6 object-contain" /> : <r.icon size={18} className={r.color} />}
                       <div className="flex flex-col items-start leading-none">
-                        <span className={`font-black text-lg ${r.color}`}>+{rewardModal[r.key]}</span>
-                        <span className="font-black text-[9px] text-theme-text-secondary uppercase tracking-widest">{r.label}</span>
+                        <span className="font-bold text-base text-[var(--club-ink)]">+{rewardModal[r.key]}</span>
+                        <span className="font-medium text-[9px] text-[var(--club-muted)] uppercase tracking-wider">{r.label}</span>
                       </div>
                    </div>
                  ))}
               </div>
-              <KineticButton
-                 onClick={handleClaim}
-                colorClass="bg-theme-primary-coral-pink"
-                className="w-full py-3 text-base relative z-10"
+              <button
+                onClick={handleClaim}
+                className="pop-button pink w-full"
               >
                 <span data-testid="chest-reward-claim">Klaim Hadiah</span>
-              </KineticButton>
+              </button>
            </motion.div>
         </motion.div>
       )}
