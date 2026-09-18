@@ -3,6 +3,9 @@ import { MISSION_REWARDS, getTodayKey } from './economy';
 const withReward = (m) => ({ ...m, rewardType: 'permen', rewardAmount: MISSION_REWARDS.weekly[m.difficulty] || 8 });
 
 export const WEEKLY_MISSIONS_POOL = [
+    { id: 'w_block_lines', type: 'blockLines', category: 'block', title: 'Ruang untuk Kombo', desc: 'Bersihkan 25 baris atau kolom di Block Puzzle.', target: 25, difficulty: 'Menengah' },
+    { id: 'w_split_tiles', type: 'split', category: 'discovery', title: 'Lapisan Kejutan', desc: 'Pecahkan 20 pasangan tile gabungan di Onet.', target: 20, difficulty: 'Menengah' },
+    { id: 'w_arcade_wins', type: 'minigame', category: 'discovery', title: 'Keliling Klub', desc: 'Menangkan 5 ronde Memory Flip atau Triple Match.', target: 5, difficulty: 'Menengah' },
     // Consistency (Meta)
     { id: "w_daily_med", type: "complete_daily", category: "consistency", title: "Rajin Banget Mainnya", desc: "Selesaikan 15 Misi Harian minggu ini.", target: 15, difficulty: "Menengah" },
     { id: "w_daily_hard", type: "complete_daily", category: "consistency", title: "Kamu Paling Setia", desc: "Selesaikan 20 Misi Harian minggu ini.", target: 20, difficulty: "Sulit" },
@@ -69,10 +72,10 @@ export const generateWeeklyMissions = function(profile) {
 
     const slots = [
         ['consistency'],
-        ['skill_peak'],
-        ['skill_consistency'],
+        ['block'],
+        ['discovery'],
         ['progression'],
-        ['economy']
+        ['skill_peak']
     ];
 
     const selected = [];

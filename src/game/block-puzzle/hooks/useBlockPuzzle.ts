@@ -6,6 +6,7 @@ import { ObstacleType, getLevelConfig } from '../core/levelConfig';
 import { useProfile } from '../../../core/profile/ProfileContext';
 import { useCDE } from '../../../core/cde';
 import { RewardEngine } from '../../../core/reward';
+import { useAudio } from '../../../core/audio/AudioEngine';
 
 const BOARD_SIZE = 10;
 
@@ -17,10 +18,11 @@ export interface DragState {
   isDragging: boolean;
 }
 
-export const useBlockPuzzle = () => {
+export const useBlockPuzzle = (infinity=false) => {
+  const audio=useAudio();
   const { profile, updateProfile } = useProfile();
   const cde = useCDE();
-  const [winReward, setWinReward] = useState<{ chestPoints: number, permen: number } | null>(null);
+  const [winReward, setWinReward] = useState<any>(null);
   const blocksClearedRef = useRef<number>(0);
   const highestComboRef = useRef<number>(0);
   const runId = useRef(crypto.randomUUID());
@@ -35,7 +37,7 @@ export const useBlockPuzzle = () => {
   const [tray, setTray] = useState<(Piece | null)[]>([null, null, null]);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
-  const [highScore, setHighScore] = useState(profile.statistics?.blockPuzzleHighScore || 0);
+  const [highScore, setHighScore] = useState((infinity?profile.statistics?.infinityHighScore:profile.statistics?.blockPuzzleHighScore) || 0);
   const [gameState, setGameState] = useState<'playing' | 'gameover' | 'won'>('playing');
   const [currentLevel, setCurrentLevel] = useState(profile.blockPuzzleLevel || 1);
   
@@ -102,7 +104,8 @@ export const useBlockPuzzle = () => {
       const mainMission = currentLevelConfig.missions[0];
       const mainMet = evaluateMission(mainMission, false);
 
-      if (mainMet) {
+      if (mainMet && !infinity) {
+         audio.playSfx('win');
          resultSent.current = true;
          const results = currentLevelConfig.missions.map(m => evaluateMission(m, true));
          setMissionResults(results);
@@ -140,7 +143,7 @@ export const useBlockPuzzle = () => {
             blocksCleared: blocksClearedRef.current
          };
          const { rewardResult } = RewardEngine.processWin(JSON.parse(JSON.stringify(profile)), winPayload);
-         setWinReward({ chestPoints: rewardResult.chestPoints, permen: rewardResult.permen });
+         setWinReward(rewardResult);
          cde.queueMutation('PROCESS_WIN', winPayload);
       } else if(needsGameOver) setGameState('gameover');
     }
@@ -153,8 +156,11 @@ export const useBlockPuzzle = () => {
     }
     if (gameState === 'gameover' && !resultSent.current) {
       resultSent.current = true;
-      cde.queueMutation('PROCESS_WIN', { game: 'block', runId: runId.current, level: currentLevel, isWinner: false, score, timeElapsed: Date.now()-levelStartTime.current, linesCleared: linesClearedTotal, blocksCleared: blocksClearedRef.current, highestCombo: highestComboRef.current });
-      cde.queueMutation('UPDATE_PROFILE', { blockPuzzleSkill: skillScore });
+      const payload={ game: infinity?'block-infinity':'block', runId: runId.current, level: currentLevel, isWinner: false, score, timeElapsed: Date.now()-levelStartTime.current, linesCleared: linesClearedTotal, blocksCleared: blocksClearedRef.current, highestCombo: highestComboRef.current };
+      setWinReward(RewardEngine.processWin(profile,payload).rewardResult);
+      audio.playSfx('lose');
+      cde.queueMutation('PROCESS_WIN', payload);
+      if(!infinity)cde.queueMutation('UPDATE_PROFILE', { blockPuzzleSkill: skillScore });
     }
   }, [gameState, score, highScore, updateProfile]);
 
@@ -184,7 +190,7 @@ export const useBlockPuzzle = () => {
     const seed = `${profile?.id || 'guest'}_${levelToPlay}_${retryCount.current}`;
     const baseConfig = getLevelConfig(levelToPlay, bracket, seed);
     // Only apply DDA post-processing for manual levels (<= 20)
-    const config = levelToPlay <= 20 ? applyDDAToLevel(baseConfig, bracket) : baseConfig;
+    const config = infinity ? {level:0,obstacles:[],gravity:false,missions:[{type:'score',target:Number.MAX_SAFE_INTEGER,description:'Bersihkan garis, kejar rekor'}]} : levelToPlay <= 20 ? applyDDAToLevel(baseConfig, bracket) : baseConfig;
     setCurrentLevelConfig(config);
     const emptyBoard = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(''));
     const initialObstacles = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill('')) as ObstacleType[][];
@@ -195,7 +201,7 @@ export const useBlockPuzzle = () => {
 
     setBoard(emptyBoard);
     setObstacles(initialObstacles);
-    setTray(getRandomPieces(3, emptyBoard, (p, r, c, b) => canPlace(p, r, c, b, initialObstacles)));
+    setTray(getRandomPieces(3, emptyBoard, (p, r, c, b) => canPlace(p, r, c, b, initialObstacles),0,initialObstacles,Math.random,infinity));
     setScore(0);
     setCombo(0);
     setGameState('playing');
@@ -292,7 +298,7 @@ export const useBlockPuzzle = () => {
       actionLock.current = false;
       
       if (currentTray.every(p => p === null)) {
-        const freshTray = getRandomPieces(3, currentBoard, (p, r, c, b) => canPlace(p, r, c, b, currentObstacles));
+        const freshTray = getRandomPieces(3, currentBoard, (p, r, c, b) => canPlace(p, r, c, b, currentObstacles),0,currentObstacles,Math.random,infinity);
         setTray(freshTray);
         checkGameOver(currentBoard, freshTray, currentObstacles);
       } else {
@@ -304,6 +310,7 @@ export const useBlockPuzzle = () => {
     }
 
     const newCombo = currentCombo + 1;
+    audio.playSfx(linesCleared>1?'combo':'clear');
     highestComboRef.current = Math.max(highestComboRef.current, newCombo);
     const lineScore = ((linesCleared * (linesCleared + 1)) / 2) * 100;
     const comboBonus = newCombo > 1 ? (newCombo - 1) * 200 : 0;
@@ -325,7 +332,8 @@ export const useBlockPuzzle = () => {
           if (currentBoard[r][c] !== '') nonEmptyCount++;
        }
     }
-    const isPerfectClear = nonEmptyCount === cellsToClear.length;
+    const clearedSet=new Set(cellsToClear.map(p=>`${p.r}:${p.c}`));
+    const isPerfectClear = currentBoard.every((row,r)=>row.every((cell,c)=>!cell||clearedSet.has(`${r}:${c}`))) && currentObstacles.every((row,r)=>row.every((obs,c)=>!obs||(clearedSet.has(`${r}:${c}`)&&!['stone','metal-2'].includes(obs))));
 
     let finalAddedScore = addedScore;
     if (isPerfectClear) {
@@ -406,6 +414,7 @@ export const useBlockPuzzle = () => {
 
   const placePiece = (row: number, col: number, selectedIndex?: number) => {
     if (isAnimating || actionLock.current || gameState !== 'playing') return false;
+    audio.playSfx('place');
     const currentDrag = selectedIndex !== undefined && tray[selectedIndex] ? {piece:tray[selectedIndex]!,trayIndex:selectedIndex} : dragState;
     if (!currentDrag || !tray[currentDrag.trayIndex] || !canPlace(currentDrag.piece, row, col, board, obstacles)) return false;
     actionLock.current = true;
@@ -524,7 +533,7 @@ export const useBlockPuzzle = () => {
     board,
     obstacles,
     currentLevelConfig,
-    missionResults,
+    missionResults: gameState === 'won' ? missionResults : currentLevelConfig.missions.map((m:any)=> m.type==='max_moves'?moves<=m.target:({score,clear_lines:linesClearedTotal,destroy_gems:gemsDestroyed,destroy_ice:iceDestroyed,destroy_wood:woodDestroyed}[m.type]||0)>=m.target),
     moves,
     linesClearedTotal,
     gemsDestroyed,

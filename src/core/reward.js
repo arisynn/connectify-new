@@ -2,15 +2,18 @@ import { addChestProgress } from './chest';
 import { updateMissions } from './misiHarian';
 import { getTodayKey } from './economy';
 import { unlockAvatars } from './avatars';
+import { awardXP, getAccountProgress } from './progression.js';
 
 export const RewardEngine = {
   processWin: (profile, payload = {}) => {
     const { game = 'onet', isWinner = true, isMultiplayer = false, isFlawless = false,
       timeElapsed = 0, score = 0, matches = 0, highestCombo = 0, blocksCleared = 0,
       linesCleared = 0, stars = 0, isDailyChallenge = false, runId, level = 1 } = payload;
-    const empty = { profile, rewardResult: { chestPoints: 0, permen: 0, dailyBonus: 0 } };
+    const empty = { profile, rewardResult: { chestPoints: 0, permen: 0, dailyBonus: 0, xp: 0, leveledUp: false, accountLevel: getAccountProgress(profile).level } };
     if (runId && (profile.processedRuns || []).includes(runId)) return empty;
-    let p = { ...profile, statistics: { ...profile.statistics } };
+    const xp = isWinner ? 100 + (isFlawless ? 25 : 0) + Math.min(25, highestCombo * 2) : Math.min(40, Math.floor(score / 100));
+    const previousLevel = getAccountProgress(profile).level;
+    let p = { ...awardXP(profile, xp), statistics: { ...profile.statistics } };
     const s = p.statistics;
     if (runId) p.processedRuns = [...(p.processedRuns || []), runId].slice(-200);
     s.totalGames = (s.totalGames || 0) + 1;
@@ -19,6 +22,7 @@ export const RewardEngine = {
     s.highestScore = Math.max(s.highestScore || 0, score);
     s.highestCombo = Math.max(s.highestCombo || 0, highestCombo);
     s.totalMatches = (s.totalMatches || 0) + matches;
+    s.totalSplits = (s.totalSplits || 0) + (payload.splits || 0);
     s.totalBlocksCleared = (s.totalBlocksCleared || 0) + matches * 2 + blocksCleared;
     s[`${game}Games`] = (s[`${game}Games`] || 0) + 1;
     s[`${game}HighScore`] = Math.max(s[`${game}HighScore`] || 0, score);
@@ -31,6 +35,12 @@ export const RewardEngine = {
       if (game === 'onet' && timeElapsed > 0 && timeElapsed < 45000) s.speedrunLevels = (s.speedrunLevels || 0) + 1;
       if (game === 'onet' && payload.progress >= 50) s.survivorLevels = (s.survivorLevels || 0) + 1;
       if (game === 'onet' && payload.remainingTime > 0 && payload.remainingTime <= 1) s.nearDeathEscapes = (s.nearDeathEscapes || 0) + 1;
+    }
+    if (game === 'block-infinity') {
+      s.infinityHighScore = Math.max(s.infinityHighScore || 0, score);
+      s.infinityGames = (s.infinityGames || 0) + 1;
+      s.infinityLines = (s.infinityLines || 0) + linesCleared;
+      s.blockLines = (s.blockLines || 0) + linesCleared;
     }
     if (game === 'block') {
       s.blockPuzzleGames = (s.blockPuzzleGames || 0) + 1;
@@ -59,9 +69,10 @@ export const RewardEngine = {
     if (isWinner && (game === 'memory' || game === 'triple')) p = updateMissions(p, 'minigameWin', 1);
     if (isWinner && game === 'onet' && payload.progress >= 50) p = updateMissions(p, 'survivor', 1);
     if (isWinner && game === 'onet' && timeElapsed > 0 && timeElapsed < 45000) p = updateMissions(p, 'fast_clear', 1);
-    for (const [event, amount] of [['combo', highestCombo], ['match', matches], ['score', score], ['blockLines', linesCleared]]) {
+    for (const [event, amount] of [['combo', highestCombo], ['match', matches], ['score', score], ['blockLines', linesCleared], ['split', payload.splits || 0], ['playGame', 1]]) {
       if (amount > 0) p = updateMissions(p, event, amount);
     }
-    return { profile: unlockAvatars(p), rewardResult: { chestPoints, permen: 0, dailyBonus: 0 } };
+    const accountLevel=getAccountProgress(p).level;
+    return { profile: unlockAvatars(p), rewardResult: { chestPoints, permen: 0, dailyBonus: 0, xp, accountLevel, leveledUp: accountLevel>previousLevel } };
   }
 };

@@ -11,6 +11,7 @@ import { ACHIEVEMENTS_DATA, getCurrentTier } from '../core/achievements';
 import { CHEST_TYPES } from '../core/chest';
 import { AVATARS, isAvatarUnlocked } from '../core/avatars';
 import { AvatarGallery } from '../components/AvatarGallery';
+import { TileGallery } from '../components/TileGallery';
 
 const ALL_AVATARS = AVATARS.map(a=>a.id);
 
@@ -160,9 +161,9 @@ export const CollectionScreen = () => {
                     {equipped ? (
                       <div className="w-full py-1.5 rounded-xl bg-[var(--club-paper)] border border-[var(--club-line)] flex items-center justify-center gap-1 font-bold text-xs text-[var(--club-muted)]"><Check size={14} strokeWidth={2.5} /> Dipakai</div>
                     ) : unlocked ? (
-                      <button onClick={() => handleEquipTheme(theme.id)} className="pop-button pink w-full py-1.5 text-xs font-bold">Pakai</button>
+                      <button data-testid={`collection-equip-${theme.id}`} onClick={() => handleEquipTheme(theme.id)} className="pop-button pink w-full py-1.5 text-xs font-bold">Pakai</button>
                     ) : (
-                      <button onClick={() => navigate('toko')} className="pop-button butter w-full py-1.5 text-xs font-bold">Beli di Toko</button>
+                      <button data-testid={`collection-buy-${theme.id}`} onClick={() => navigate('toko')} className="pop-button butter w-full py-1.5 text-xs font-bold">Beli di Toko</button>
                     )}
                   </div>
                 );
@@ -171,6 +172,7 @@ export const CollectionScreen = () => {
           </div>
         )}
 
+        {section === 'tema' && <TileGallery/>}
         {section === 'lencana' && (
           <div>
             <SectionTitle icon={Trophy} title="Lencana Penghargaan" count={`${badgesEarned}/${badges.length}`} colorClass="bg-[var(--club-butter)]" />

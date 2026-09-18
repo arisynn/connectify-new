@@ -9,7 +9,7 @@ const COLORS=['#bde0fe','#fcf6bd','#d0f4de','#ffdac1','#ffd1dc','#1e3a8a','#0f76
 export const EditAvatarScreen=()=>{
   const {profile,updateProfile}=useProfile(),{navigate}=useGame();
   const [avatar,setAvatar]=useState(profile.activeAvatarId||'avatar_male'),[bg,setBg]=useState(profile.activeAvatarBackground||COLORS[0]);
-  const save=()=>{updateProfile({activeAvatarId:avatar,avatar,activeAvatarBackground:bg});navigate('profile');};
+  const save=()=>{updateProfile({activeAvatarId:avatar,avatar,activeAvatarBackground:bg,equippedCosmetics:{...profile.equippedCosmetics,avatar:null}});navigate('profile');};
   return <GameShell title="Temukan karaktermu" eyebrow="AVATAR • KOLEKSI PRIBADI" back="profile">
     <p data-testid="avatar-intro" className="page-lede">Bukan dibeli. Didapatkan dari petualanganmu. Buka 9 teman baru dengan bermain.</p>
     <AvatarGallery selected={avatar} onSelect={setAvatar}/>

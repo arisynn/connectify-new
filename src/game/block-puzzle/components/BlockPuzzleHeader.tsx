@@ -1,65 +1,7 @@
 import React from 'react';
-import { ArrowLeft, Star } from 'lucide-react';
-
-interface BlockPuzzleHeaderProps {
-  testIdPrefix?: string;
-  score: number;
-  currentLevel: number;
-  moves: number;
-  missions: any[];
-  missionResults: boolean[];
-  onPause: () => void;
-}
-
-export const BlockPuzzleHeader: React.FC<BlockPuzzleHeaderProps> = ({ 
-  testIdPrefix='block',
-  score, 
-  currentLevel, 
-  moves,
-  missions,
-  missionResults,
-  onPause 
-}) => {
-  return (
-    <div className="w-full max-w-md flex flex-col items-center z-10 pt-2 px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
-      <header className="w-full flex items-center justify-between gap-1.5 pb-2">
-        <button 
-           data-testid={`${testIdPrefix}-pause`}
-           aria-label="Jeda Block Puzzle"
-           onClick={onPause}
-           className="bg-theme-surface-card-white p-2.5 flex items-center justify-center hover:bg-gray-50 border-theme-sm border-theme-border-main shadow-theme-base rounded-[4px] active:translate-y-[2px] active:translate-x-[2px] active:shadow-[var(--geometry-shadow-active)] transition-all flex-shrink-0"
-        >
-          <svg className="w-5 h-5 text-theme-text-primary" fill="currentColor" viewBox="0 0 24 24">
-            <rect x="6" y="4" width="4" height="16"/>
-            <rect x="14" y="4" width="4" height="16"/>
-          </svg>
-        </button>
-
-        <div className="bg-theme-surface-card-white px-3 py-1 flex-[2] text-center border-theme-sm border-theme-border-main shadow-theme-base rounded-[4px] flex flex-col items-center">
-          <div data-testid={`${testIdPrefix}-level`} className="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">LEVEL {currentLevel}</div>
-          <div data-testid={`${testIdPrefix}-score`} className="text-lg sm:text-xl font-black text-theme-text-primary leading-none">{score}</div>
-        </div>
-
-        <div className="bg-theme-surface-card-white px-3 py-1 flex-1 text-center border-theme-sm border-theme-border-main shadow-theme-base rounded-[4px]">
-          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">MOVES</div>
-          <div data-testid={`${testIdPrefix}-moves`} className="text-lg sm:text-xl font-black text-theme-text-primary leading-none">{moves}</div>
-        </div>
-      </header>
-
-      {/* Missions UI */}
-      <div className="w-full flex gap-1 mb-2 mt-1">
-         {missions.map((mission, index) => {
-            const isCompleted = missionResults[index];
-            return (
-               <div data-testid={`${testIdPrefix}-objective-${index}`} key={index} className={`flex-1 p-1 rounded-[4px] border-theme-sm border-theme-border-main flex flex-col items-center justify-center shadow-[var(--geometry-shadow-sm)] ${isCompleted ? 'bg-theme-primary-canary-yellow' : 'bg-theme-surface-card-white'}`}>
-                  <Star size={14} className={isCompleted ? 'fill-theme-primary-coral-pink text-theme-primary-coral-pink' : 'fill-gray-300 text-gray-400'} />
-                  <div className="text-[9px] font-bold text-center leading-tight mt-0.5 text-theme-text-primary line-clamp-2">{mission.description}</div>
-               </div>
-            );
-         })}
-      </div>
-
-      <div className="border-b-theme-base border-theme-border-main w-full"></div>
-    </div>
-  );
-};
+import { Pause, Star, Check } from 'lucide-react';
+interface Props {testIdPrefix?:string;score:number;currentLevel:number;moves:number;missions:any[];missionResults:boolean[];onPause:()=>void;infinity?:boolean;highScore?:number;}
+export const BlockPuzzleHeader=({testIdPrefix='block',score,currentLevel,moves,missions,missionResults,onPause,infinity=false,highScore=0}:Props)=><div className="block-hud" data-testid={`${testIdPrefix}-header`}>
+  <header><button data-testid={`${testIdPrefix}-pause`} aria-label="Jeda Block Puzzle" className="round-button" onClick={onPause}><Pause size={20}/></button><div><small>BLOCK PUZZLE</small><b data-testid={`${testIdPrefix}-level`}>{infinity?'Infinity':`Level ${currentLevel}`}</b></div><div className="block-score-box"><small>SKOR</small><b data-testid={`${testIdPrefix}-score`}>{score.toLocaleString('id-ID')}</b></div><span data-testid={`${testIdPrefix}-moves`} className="block-moves">{moves}<small>langkah</small></span></header>
+  {infinity?<div className="infinity-record" data-testid={`${testIdPrefix}-infinity-record`}><span>TANPA BATAS. TANPA TIMER.</span><b>Rekor {Math.max(highScore,score).toLocaleString('id-ID')}</b></div>:<div className="block-objectives">{missions.map((m,i)=><div key={i} data-testid={`${testIdPrefix}-objective-${i}`} className={missionResults[i]?'met':''}>{missionResults[i]?<Check size={13}/>:<Star size={13}/>}<span>{m.description}</span></div>)}</div>}
+</div>;

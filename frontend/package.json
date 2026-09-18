@@ -3,6 +3,7 @@
   "private": true,
   "description": "Preview-environment launcher only. The real app (Vite + Express + Supabase) lives in /app. `yarn expo start` here simply boots `npm run dev` of the root project.",
   "scripts": {
+    "start": "cd /app && /app/node_modules/node/bin/node /app/node_modules/tsx/dist/cli.mjs watch --exclude '**/vite.config.*.mjs' --exclude '**/.preview/**' server.ts",
     "expo": "npm --prefix /app run dev --"
   }
 }

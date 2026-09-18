@@ -1,17 +1,20 @@
 import React from 'react';
-import { Play, ArrowUpRight, Users, Sparkles } from 'lucide-react';
-import { GameShell } from '../components/GameShell';
-import { useGame } from '../GameContext';
-import { useProfile } from '../core/profile/ProfileContext';
-
+import {ArrowUpRight,Infinity as InfinityIcon,Layers,Brain,Timer,Users,Grid3X3} from 'lucide-react';
+import {GameShell} from '../components/GameShell';
+import {useGame,GameMode,Screen} from '../GameContext';
+import {useProfile} from '../core/profile/ProfileContext';
+import {getOnetDifficulty} from '../core/difficulty';
 export const LevelSelectScreen=()=>{
   const {navigate,setGameMode}=useGame(),{profile,updateProfile}=useProfile();
-  const play=(game:'play'|'block-puzzle')=>{setGameMode('normal');if(game==='play')updateProfile({currentLevel:profile.highestLevel||1});navigate(game);};
-  return <GameShell title="Pilih keseruanmu" eyebrow="PERMAINAN UTAMA" wide>
-    <p data-testid="games-intro" className="page-lede">Fokus sebentar. Lupakan sibuknya hari.</p>
-    <div className="game-cards"><article className="game-card onet"><div className="game-card-art"><img src="/art/candy/0.webp" alt="Donat"/><img src="/art/candy/2.webp" alt="Cupcake"/><img src="/art/candy/0.webp" alt="Pasangan donat"/></div><span className="eyebrow">TEMUKAN PASANGANNYA</span><h2 data-testid="onet-card-title">Onet Classic</h2><p>Hubungkan gambar yang sama. Kenali tile gabungan dan bersihkan papan.</p><div className="game-card-meta" data-testid="onet-level">Level {profile.highestLevel||1}<span>Grid tetap · Combo</span></div><button data-testid="play-onet" className="pop-button pink" onClick={()=>play('play')}><Play size={18}/>Main Onet</button></article>
-    <article className="game-card block"><div className="game-card-art block-art" aria-hidden="true">{[0,1,2].map(n=><div key={n} className={`block-art-piece piece-${n}`}>{[0,1,2,3].map(i=><i key={i}/>)}</div>)}</div><span className="eyebrow">SUSUN. BERSIHKAN. ULANGI.</span><h2 data-testid="block-card-title">Block Puzzle</h2><p>Temukan tempat terbaik untuk setiap balok. Bersihkan garis dan kejar tiga bintang.</p><div className="game-card-meta" data-testid="block-level">Level {profile.blockPuzzleLevel||1}<span>Strategi · Tanpa timer</span></div><button data-testid="play-block" className="pop-button mint" onClick={()=>play('block-puzzle')}><Play size={18}/>Main Block Puzzle</button></article></div>
-    <button data-testid="open-challenges" className="hub-banner" onClick={()=>navigate('challenges')}><Sparkles size={30}/><span><b>Pusat Tantangan</b><small>Memory Flip, Triple Match, dan Onet Sprint.</small></span><span className="new-label">BARU</span><ArrowUpRight size={22}/></button>
-    <button data-testid="open-multiplayer" className="hub-banner secondary" onClick={()=>navigate('multiplayer')}><Users size={25}/><span><b>Main bersama teman</b><small>Buat ruang atau bergabung dengan kode.</small></span><ArrowUpRight size={22}/></button>
-  </GameShell>;
+  const games=[
+    {id:'onet',route:'play',mode:'normal',name:'Onet',tag:`LEVEL ${profile.highestLevel||1} · ${getOnetDifficulty(profile.highestLevel).label}`,copy:'Temukan pasangan. Ikuti arah. Pecahkan lapisannya.',asset:'/art/candy/0.webp',icon:Layers,color:'rose'},
+    {id:'block',route:'block-puzzle',mode:'normal',name:'Block Puzzle',tag:`LEVEL ${profile.blockPuzzleLevel||1}`,copy:'Susun balok klasik dan tuntaskan target papan.',asset:'/art/atelier/ceramic.svg',icon:Grid3X3,color:'mint'},
+    {id:'infinity',route:'block-puzzle',mode:'infinity',name:'Block Infinity',tag:`REKOR ${(profile.statistics?.infinityHighScore||0).toLocaleString('id-ID')}`,copy:'Tanpa timer, tanpa batas level. Bertahan selama masih ada tempat.',asset:'/art/atelier/jelly.svg',icon:InfinityIcon,color:'sky'},
+    {id:'memory',route:'memory',mode:'normal',name:'Memory Flip',tag:'8 PASANGAN',copy:'Balik kartu dan latih ingatanmu.',asset:'/art/avatars/7.webp',icon:Brain,color:'butter'},
+    {id:'triple',route:'triple',mode:'normal',name:'Triple Match',tag:'7 SLOT',copy:'Kumpulkan tiga gambar sama sebelum slot penuh.',asset:'/art/avatars/5.webp',icon:Layers,color:'rose'},
+    {id:'sprint',route:'play',mode:'daily',name:'Onet Sprint',tag:'PAPAN HARIAN · 90 DETIK',copy:'Satu tantangan harian, seberapa cepat kamu?',asset:'/art/space/0.webp',icon:Timer,color:'sky'},
+    {id:'friends',route:'multiplayer',mode:'normal',name:'Main bareng',tag:'DUEL TEMAN',copy:'Buat ruang atau masuk dengan kode teman.',asset:'/art/atelier/orbit.svg',icon:Users,color:'mint'}
+  ];
+  const start=(game:any)=>{setGameMode(game.mode as GameMode);if(game.id==='onet')updateProfile({currentLevel:profile.highestLevel||1});navigate(game.route as Screen);};
+  return <GameShell title="Mau main apa?" eyebrow="PILIH SESUAI SUASANA HATI" wide><p className="page-lede" data-testid="games-intro">Satu tempat untuk semua permainanmu.</p><div className="play-library">{games.map(game=><button data-testid={`play-${game.id}`} key={game.id} className={`play-library-card ${game.color}`} onClick={()=>start(game)}><span className="play-library-art"><img src={game.asset} alt=""/><game.icon size={18}/></span><span className="play-library-copy"><small>{game.tag}</small><b>{game.name}</b><span>{game.copy}</span></span><ArrowUpRight size={21}/></button>)}</div></GameShell>;
 };

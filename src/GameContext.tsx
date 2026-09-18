@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 
 export type Screen = 'boot' | 'startup' | 'login' | 'home' | 'play' | 'multiplayer' | 'peti' | 'toko' | 'misi' | 'tema' | 'prestasi' | 'statistik' | 'pesan' | 'profile' | 'levels' | 'block-puzzle' | 'settings' | 'koleksi' | 'edit-avatar' | 'challenges' | 'memory' | 'triple' | 'ledger';
 
-export type GameMode = 'normal' | 'daily';
+export type GameMode = 'normal' | 'daily' | 'infinity';
 
 interface GameContextType {
   screen: Screen;

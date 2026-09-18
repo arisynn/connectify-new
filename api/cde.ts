@@ -322,7 +322,9 @@ export default async function handler(req: Request, res: Response) {
                 .maybeSingle();
 
             if (error) throw error;
-            return res.json({ profile: data });
+            const { data: account, error: accountError } = await supabase.from('cde_accounts').select('id,username').eq('id', accountId).maybeSingle();
+            if (accountError) throw accountError;
+            return res.json({ profile: data, account: account ? { id: account.id, username: account.username } : null });
         }
 
         if (action === 'mutate_permen' && req.method === 'POST') {
@@ -402,6 +404,7 @@ export default async function handler(req: Request, res: Response) {
             let gamePatch: any = {};
 
             const ECON = await import('../src/core/economy.js');
+            const COSMETIC = await import('../src/core/cosmetics.js');
             const applyProfilePatch = (patch: any) => {
                 profilePatch = { ...profilePatch, ...patch };
                 mergedProfileData.profile = { ...(mergedProfileData.profile || {}), ...patch };
@@ -409,8 +412,9 @@ export default async function handler(req: Request, res: Response) {
             const currentProf = () => (mergedProfileData.profile || {});
 
             if (type === 'UPDATE_PROFILE') {
-                 const writable = ['playerName', 'avatar', 'activeAvatarId', 'activeAvatarBackground', 'activeTheme', 'settings', 'notifications', 'currentLevel', 'blockPuzzleLevel', 'blockPuzzleSkill'];
+                 const writable = ['playerName', 'avatar', 'activeAvatarId', 'activeAvatarBackground', 'activeTheme', 'settings', 'notifications', 'currentLevel', 'blockPuzzleLevel', 'blockPuzzleSkill', 'equippedCosmetics'];
                  const safePayload = Object.fromEntries(Object.entries(payload).filter(([key]) => writable.includes(key)));
+                 if (safePayload.equippedCosmetics !== undefined && !COSMETIC.validateCosmeticEquip(currentProf(), safePayload.equippedCosmetics)) return res.status(400).json({error:'COSMETIC_LOCKED'});
                  if (safePayload.activeTheme && !['sweets', ...(currentProf().unlockedThemes || [])].includes(safePayload.activeTheme)) return res.status(400).json({ error: 'THEME_LOCKED' });
                  for (const key of ['avatar', 'activeAvatarId']) {
                    if (safePayload[key] && !AVATARS.some(a => a.id === safePayload[key] && isAvatarUnlocked(currentProf(), a))) return res.status(400).json({ error: 'AVATAR_LOCKED' });
@@ -444,7 +448,10 @@ export default async function handler(req: Request, res: Response) {
                  if ((currentProfile.permen || 0) < cost) return res.status(400).json({ error: 'INSUFFICIENT_PERMEN' });
                  permenDelta = -cost;
 
-                 if (itemId.startsWith('theme_')) {
+                 if (COSMETIC.cosmeticById(itemId)) {
+                      if (COSMETIC.ownsCosmetic(currentProf(), itemId)) return res.status(400).json({error:'ALREADY_OWNED'});
+                      applyProfilePatch({ownedCosmetics:[...(currentProf().ownedCosmetics||[]),itemId]});
+                 } else if (itemId.startsWith('theme_')) {
                       const themeId = itemId.replace('theme_', '');
                       const owned = currentProf().unlockedThemes || ['sweets'];
                       if (owned.includes(themeId)) return res.status(400).json({ error: 'ALREADY_OWNED' });
@@ -473,8 +480,8 @@ export default async function handler(req: Request, res: Response) {
                    const verified=verifiedMultiplayerResult(payload.runId,owner?.username);
                    if(!verified||verified.game!==payload.game||verified.isWinner!==payload.isWinner) return res.status(400).json({error:'UNVERIFIED_MULTIPLAYER_RESULT'});
                  }
-                 if (!['onet', 'block', 'memory', 'triple'].includes(payload.game) || !payload.runId || typeof payload.runId !== 'string') return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
-                 for (const [key, max] of Object.entries({ score: 1000000, matches: 200, highestCombo: 100, timeElapsed: 86400000, blocksCleared: 10000, linesCleared: 1000, stars: 3, level: 10000 })) {
+                 if (!['onet', 'block', 'block-infinity', 'memory', 'triple'].includes(payload.game) || !payload.runId || typeof payload.runId !== 'string' || (payload.game==='block-infinity'&&payload.isWinner!==false)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
+                 for (const [key, max] of Object.entries({ score: 1000000, matches: 200, splits: 100, highestCombo: 100, timeElapsed: 86400000, blocksCleared: 10000, linesCleared: 1000, stars: 3, level: 10000 })) {
                    if (payload[key] !== undefined && (!Number.isFinite(payload[key]) || payload[key] < 0 || payload[key] > max)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
                  }
                  const { RewardEngine } = await import('../src/core/reward.js');

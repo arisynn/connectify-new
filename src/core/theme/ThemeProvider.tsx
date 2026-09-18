@@ -3,6 +3,7 @@ import { ThemeManifest, ThemeContextType } from './types';
 import { resolveTheme } from './utils';
 import { DEFAULT_THEMES } from './registry';
 import { useProfile } from '../profile/ProfileContext';
+import { enableAssetCache,warmImages } from '../../lib/assetCache';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -38,6 +39,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const activeTheme = useMemo(() => {
     return resolveTheme(customTheme);
   }, [customTheme]);
+  React.useEffect(()=>{enableAssetCache();warmImages(Object.values(activeTheme.assets.tiles));},[activeTheme]);
 
   useLayoutEffect(() => {
     const root = document.documentElement;

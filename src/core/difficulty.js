@@ -1,13 +1,8 @@
-// ===================== DIFFICULTY CURVE =====================
-// Timer speed stays constant across all levels (see game/timer.js) — difficulty instead
-// ramps through board variety so players never lose purely to a shrinking clock.
-// Cycles every 30 levels: 10 easy, 10 medium, 10 hard, then eases off again — this keeps
-// Fewer unique tile types = more duplicates on the board = easier to spot matches.
-// More unique types = harder to find pairs, even though the board size never changes.
-
-export const getTileVarietyCount = (level, maxAvailable) => {
-    // Berdasarkan feedback, kita hapus sistem pooling yang melelahkan.
-    // Tetapkan 12 tile secara konstan agar pemain mengandalkan sistem tema 
-    // untuk visual yang baru, dan kreator tema tidak kelelahan membuat banyak asset.
-    return Math.max(4, Math.min(maxAvailable, 12));
+export const getTileVarietyCount=(_level,maxAvailable)=>maxAvailable;
+export const getOnetDifficulty=(input=1)=>{
+  const level=Math.max(1,Math.floor(Number(input)||1));
+  const tier=level<4?1:level<8?2:level<15?3:level<25?4:5;
+  return {tier,label:['','Santai','Fokus','Menantang','Ahli','Master'][tier],
+    groups:level<2?0:level<6?1:2,time:Math.max(75,150-(level-1)*2),
+    separation:Math.min(8,2+Math.floor(level/3)),arrowPairs:level<8?0:Math.min(6,1+Math.floor((level-8)/4))};
 };

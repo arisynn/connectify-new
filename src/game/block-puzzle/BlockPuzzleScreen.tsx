@@ -7,6 +7,9 @@ import { KineticButton } from '../../designs/KineticComponents';
 import { KineticModal } from '../../designs/KineticPopups';
 import { ArrowLeft, RefreshCw, Trophy, Play, Star } from 'lucide-react';
 import { Piece } from './core/pieces';
+import { useProfile } from '../../core/profile/ProfileContext';
+import { equippedCosmetic } from '../../core/cosmetics';
+import { VictoryBurst } from '../../components/VictoryBurst';
 import { DynamicIcon } from '../../components/theme/DynamicIcon';
 import { GameLoader } from '../../components/GameLoader';
 
@@ -35,9 +38,12 @@ export const BlockPuzzleScreen = () => {
 };
 
 const BlockPuzzleContent = () => {
-  const { navigate } = useGame();
+  const { navigate,gameMode } = useGame();
+  const infinity=gameMode==='infinity';
+  const {profile}=useProfile(),skin=equippedCosmetic(profile,'block');
   const [isPaused, setIsPaused] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+  const [feedback,setFeedback]=useState('');
   const touchOffset = useRef(0);
   const {
     board,
@@ -64,9 +70,9 @@ const BlockPuzzleContent = () => {
     currentLevel,
     currentLevelConfig,
     missionResults,
-    moves,
+    moves, linesClearedTotal, gemsDestroyed, iceDestroyed, woodDestroyed,
     winReward
-  } = useBlockPuzzle();
+  } = useBlockPuzzle(infinity);
 
   const powerups = usePowerups();
   const pauseGame=()=>{setDragState(null);setPreviewPlacement(null);setIsPaused(true);};
@@ -84,7 +90,8 @@ const BlockPuzzleContent = () => {
   const handleCellClick = (r: number, c: number) => {
     if(isPaused || isAnimating || gameState !== 'playing') return;
     if(!powerups.activePowerup && selectedPiece !== null) {
-      if(placePiece(r,c,selectedPiece)) setSelectedPiece(null);
+      if(placePiece(r,c,selectedPiece)) {setSelectedPiece(null);setFeedback('');}
+      else setFeedback('Belum pas di sini. Coba sel lain atau pilih balok lain.');
       return;
     }
     if (powerups.activePowerup === 'hammer') {
@@ -116,7 +123,7 @@ const BlockPuzzleContent = () => {
 
   const handlePointerDown = (e: React.PointerEvent, piece: Piece, index: number) => {
     if (gameState !== 'playing' || isPaused || isAnimating) return;
-    setSelectedPiece(index);
+    setSelectedPiece(index);setFeedback('');
     touchOffset.current = e.pointerType === 'touch' ? 80 : 0;
     e.preventDefault();
     setDragState({
@@ -179,7 +186,7 @@ const BlockPuzzleContent = () => {
     const handlePointerUp = (e: PointerEvent) => {
       if (!dragState || !dragState.isDragging) return;
       
-      if (previewPlacement) {
+      if (previewPlacement && e.type !== 'pointercancel') {
          placePiece(previewPlacement.row, previewPlacement.col);
          setSelectedPiece(null);
       }
@@ -201,13 +208,20 @@ const BlockPuzzleContent = () => {
     };
   }, [dragState, previewPlacement, board, placePiece]);
 
+  const objective=currentLevelConfig.missions[0];
+  const objectiveValue=({score,clear_lines:linesClearedTotal,destroy_gems:gemsDestroyed,destroy_ice:iceDestroyed,destroy_wood:woodDestroyed} as any)[objective.type]||0;
+  const previewCells=new Set<string>();
+  if(dragState&&previewPlacement)dragState.piece.shape.forEach((row,r)=>row.forEach((val,c)=>{if(val)previewCells.add(`${r+previewPlacement.row}:${c+previewPlacement.col}`);}));
+  const occupied=(r:number,c:number)=>!!board[r][c]||['wood','metal-1','metal-2','stone'].includes(obstacles[r][c])||previewCells.has(`${r}:${c}`);
+  const previewRows=previewCells.size?board.map((row,r)=>row.every((_,c)=>occupied(r,c))):[];
+  const previewCols=previewCells.size?board[0].map((_,c)=>board.every((row,r)=>occupied(r,c))):[];
   return (
-    <div className="absolute inset-0 bg-gray-900 z-50 flex flex-col md:p-6 lg:p-10 items-center overflow-hidden font-sans touch-none select-none">
+    <div data-testid="block-game-screen" data-mode={infinity?'infinity':'level'} data-skin={skin?.asset||'classic'} style={{'--block-skin':skin?`url(/art/atelier/${skin.asset}.svg)`:'none'} as React.CSSProperties} className={`block-game-screen block-look-${skin?.asset||'classic'} absolute inset-0 bg-gray-900 z-50 flex flex-col md:p-6 lg:p-10 items-center overflow-hidden font-sans touch-none select-none`}>
       <div className="w-full h-full md:max-w-6xl md:mx-auto md:bg-[#f8fafc] md:rounded-[2rem] md:shadow-2xl md:border-4 md:border-white/30 flex flex-col md:flex-row items-center overflow-hidden">
         
         {/* Mobile Header */}
         <div className="w-full md:hidden flex justify-center bg-[#f8fafc]">
-          <BlockPuzzleHeader 
+          <BlockPuzzleHeader infinity={infinity} highScore={highScore}
             testIdPrefix="block-mobile"
             score={score} 
             currentLevel={currentLevel}
@@ -219,14 +233,15 @@ const BlockPuzzleContent = () => {
         </div>
 
         {/* Center Board Area */}
-        <div className="flex-1 w-full flex flex-col items-center justify-center relative md:border-r-4 md:border-white/20 bg-[#f8fafc] md:bg-white/10 md:backdrop-blur-sm pt-4 md:pt-0">
+        <div className="block-main-area flex-1 min-h-0 w-full flex flex-col items-center justify-center relative md:border-r-4 md:border-white/20 bg-[#f8fafc] md:bg-white/10 md:backdrop-blur-sm pt-4 md:pt-0">
           
           {/* BOARD */}
-          <div className="flex-1 w-full max-w-md md:max-w-2xl flex flex-col items-center justify-center p-4">
+          <div className="block-board-frame flex-1 w-full max-w-md md:max-w-2xl flex flex-col items-center justify-center p-4">
+            <div data-testid="block-main-objective-progress" className="block-mission-progress"><span>{infinity?'Satu garis lagi, ruang baru lagi.':objective.description}</span><div><i style={{width:`${infinity?Math.min(100,score/Math.max(1000,highScore)*100):Math.min(100,objectiveValue/objective.target*100)}%`}}/></div><b>{infinity?`${linesClearedTotal} garis`:`${Math.min(objectiveValue,objective.target)}/${objective.target}`}</b></div>
             <div 
               ref={boardRef}
               data-testid="block-board"
-              className={`w-full max-w-[350px] md:max-w-[450px] aspect-square bg-theme-surface-card-soft border-theme-lg border-theme-border-main rounded-xl shadow-theme-lg grid relative transition-all ${powerups.activePowerup === 'hammer' ? 'ring-4 ring-amber-400 opacity-90' : ''}`}
+              className={`block-board-grid w-full max-w-[350px] md:max-w-[450px] aspect-square bg-theme-surface-card-soft border-theme-lg border-theme-border-main rounded-xl shadow-theme-lg grid relative ${powerups.activePowerup === 'hammer' ? 'ring-4 ring-amber-400 opacity-90' : ''}`}
               style={{ 
                   gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
                   gridTemplateRows: `repeat(${BOARD_SIZE}, 1fr)`,
@@ -259,9 +274,11 @@ const BlockPuzzleContent = () => {
                           data-testid={`block-cell-${r}-${c}`}
                           aria-label={`Taruh balok baris ${r+1}, kolom ${c+1}`}
                           data-filled={cellColor !== ''}
+                          data-obstacle={obstacles[r][c]}
+                          style={{animationDelay:`${(r+c)%5*.016}s`}}
                           onClick={() => handleCellClick(r, c)}
-                          className={`relative w-full h-full rounded-sm transition-colors duration-150 border-theme-sm 
-                              ${clearingCells.some(cell => cell.r === r && cell.c === c) ? 'bg-white brightness-150 scale-105 border-white shadow-[0_0_10px_rgba(255,255,255,0.8)] z-10' :
+                          className={`relative w-full h-full rounded-sm transition-colors duration-150 border-theme-sm ${previewRows[r]||previewCols[c]?'block-line-preview':''}
+                              ${clearingCells.some(cell => cell.r === r && cell.c === c) ? 'block-clear-cell bg-white border-white z-10' :
                                 cellColor !== '' ? `${cellColor} border-black/20 shadow-[inset_1px_1px_0px_rgba(255,255,255,0.4)]` : 
                                 isPreview ? `${previewColor} opacity-50 border-black/20` : 
                                 'bg-gray-300/50 border-transparent'
@@ -278,7 +295,7 @@ const BlockPuzzleContent = () => {
               <AnimatePresence>
                 {comboText && (
                   <motion.div
-                    key={comboText.id}
+                    key={comboText.id} data-testid="block-combo-feedback"
                     initial={{ opacity: 0, y: 0, scale: 0.5 }}
                     animate={{ opacity: 1, y: -40, scale: 1.2 }}
                     exit={{ opacity: 0, y: -80 }}
@@ -295,10 +312,11 @@ const BlockPuzzleContent = () => {
           </div>
 
           {/* TRAY */}
-          <p data-testid="block-controls-help" className="text-xs text-theme-text-secondary px-4 text-center font-bold">{selectedPiece !== null ? 'Pilih sel kiri atas untuk menaruh balok.' : 'Geser balok, atau pilih balok lalu ketuk papan.'}</p>
-          <div className={`w-full max-w-md h-40 flex items-center justify-around px-4 pb-8 transition-opacity ${powerups.activePowerup === 'hammer' ? 'opacity-30 pointer-events-none' : ''}`}>
+          <p data-testid="block-controls-help" className="text-xs text-theme-text-secondary px-4 text-center font-bold">{powerups.activePowerup?'Ketuk papan untuk memakai bantuan.':selectedPiece !== null ? 'Ketuk posisi sudut kiri atas balok.' : 'Geser balok, atau pilih lalu ketuk papan.'}</p>
+          <p className="block-feedback" role="status" data-testid="block-placement-feedback">{feedback}</p>
+          <div className={`block-tray w-full max-w-md h-40 flex items-center justify-around px-4 pb-8 transition-opacity ${powerups.activePowerup ? 'opacity-30 pointer-events-none' : ''}`}>
             {tray.map((piece, i) => (
-                <div key={i} className="w-24 h-24 flex items-center justify-center">
+                <div key={i} className="block-tray-slot w-24 h-24 flex items-center justify-center">
                   {piece && !(dragState?.trayIndex === i) && (
                       <button
                         data-testid={`block-piece-${i}`}
@@ -331,7 +349,7 @@ const BlockPuzzleContent = () => {
 
         {/* Mobile Footer */}
         <div className="w-full md:hidden flex justify-center mt-auto bg-[#f8fafc]">
-          <BlockPuzzleFooter 
+          <BlockPuzzleFooter testIdPrefix="block-mobile"
             shuffles={powerups.shuffles} 
             hints={powerups.hammers}
             bombs={powerups.bombs}
@@ -344,7 +362,7 @@ const BlockPuzzleContent = () => {
 
         {/* Desktop Sidebar Panel */}
         <div className="hidden md:flex flex-col w-96 h-full bg-white/40 backdrop-blur-md p-8 z-20 shrink-0 border-l-4 border-white/40 overflow-y-auto">
-          <BlockPuzzleHeader 
+          <BlockPuzzleHeader infinity={infinity} highScore={highScore}
             testIdPrefix="block-desktop"
             score={score} 
             currentLevel={currentLevel}
@@ -354,7 +372,7 @@ const BlockPuzzleContent = () => {
             onPause={pauseGame}
           />
           <div className="mt-auto pt-8">
-            <BlockPuzzleFooter 
+            <BlockPuzzleFooter testIdPrefix="block-desktop"
               shuffles={powerups.shuffles} 
               hints={powerups.hammers}
               bombs={powerups.bombs}
@@ -372,7 +390,7 @@ const BlockPuzzleContent = () => {
          <div 
             className="fixed pointer-events-none z-[100]"
             style={{
-               left: dragState.x,
+               left: Math.max(dragState.piece.shape[0].length*(getCellSize()+2)/2+6, Math.min(window.innerWidth-dragState.piece.shape[0].length*(getCellSize()+2)/2-6,dragState.x)),
                top: dragState.y - touchOffset.current,
                transform: 'translate(-50%, -50%)', // Center horizontally over touch
             }}
@@ -414,10 +432,12 @@ const BlockPuzzleContent = () => {
            <RefreshCw size={48} className="text-white" />
         </div>
         <h2 className="font-black text-3xl text-white uppercase tracking-tighter mt-4 mb-2">Penuh!</h2>
-        <p className="font-bold text-gray-400 text-sm mb-6">Level Gagal</p>
+        <p data-testid="block-result-caption" className="font-bold text-gray-400 text-sm mb-6">{infinity?'Tidak ada balok yang bisa ditempatkan.':'Belum berhasil kali ini.'}</p>
+        <p data-testid="block-final-score" className="text-white font-bold mb-3">{score.toLocaleString('id-ID')} skor · +{winReward?.xp||0} XP</p>
+        {infinity&&<p data-testid="infinity-final-record" className="text-amber-300 mb-4">Rekor: {Math.max(score,highScore).toLocaleString('id-ID')} · {linesClearedTotal} garis</p>}
         
         <div className="flex flex-col gap-2 mb-8 text-left bg-gray-800 p-4 rounded-xl border-theme-sm border-gray-700">
-           {currentLevelConfig.missions.map((m: any, i: number) => (
+           {(infinity?[]:currentLevelConfig.missions).map((m: any, i: number) => (
              <div key={i} className="flex items-center gap-3">
                <Star size={20} className="fill-gray-600 text-gray-500 flex-shrink-0" />
                <span className="text-sm font-bold text-gray-500">{m.description}</span>
@@ -433,6 +453,7 @@ const BlockPuzzleContent = () => {
 
       {/* LEVEL WON MODAL */}
       <KineticModal isOpen={gameState === 'won'} colorClass="bg-theme-surface-card-white" widthClass="w-full max-w-sm" className="text-center pt-10">
+        {gameState==='won'&&<VictoryBurst/>}
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-theme-primary-tropical-green border-theme-lg border-white rounded-full flex items-center justify-center shadow-theme-base z-10">
            <Trophy size={48} className="text-white" />
         </div>
@@ -455,8 +476,8 @@ const BlockPuzzleContent = () => {
 
         <div data-testid="block-win-rewards" className="flex gap-3 mb-8">
            <div className="flex-1 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl py-2 flex flex-col items-center shadow-theme-sm">
-              <span className="font-black text-lg text-theme-primary-tropical-green">Tercatat</span>
-              <span className="font-black text-[9px] text-theme-text-secondary uppercase tracking-widest mt-0.5">Progres Misi</span>
+              <span data-testid="block-earned-xp" className="font-black text-lg text-theme-primary-tropical-green">+{winReward?.xp||0} XP</span>
+              <span data-testid="block-account-level" className="font-black text-[9px] text-theme-text-secondary uppercase tracking-widest mt-0.5">{winReward?.leveledUp?`Naik ke Level ${winReward.accountLevel}!`:'Progres Akun'}</span>
            </div>
            <div className="flex-1 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl py-2 flex flex-col items-center shadow-theme-sm">
               <span className="font-black text-lg text-blue-500">+{winReward?.chestPoints ?? 0}</span>

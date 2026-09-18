@@ -1,10 +1,11 @@
 // One currency. All grants go through the same daily budget, on client and server.
+import { cosmeticById } from './cosmetics.js';
 export const DAILY_INCOME_CAP = 100;
 export const ECONOMY_VERSION = 3;
 export const ITEM_PRICES = { hint: 8, shuffle: 12, hammer: 14, bomb: 18 };
 export const THEME_PRICES = { ocean: 60, forest: 80, candy: 80, space: 100 };
 export const DEFAULT_THEME_PRICE = 100;
-export const getItemPrice = id => typeof id !== 'string' ? null : id.startsWith('theme_') ? (THEME_PRICES[id.slice(6)] ?? null) : (ITEM_PRICES[id] ?? null);
+export const getItemPrice = id => typeof id !== 'string' ? null : id.startsWith('theme_') ? (THEME_PRICES[id.slice(6)] ?? null) : (cosmeticById(id)?.price ?? ITEM_PRICES[id] ?? null);
 export const CONSUMABLE_ITEMS = ['hint', 'shuffle', 'hammer', 'bomb'];
 export const ITEM_FIELD = { hint: 'hints', shuffle: 'shuffles', hammer: 'hammers', bomb: 'bombs' };
 export const DEFAULT_ITEM_COUNT = 3;

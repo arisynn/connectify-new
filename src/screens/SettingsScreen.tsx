@@ -18,7 +18,7 @@ import { hasPublicAuth } from '../lib/supabase';
 
 export const SettingsScreen = () => {
   const { navigate, resetProgress } = useGame();
-  const { settings, updateSettings } = useAudio();
+  const { settings, updateSettings,playSfx } = useAudio();
   const { profile, clearProfile } = useProfile();
   const cde = useCDE();
 
@@ -76,7 +76,7 @@ export const SettingsScreen = () => {
     >
       <div className="flex items-center gap-3 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
         <button 
-           onClick={() => navigate('home')} 
+           onClick={() => navigate('profile')} 
            className="round-button"
            aria-label="Kembali ke lobby"
         >
@@ -112,6 +112,7 @@ export const SettingsScreen = () => {
                  <span className="font-bold text-sm text-[var(--club-ink)]">Efek Suara (SFX)</span>
               </div>
               <button 
+                data-testid="settings-sfx-toggle" aria-label="Efek suara" aria-pressed={!settings.muteSfx}
                 onClick={() => updateSettings({ muteSfx: !settings.muteSfx })}
                 className={`w-12 h-7 rounded-full border-2 border-[var(--club-line)] relative transition-colors cursor-pointer ${!settings.muteSfx ? 'bg-[#46b995]' : 'bg-[var(--club-paper)]'}`}
               >
@@ -134,6 +135,7 @@ export const SettingsScreen = () => {
                  <span className="font-bold text-sm text-[var(--club-ink)]">Musik Latar (BGM)</span>
               </div>
               <button 
+                data-testid="settings-music-toggle" aria-label="Musik latar" aria-pressed={!settings.muteMusic}
                 onClick={() => updateSettings({ muteMusic: !settings.muteMusic })}
                 className={`w-12 h-7 rounded-full border-2 border-[var(--club-line)] relative transition-colors cursor-pointer ${!settings.muteMusic ? 'bg-[#46b995]' : 'bg-[var(--club-paper)]'}`}
               >
@@ -146,6 +148,7 @@ export const SettingsScreen = () => {
            </div>
         </section>
 
+        <section className="audio-mixer" data-testid="audio-mixer"><h3 data-testid="audio-mixer-title">Pas sesuai suasana.</h3><p data-testid="audio-mixer-info">Musik original dibuat di perangkat, tanpa unduhan audio. Suara berhenti saat aplikasi disembunyikan.</p>{[{key:'musicVol',label:'Volume musik'},{key:'sfxVol',label:'Volume efek'}].map(item=><label key={item.key}><span>{item.label}<b data-testid={`audio-${item.key}-value`}>{settings[item.key]}%</b></span><input data-testid={`audio-${item.key}`} type="range" min="0" max="100" value={settings[item.key]} onChange={e=>updateSettings({[item.key]:Number(e.target.value)})}/></label>)}<button className="pop-button sky" data-testid="audio-preview" onClick={()=>playSfx('combo')}>Dengarkan efek</button><p data-testid="asset-cache-info">Gambar disimpan otomatis di cache perangkat setelah dimuat. Pergantian tab tidak perlu mengunduhnya terus.</p></section>
         {/* Account Settings */}
         <section className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex flex-col gap-3.5">
           <h3 className="font-bold text-xs uppercase tracking-wider text-[var(--club-muted)]">Akun & Data</h3>

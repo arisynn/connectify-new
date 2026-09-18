@@ -7,6 +7,8 @@ import { OnetFooter } from './components/OnetFooter';
 import { OnetModals } from './components/OnetModals';
 import { ThemeCard } from '../components/theme/ThemeCard';
 import { GameLoader } from '../components/GameLoader';
+import { countRemaining } from '../core/board';
+import { getOnetDifficulty } from '../core/difficulty';
 
 export const GameplayScreen = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -65,7 +67,7 @@ const GameplayContent = () => {
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 overflow-hidden bg-gray-900 md:p-6 lg:p-10"
+      data-testid="onet-game-screen" className="onet-game-screen absolute inset-0 z-50 overflow-hidden bg-gray-900 md:p-6 lg:p-10"
     >
       <ThemeCard 
         bgKey="gameplay_bg" 
@@ -82,6 +84,7 @@ const GameplayContent = () => {
           />
         </div>
 
+        <div className="onet-mobile-status" data-testid="onet-mobile-status"><span>{getOnetDifficulty(currentLevel).label}</span><b>{countRemaining(board)} sel tersisa</b></div>
         {/* Center Board Area */}
         <div className="flex-1 min-h-0 w-full h-full flex items-center justify-center relative md:border-r-4 md:border-white/20 md:bg-white/10 md:backdrop-blur-sm">
           <OnetBoard 
@@ -140,7 +143,7 @@ const GameplayContent = () => {
           </div>
 
           <div className="mt-auto flex flex-col gap-4">
-            <p data-testid="onet-rules" className="text-xs text-theme-text-secondary leading-relaxed">Hubungkan gambar dan bentuk kelompok yang sama, maksimal 2 belokan. Tile gabungan tetap menempati sel grid asli.</p>
+            <p data-testid="onet-rules" className="text-xs text-theme-text-secondary leading-relaxed">Gambar dan ukuran sama, maksimal 2 belokan. Tile besar pecah menjadi gambar baru. Cocokkan lagi sampai papan bersih!</p>
             <button data-testid="onet-shuffle-desktop" onClick={useShuffle} className="bg-indigo-200 w-full py-4 px-5 flex items-center justify-between hover:bg-indigo-300 border-theme-sm border-theme-border-main shadow-theme-base rounded-xl active:translate-y-[2px] active:translate-x-[2px] transition-all">
                <span className="font-black text-lg tracking-wide text-theme-text-primary">SHUFFLE</span>
                <span className="bg-white border-theme-sm border-theme-border-main rounded-md px-3 py-1 text-base font-black">{profile.shuffles}</span>

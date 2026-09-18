@@ -26,16 +26,14 @@ import { TripleGame } from './game/minigames/TripleGame';
 
 export const DestinationScreen = () => {
   const { screen, navigate } = useGame();
-  const { profile, markNotificationRead } = useProfile();
+  const { profile, updateProfile } = useProfile();
   
   // Mark all as read when opening notification screen
   useEffect(() => {
-    if (screen === 'pesan' && profile.notifications) {
-      profile.notifications.forEach((n: any) => {
-        if (!n.read) markNotificationRead(n.id);
-      });
+    if (screen === 'pesan' && profile.notifications?.some((n:any)=>!n.read)) {
+      updateProfile({notifications:profile.notifications.map((n:any)=>({...n,read:true}))});
     }
-  }, [screen, profile.notifications, markNotificationRead]);
+  }, [screen, profile.notifications, updateProfile]);
 
   if (screen === 'home') return null;
   if (screen === 'challenges') return <ChallengeScreen />;
@@ -115,7 +113,7 @@ export const DestinationScreen = () => {
                       
                       return (
                          <div 
-                           key={n.id}
+                           key={n.id} data-testid={`notification-${n.id}`}
                            className="flex items-start gap-3.5 p-3.5 bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl shadow-[2px_2px_0_var(--club-line)] text-left"
                          >
                            <div className={`w-10 h-10 ${bgClass} border-2 border-[var(--club-line)] rounded-xl flex items-center justify-center shrink-0 text-[var(--club-ink)] shadow-[1px_1px_0_var(--club-line)]`}>
@@ -127,6 +125,7 @@ export const DestinationScreen = () => {
                                <span className="text-[10px] text-[var(--club-muted)] font-medium shrink-0">{timeStr} lalu</span>
                              </div>
                              <p className="text-xs text-[var(--club-muted)] mt-0.5 leading-relaxed">{n.message}</p>
+                             {['mission','achievement','chest'].includes(n.type)&&<button data-testid={`notification-open-${n.id}`} className="text-button mt-2" onClick={()=>navigate(n.type==='mission'?'misi':n.type==='achievement'?'prestasi':'peti')}>Lihat {n.type==='mission'?'misi':n.type==='achievement'?'pencapaian':'peti'} →</button>}
                            </div>
                          </div>
                       );

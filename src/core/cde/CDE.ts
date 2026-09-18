@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import { cosmeticById, ownsCosmetic } from '../cosmetics';
 import { CDEIndexedDB, CDE_SCHEMA_VERSION } from './persistence/CDEIndexedDB';
 import { CDEState, CDEProfile, CDEOperation, CDEOperationType, CDESyncStatus } from './types/cde.types';
 import { CDEEventEmitter } from './events/CDEEventEmitter';
@@ -181,6 +182,10 @@ export class CDEngine {
           if (!res.ok) throw new Error(`Failed to fetch authoritative profile: ${res.status}`);
           const data = await res.json();
           
+          if (data.account?.username && this.state.account) {
+              localStorage.setItem('pkmnPlayerName', data.account.username);
+              this.updateState({ account: { ...this.state.account, username: data.account.username } });
+          }
           if (data.profile) {
               const currentProfile = this.state.profile;
               // Only apply if cloud revision is newer or we don't have one
@@ -254,10 +259,13 @@ export class CDEngine {
       } else if (type === 'PURCHASE_ITEM') {
           const itemId = payload.itemId;
           const cost = getItemPrice(itemId);
+          if (cosmeticById(itemId) && ownsCosmetic(prof(), itemId)) throw new Error('ALREADY_OWNED');
           if (itemId.startsWith('theme_') && (prof().unlockedThemes || ['sweets']).includes(itemId.slice(6))) return;
           if (cost !== null && (newProfile.permen || 0) >= cost) {
               addPermen(-cost);
-              if (itemId.startsWith('theme_')) {
+              if (cosmeticById(itemId)) {
+                  patchProfile({ownedCosmetics:[...(prof().ownedCosmetics||[]),itemId]});
+              } else if (itemId.startsWith('theme_')) {
                   const themeId = itemId.replace('theme_', '');
                   const owned = prof().unlockedThemes || ['sweets'];
                   const stats = { ...(prof().statistics || {}) };

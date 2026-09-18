@@ -1,9 +1,15 @@
 import { MISSION_REWARDS, getTodayKey, canReceive, creditIncome, ECONOMY_VERSION } from './economy';
 import { WEEKLY_MISSIONS_POOL, generateWeeklyMissions, getWeekNumber } from './misiMingguan';
+import { awardXP, missionXP } from './progression.js';
 
 const withReward = (m) => ({ ...m, rewardType: 'permen', rewardAmount: MISSION_REWARDS.daily[m.difficulty] || 5 });
 
 export const DAILY_MISSIONS_POOL = [
+    { id: 'd_play', type: 'playGame', category: 'welcome', title: 'Waktunya Main', desc: 'Tuntaskan 1 ronde game apa saja, menang atau kalah.', target: 1, difficulty: 'Mudah' },
+    { id: 'd_onet_pairs', type: 'match', category: 'onet', title: 'Ketemu Pasangannya', desc: 'Hubungkan 15 pasangan tile Onet.', target: 15, difficulty: 'Mudah' },
+    { id: 'd_onet_split', type: 'split', category: 'onet', title: 'Kejutan di Dalam Tile', desc: 'Pecahkan 6 pasangan tile gabungan di Onet.', target: 6, difficulty: 'Menengah' },
+    { id: 'd_block_lines', type: 'blockLines', category: 'block', title: 'Beri Ruang Baru', desc: 'Bersihkan 3 baris atau kolom di Block Puzzle.', target: 3, difficulty: 'Mudah' },
+    { id: 'd_block_lines_pro', type: 'blockLines', category: 'block', title: 'Arsitek Balok', desc: 'Bersihkan 8 baris atau kolom di Block Puzzle.', target: 8, difficulty: 'Menengah' },
     { id: 'd_arcade', type: 'minigame', category: 'arcade', title: 'Petualangan Kecil', desc: 'Menangkan 1 Memory Flip atau Triple Match.', target: 1, difficulty: 'Mudah' },
     // Progress - Clear
     { id: "d_clear_easy", type: "clear", category: "progress", title: "Pemanasan", desc: "Selesaikan 2 level.", target: 2, difficulty: "Mudah" },
@@ -76,16 +82,16 @@ const shuffleDeterministic = (arr, rng) => {
 export const generateDailyMissions = function(profile) {
     const highestLevel = profile?.highestLevel || 1;
     let playerDiff = "Mudah";
-    if (highestLevel >= 15) playerDiff = "Sulit";
-    else if (highestLevel >= 5) playerDiff = "Menengah";
+    if (highestLevel >= 30) playerDiff = "Sulit";
+    else if (highestLevel >= 6) playerDiff = "Menengah";
 
     const rng = seededRng(getTodayKey());
 
     const slots = [
-        ['progress'], // Slot 1: clear, match, score
-        ['skill'],    // Slot 2: combo, flawless
-        ['speed'],    // Slot 3: survivor, fast_clear
-        ['economy'],  // Slot 4: openChest
+        ['welcome'],
+        ['onet'],
+        ['block'],
+        ['skill'],
         ['arcade'] // A minigame mission is always available.
     ];
 
@@ -106,7 +112,7 @@ export const generateDailyMissions = function(profile) {
     const validMissions = Object.values(bestMissionsByType);
 
     for (const slotCategories of slots) {
-        let candidates = validMissions.filter(m => slotCategories.includes(m.category) && !usedTypes.has(m.type));
+        let candidates = DAILY_MISSIONS_POOL.filter(m => slotCategories.includes(m.category) && diffRanks[m.difficulty] <= playerDiffRank && !usedTypes.has(m.type));
         candidates = shuffleDeterministic(candidates, rng);
         
         if (candidates.length > 0) {
@@ -141,6 +147,8 @@ const EVENT_TO_TYPE = {
     dailyAllClaimed: 'complete_daily_all',
     minigameWin: 'minigame',
     blockLines: 'blockLines',
+    split: 'split',
+    playGame: 'playGame',
 };
 
 // "Peak" missions keep the best single value instead of accumulating.
@@ -281,6 +289,7 @@ export const claimMissionReward = (profile, missionId) => {
     if (scope === 'daily') p = onDailyMissionClaimed(p);
     if (scope === 'saved' && mission.scope === 'daily') p.statistics = {...p.statistics,totalDailyMissionsCompleted:(p.statistics?.totalDailyMissionsCompleted||0)+1};
     p = creditIncome(p, permenDelta);
+    p = awardXP(p, missionXP(mission));
     return { profile: p, permenDelta, error: null };
 };
 
