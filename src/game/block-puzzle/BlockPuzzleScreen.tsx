@@ -319,7 +319,7 @@ const BlockPuzzleContent = () => {
                 <div key={i} className="block-tray-slot w-24 h-24 flex items-center justify-center">
                   {piece && !(dragState?.trayIndex === i) && (
                       <button
-                        data-testid={`block-piece-${i}`}
+                      data-testid={`block-piece-${i}`} data-shape={JSON.stringify(piece.shape)}
                         aria-label={`Pilih balok ${i+1}`}
                         aria-pressed={selectedPiece===i}
                         onPointerDown={(e) => handlePointerDown(e, piece, i)}

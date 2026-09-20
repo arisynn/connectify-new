@@ -444,6 +444,7 @@ export default async function handler(req: Request, res: Response) {
                  const itemId = payload.itemId;
                  const cost = ECON.getItemPrice(itemId);
                  if (cost === null || cost === undefined) return res.status(400).json({ error: 'INVALID_ITEM' });
+                 if (COSMETIC.cosmeticById(itemId) && COSMETIC.ownsCosmetic(currentProf(), itemId)) return res.status(400).json({error:'ALREADY_OWNED'});
 
                  if ((currentProfile.permen || 0) < cost) return res.status(400).json({ error: 'INSUFFICIENT_PERMEN' });
                  permenDelta = -cost;
