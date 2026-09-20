@@ -3,6 +3,10 @@ import { MISSION_REWARDS, getTodayKey } from './economy';
 const withReward = (m) => ({ ...m, rewardType: 'permen', rewardAmount: MISSION_REWARDS.weekly[m.difficulty] || 8 });
 
 export const WEEKLY_MISSIONS_POOL = [
+    {id:'w_memory_pairs',type:'memoryPairs',category:'memory',title:'Memori Pekan Ini',desc:'Temukan 40 pasangan Memory Flip sepanjang minggu.',target:40,difficulty:'Menengah'},
+    {id:'w_memory_combo',type:'memoryCombo',category:'memory',title:'Enam Tanpa Putus',desc:'Raih 6 pasangan berturut-turut di Memory Flip.',target:6,difficulty:'Menengah'},
+    {id:'w_triple_trios',type:'tripleTrios',category:'triple',title:'Racikan Mingguan',desc:'Satukan 36 trio di Triple Match.',target:36,difficulty:'Menengah'},
+    {id:'w_infinity_rounds',type:'infinityRound',category:'block',title:'Jangan Kehabisan Ide',desc:'Tuntaskan 3 ronde Block Infinity.',target:3,difficulty:'Menengah'},
     { id: 'w_block_lines', type: 'blockLines', category: 'block', title: 'Ruang untuk Kombo', desc: 'Bersihkan 25 baris atau kolom di Block Puzzle.', target: 25, difficulty: 'Menengah' },
     { id: 'w_split_tiles', type: 'split', category: 'discovery', title: 'Lapisan Kejutan', desc: 'Pecahkan 20 pasangan tile gabungan di Onet.', target: 20, difficulty: 'Menengah' },
     { id: 'w_arcade_wins', type: 'minigame', category: 'discovery', title: 'Keliling Klub', desc: 'Menangkan 5 ronde Memory Flip atau Triple Match.', target: 5, difficulty: 'Menengah' },
@@ -73,7 +77,8 @@ export const generateWeeklyMissions = function(profile) {
     const slots = [
         ['consistency'],
         ['block'],
-        ['discovery'],
+        ['memory'],
+        ['triple'],
         ['progression'],
         ['skill_peak']
     ];

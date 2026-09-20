@@ -3,6 +3,7 @@ import { vanillaTheme } from './utils';
 import { TILE_SETS } from '../tileCatalog';
 import { THEME_PRICES } from '../economy';
 import { ART_REWARDS } from '../artRewards';
+import { SEASONAL_THEMES } from '../seasonalCatalog';
 
 const makeTheme=(id:string,name:string,bg:string,accent:string):ThemeManifest=>({
   id,name,type:'standar',price:THEME_PRICES[id],currency:'coins',data:TILE_SETS[id],
@@ -27,4 +28,7 @@ for (const [id,name] of [['sakura','Sakura'],['bakery','Bakery'],['galaxy','Gala
   const key = `reward_${id}`;
   DEFAULT_THEMES[key] = { ...makeTheme(key,`${name} · Edisi Hadiah`,'#f4f5f0','#9abbaa'),type:'reward',price:undefined,reward:ART_REWARDS[key],
     assets:{logo:{},tiles:Object.fromEntries(TILE_SETS[key].map((tile:string,i:number)=>[tile,`/art/${id}/${i}.webp`])),backgrounds:{}} };
+}
+for (const {id,name,bg,accent} of SEASONAL_THEMES) {
+  DEFAULT_THEMES[id] = {...makeTheme(id,name,bg,accent),type:'premium',assets:{logo:{},tiles:Object.fromEntries(TILE_SETS[id].map((key:string,i:number)=>[key,`/art/premium/${id}/${i}.webp`])),backgrounds:{}}};
 }

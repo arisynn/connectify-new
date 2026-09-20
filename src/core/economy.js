@@ -1,11 +1,12 @@
 // One currency. All grants go through the same daily budget, on client and server.
 import { cosmeticById } from './cosmetics.js';
+import { SEASONAL_THEMES } from './seasonalCatalog.js';
 export const DAILY_INCOME_CAP = 100;
 export const ECONOMY_VERSION = 3;
 export const ITEM_PRICES = { hint: 8, shuffle: 12, hammer: 14, bomb: 18 };
-export const THEME_PRICES = { ocean: 60, forest: 80, candy: 80, space: 100, meadow: 0, sakura: 120, bakery: 110, galaxy: 150, fruit: 100 };
+export const THEME_PRICES = { ocean: 60, forest: 80, candy: 80, space: 100, meadow: 0, sakura: 120, bakery: 110, galaxy: 150, fruit: 100, ...Object.fromEntries(SEASONAL_THEMES.map(theme=>[theme.id,theme.price])) };
 export const DEFAULT_THEME_PRICE = 100;
-export const getItemPrice = id => typeof id !== 'string' || id.startsWith('reward_') ? null : id.startsWith('theme_') ? (THEME_PRICES[id.slice(6)] ?? null) : (cosmeticById(id)?.price ?? ITEM_PRICES[id] ?? null);
+export const getItemPrice = id => typeof id !== 'string' || id.startsWith('reward_') || cosmeticById(id)?.hiddenIndividual ? null : id.startsWith('theme_') ? (THEME_PRICES[id.slice(6)] ?? null) : (cosmeticById(id)?.price ?? ITEM_PRICES[id] ?? null);
 export const CONSUMABLE_ITEMS = ['hint', 'shuffle', 'hammer', 'bomb'];
 export const ITEM_FIELD = { hint: 'hints', shuffle: 'shuffles', hammer: 'hammers', bomb: 'bombs' };
 export const DEFAULT_ITEM_COUNT = 3;

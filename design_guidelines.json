@@ -1,132 +1,393 @@
 {
-  "project_name": "Connectify Club - Editorial Atelier Pastel Mobile & Asset Art Direction",
-  "archetype": "ORGANIC & PASTEL ATELIER (Warm, tactile, playful, high-contrast readability)",
-  "art_direction_blueprint": {
-    "style_rules": "Vector-style high-definition 3D pastel assets with subtle ink outline, warm ambient occlusions, soft clay/felt texture, no generic AI gradients. Must fit seamlessly on light cream background (#fffaf5).",
-    "theme_sheets_4x4": [
+  "project_name": "Connectify Club - Editorial Atelier Visual Consistency & Expansion Blueprint",
+  "archetype": "ORGANIC & PASTEL ATELIER (Tactile, warm cream canvas #fffaf5, high-contrast ink borders #172337, soft 3D claymation art)",
+  "consistency_pass_architecture": {
+    "audit_summary": "75% of app upgraded to Editorial Atelier design language; 25% legacy screens (Pusat Tantangan / Challenge, Game Over modal, legacy header widgets) need visual alignment with MainLobby & LevelSelectScreen.",
+    "one_button_per_feature_matrix": [
       {
-        "theme": "Sakura",
-        "description": "Japanese Zen Blossom & Tea Garden theme",
-        "objects_16": [
-          "Cherry blossom flower", "Dango skewered rice cake", "Matcha bamboo whisk (Chasen)", "Wooden Geta sandal",
-          "Paper Origami crane", "Miniature Bonsai tree", "Japanese paper lantern (Chochin)", "Red Torii gate emblem",
-          "Folding silk fan (Sensu)", "Golden Koi fish", "Omikuji fortune slip", "Ceramic Teapot (Kyusu)",
-          "Strawberry Mochi", "Cherry leaf garnish", "Stacked Zen stones", "Bronze Temple bell (Bonsho)"
-        ],
-        "prompt": "4x4 grid sheet of 16 distinct Japanese Sakura & Tea Garden icons, soft pastel ink-and-wash vector 3D render, cherry blossom, dango, matcha whisk, geta, origami crane, bonsai, lantern, torii gate, fan, koi fish, omikuji, teapot, mochi, zen stones, bell, isometric 3D claymation aesthetic, isolated on transparent background, clean outlines, high detail."
+        "feature": "Level Select & Game Launch",
+        "rule": "Every game mode entrance (Onet, Block Puzzle, Mini-Games) must route through LevelSelectScreen. Do NOT maintain duplicate 'Quick Play' buttons alongside 'Select Level'.",
+        "action_item": "Unify all 'Play' triggers across navigation tabs to direct to LevelSelectScreen."
       },
       {
-        "theme": "Bakery",
-        "description": "French Patisserie & Artisan Bakery theme",
-        "objects_16": [
-          "Golden Croissant", "Strawberry shortcake slice", "Pastel Macaron stack", "Cinnamon roll",
-          "Crispy Baguette", "Twisted Pretzel", "Whisk with sweet batter", "Wooden rolling pin",
-          "Berry Cupcake", "Fruit Tart", "Glazed Donut with sprinkles", "Espresso cup with crema",
-          "Butter slab on leaf", "Glass Jam jar", "Chocolate Eclair", "Baker's Toque chef hat"
-        ],
-        "prompt": "4x4 grid sheet of 16 artisan bakery icons, soft pastel pastel 3D food illustration, croissant, shortcake, macarons, cinnamon roll, baguette, pretzel, whisk, rolling pin, cupcake, tart, donut, espresso, butter, jam jar, eclair, chef hat, cozy warm lighting, matte clay finish, isolated on white/transparent background."
+        "feature": "Game Over & Retry Loop",
+        "rule": "Game Over screens must offer exactly 1 primary CTA button: 'Kembali ke Level Select' (or 'Main Lagi' routing through LevelSelectState), preserving exact level & theme state upon return.",
+        "action_item": "Ensure Game Over modal does not drop player back into a disconnected legacy lobby."
       },
       {
-        "theme": "Midnight Galaxy",
-        "description": "Cosmic Pastel Starlight theme",
-        "objects_16": [
-          "Crescent moon with sleepy face", "Glowing starlight crystal", "Deep space nebula orb", "Saturn planet with rings",
-          "Comet streak with tail", "Chibi Astronaut helmet", "Alien sprout in jar", "Cute Rocket ship",
-          "Constellation map orb", "Meteor crystal shard", "Mini Space station", "Cosmic stargate portal",
-          "Dark eclipse sun", "Moon rock crystal", "Stardust galaxy bottle", "Golden star ring"
-        ],
-        "prompt": "4x4 grid sheet of 16 cosmic starlight icons, dreamy pastel midnight galaxy vector art, crescent moon, star crystal, saturn, comet, cute astronaut helmet, rocket, nebula, meteor, space station, cosmic portal, stardust bottle, glowing pastel indigo and lavender tones, isolated on dark violet background."
+        "feature": "Economy & Shop",
+        "rule": "Coins/Permen wallet display in header acts as the single gateway to ShopScreen; individual item buy triggers exist only within Shop catalog cards.",
+        "action_item": "Remove inline redundant purchase popups outside ShopScreen."
       },
       {
-        "theme": "Meadow",
-        "description": "Botanical Wildlife & Forest Garden theme",
-        "objects_16": [
-          "Chamomile blossom", "Fluffy Honeybee", "Polka-dot Ladybug", "Cute Mushroom cluster",
-          "Autumn Oak leaf", "Golden Acorn", "Garden Snail", "Four-leaf Clover",
-          "Pastel Watering can", "Monarch Butterfly", "Robin bird on twig", "Pinecone",
-          "Morning Dew drop", "Mini Sunflower", "Garden Trowel spade", "Twig bird nest with egg"
-        ],
-        "prompt": "4x4 grid sheet of 16 meadow botanical wildlife icons, warm pastel nature illustration, chamomile, honeybee, ladybug, mushroom, oak leaf, acorn, snail, clover, watering can, butterfly, robin bird, pinecone, dew drop, sunflower, spade, nest, soft mossy greens and warm earth tones, isolated background."
-      },
-      {
-        "theme": "Fruit",
-        "description": "Fresh Orchard Harvest theme",
-        "objects_16": [
-          "Ripe Strawberry", "Sliced Lemon", "Peach with leaf", "Watermelon wedge",
-          "Blueberry cluster", "Avocado half with pit", "Pair of Cherries", "Golden Pineapple",
-          "Kiwi slice", "Banana bundle", "Grape bunch", "Orange slice",
-          "Dragonfruit half", "Mangosteen fruit", "Red Apple", "Juicy Pear"
-        ],
-        "prompt": "4x4 grid sheet of 16 fresh fruit orchard icons, vibrant soft pastel 3D vector icons, strawberry, lemon, peach, watermelon, blueberry, avocado, cherries, pineapple, kiwi, banana, grape, orange, dragonfruit, mangosteen, apple, pear, clean glossy-matte finish, isolated background."
+        "feature": "Navigation Tab Bar",
+        "rule": "MobileNav bottom bar has 1 button per core tab: [Home, Playing/Levels, Shop, Collection, Profile]. The 'Playing' tab opens canonical LevelSelectScreen directly.",
+        "action_item": "Ensure Playing tab tab-click renders LevelSelectScreen immediately with active theme previews."
       }
     ],
-    "tile_skins_sheet": {
-      "description": "Empty physical tile surfaces, bevels, frames, win effect particle sprites",
-      "skins": ["Ceramic", "Wood", "Jelly", "Mint", "Orbit", "Sunset", "Stars", "Mochi", "Cloud", "Cream", "Night"],
-      "prompt": "Grid sheet of 12 empty physical tile base surfaces and frames, square rounded tiles with 3D tactile bevels, clay texture, wooden grain, translucent jelly glass, ceramic glaze, pastel starlight, blank centered surface for icons, isolated on transparent canvas."
-    },
-    "avatars_and_frames": {
-      "avatars": ["Bear", "Cat", "Panda", "Bunny", "Shiba", "Fox", "Penguin", "Koala"],
-      "prompt": "Grid sheet of 8 cute pastel animal avatar portraits in circular badges, bear, cat, panda, bunny, shiba, fox, penguin, koala, wearing cute hats/accessories, warm friendly editorial art style, pastel background badges."
-    },
-    "brand_and_logo": {
-      "prompt": "Connectify Club game emblem logo, interlocking pastel puzzle & tile connect motif, 3D clay vector style, warm cream background, 'Connectify Club' typography in bold rounded font."
+    "canonical_level_select_flow": {
+      "entry_point": "MobileNav 'Playing' tab -> LevelSelectScreen",
+      "gameplay_start": "LevelSelectScreen -> Level Card Click -> GameplayScreen",
+      "game_over_return": "GameplayScreen (Game Over / Victory) -> 'Level Select' button -> LevelSelectScreen (scroll restored)",
+      "challenge_mode_integration": "Challenge/Pusat Tantangan uses LevelSelectScreen layout structure with custom challenge badge overlays."
     }
+  },
+  "art_direction_blueprint": {
+    "existing_asset_preservation_policy": "STRICT MANDATE: ALL existing bitmap assets in /public/art/ (including sakura, bakery, galaxy, meadow, fruit, candy, forest, ocean, space, avatars, chests, skins, and premium sets) MUST REMAIN UNCHANGED. No files removed or modified.",
+    "asset_format_preference": "Prioritize high-detail bitmap artwork (.webp, 512x512 translucent clay/vector sprites) over flat decorative SVGs. SVGs permitted only for functional UI controls and icons.",
+    "new_theme_sheets_4x4": [
+      {
+        "theme_id": "autumn_harvest",
+        "theme_name": "Autumn Harvest",
+        "type": "premium",
+        "price": 120,
+        "bg_color": "#faf4ee",
+        "accent_color": "#d97736",
+        "description": "Cozy Golden Autumn & Harvest Festival theme with warm fallen leaves, pumpkins, and hot cider.",
+        "objects_16": [
+          "0: Golden Oak Leaf",
+          "1: Mini Orange Pumpkin",
+          "2: Steaming Mug of Cider",
+          "3: Roasted Chestnut",
+          "4: Cinnamon Stick Bundle",
+          "5: Crimson Maple Leaf",
+          "6: Pinecone",
+          "7: Red Apple Slice",
+          "8: Cozy Knit Beanie",
+          "9: Wooden Harvest Basket",
+          "10: Acorn Pair",
+          "11: Sunflower",
+          "12: Pecan Pie Slice",
+          "13: Scarecrow Hat",
+          "14: Corn Cob",
+          "15: Honey Jar with Dipper"
+        ],
+        "prompt": "4x4 grid sheet of 16 distinct Cozy Autumn Harvest icons, soft 3D claymation vector art, oak leaf, pumpkin, cider mug, chestnut, cinnamon stick, maple leaf, pinecone, apple slice, knit beanie, harvest basket, acorns, sunflower, pecan pie, scarecrow hat, corn cob, honey jar, warm terracotta and amber palette, isolated on transparent background, 512x512 PNG/WEBP ready.",
+        "asset_paths": [
+          "/art/premium/autumn_harvest/0.webp",
+          "/art/premium/autumn_harvest/1.webp",
+          "/art/premium/autumn_harvest/2.webp",
+          "/art/premium/autumn_harvest/3.webp",
+          "/art/premium/autumn_harvest/4.webp",
+          "/art/premium/autumn_harvest/5.webp",
+          "/art/premium/autumn_harvest/6.webp",
+          "/art/premium/autumn_harvest/7.webp",
+          "/art/premium/autumn_harvest/8.webp",
+          "/art/premium/autumn_harvest/9.webp",
+          "/art/premium/autumn_harvest/10.webp",
+          "/art/premium/autumn_harvest/11.webp",
+          "/art/premium/autumn_harvest/12.webp",
+          "/art/premium/autumn_harvest/13.webp",
+          "/art/premium/autumn_harvest/14.webp",
+          "/art/premium/autumn_harvest/15.webp"
+        ]
+      },
+      {
+        "theme_id": "magic_atelier",
+        "theme_name": "Magic Atelier",
+        "type": "premium",
+        "price": 150,
+        "bg_color": "#f5f0fb",
+        "accent_color": "#9b51e0",
+        "description": "Enchanted Wizard Academy theme with glowing spellbooks, potion vials, and crystal orbs.",
+        "objects_16": [
+          "0: Purple Potion Vial",
+          "1: Glowing Crystal Sphere",
+          "2: Leather Spellbook",
+          "3: Pointy Wizard Hat",
+          "4: Wooden Magic Wand",
+          "5: Golden Key",
+          "6: Feather Quill & Inkpot",
+          "7: Crescent Moon Amulet",
+          "8: Celestial Hourglass",
+          "9: Mystic Rune Stone",
+          "10: Flying Broomstick",
+          "11: Enchanted Candle",
+          "12: Tarot Card Wheel",
+          "13: Glowing Stardust Pouch",
+          "14: Brass Telescope",
+          "15: Wise Owl Feather"
+        ],
+        "prompt": "4x4 grid sheet of 16 Enchanted Magic Atelier icons, soft pastel lavender 3D claymation illustration, potion bottle, crystal ball, spellbook, wizard hat, wand, golden key, quill, moon amulet, hourglass, rune stone, broom, magic candle, tarot card, stardust pouch, telescope, owl feather, pastel purple and gold accents, isolated background.",
+        "asset_paths": [
+          "/art/premium/magic_atelier/0.webp",
+          "/art/premium/magic_atelier/1.webp",
+          "/art/premium/magic_atelier/2.webp",
+          "/art/premium/magic_atelier/3.webp",
+          "/art/premium/magic_atelier/4.webp",
+          "/art/premium/magic_atelier/5.webp",
+          "/art/premium/magic_atelier/6.webp",
+          "/art/premium/magic_atelier/7.webp",
+          "/art/premium/magic_atelier/8.webp",
+          "/art/premium/magic_atelier/9.webp",
+          "/art/premium/magic_atelier/10.webp",
+          "/art/premium/magic_atelier/11.webp",
+          "/art/premium/magic_atelier/12.webp",
+          "/art/premium/magic_atelier/13.webp",
+          "/art/premium/magic_atelier/14.webp",
+          "/art/premium/magic_atelier/15.webp"
+        ]
+      },
+      {
+        "theme_id": "retro_arcade",
+        "theme_name": "Retro Arcade",
+        "type": "premium",
+        "price": 140,
+        "bg_color": "#f0f4fa",
+        "accent_color": "#2f80ed",
+        "description": "Nostalgic 80s Pixel & Arcade Gaming theme with joysticks, cassette tapes, and pixel hearts.",
+        "objects_16": [
+          "0: Red Arcade Joystick",
+          "1: Pixel Pink Heart",
+          "2: Cassette Tape",
+          "3: Game Cartridge",
+          "4: retro Handheld Console",
+          "5: Floppy Disk",
+          "6: Neon Space Invader",
+          "7: Coin Token",
+          "8: High Score Trophy",
+          "9: Pixel Cherry",
+          "10: Controller D-Pad",
+          "11: CRT Television",
+          "12: Pixel Ghost",
+          "13: Boombox",
+          "14: Arcade Cabinet Emblem",
+          "15: Lightning Bolt Token"
+        ],
+        "prompt": "4x4 grid sheet of 16 Retro Arcade Gaming icons, vibrant 3D pixel-clay hybrid art style, joystick, pixel heart, cassette tape, game cartridge, handheld console, floppy disk, space invader, arcade coin, trophy, pixel cherry, d-pad, CRT TV, pixel ghost, boombox, arcade machine, bolt, vivid pastel cyan, magenta, and electric blue on soft white background.",
+        "asset_paths": [
+          "/art/premium/retro_arcade/0.webp",
+          "/art/premium/retro_arcade/1.webp",
+          "/art/premium/retro_arcade/2.webp",
+          "/art/premium/retro_arcade/3.webp",
+          "/art/premium/retro_arcade/4.webp",
+          "/art/premium/retro_arcade/5.webp",
+          "/art/premium/retro_arcade/6.webp",
+          "/art/premium/retro_arcade/7.webp",
+          "/art/premium/retro_arcade/8.webp",
+          "/art/premium/retro_arcade/9.webp",
+          "/art/premium/retro_arcade/10.webp",
+          "/art/premium/retro_arcade/11.webp",
+          "/art/premium/retro_arcade/12.webp",
+          "/art/premium/retro_arcade/13.webp",
+          "/art/premium/retro_arcade/14.webp",
+          "/art/premium/retro_arcade/15.webp"
+        ]
+      },
+      {
+        "theme_id": "alpine_winter",
+        "theme_name": "Alpine Winter",
+        "type": "premium",
+        "price": 130,
+        "bg_color": "#f2f8fc",
+        "accent_color": "#56ccf2",
+        "description": "Frosty Mountain Resort theme with snowflakes, mittens, hot cocoa, and pine trees.",
+        "objects_16": [
+          "0: Delicate Crystal Snowflake",
+          "1: Cozy Woolen Mitten",
+          "2: Hot Chocolate Mug with Marshmallows",
+          "3: Snowy Pine Tree",
+          "4: Red Wooden Sled",
+          "5: Ice Skates",
+          "6: Snowman Head with Carrot Nose",
+          "7: Ski Goggles",
+          "8: Winter Scarf",
+          "9: Icicle Cluster",
+          "10: Snow Globe",
+          "11: Cozy Log Cabin",
+          "12: Penguin with Beanie",
+          "13: Polar Bear Paw",
+          "14: Silver Bell",
+          "15: Frost Crystal Star"
+        ],
+        "prompt": "4x4 grid sheet of 16 Alpine Winter Wonderland icons, soft 3D frosted claymation vector art, snowflake, mitten, hot chocolate mug, snow tree, sled, ice skates, snowman, goggles, scarf, icicles, snowglobe, cabin, cute penguin, polar bear paw, bell, frost star, soft powder blue and frosty teal highlights, isolated background.",
+        "asset_paths": [
+          "/art/premium/alpine_winter/0.webp",
+          "/art/premium/alpine_winter/1.webp",
+          "/art/premium/alpine_winter/2.webp",
+          "/art/premium/alpine_winter/3.webp",
+          "/art/premium/alpine_winter/4.webp",
+          "/art/premium/alpine_winter/5.webp",
+          "/art/premium/alpine_winter/6.webp",
+          "/art/premium/alpine_winter/7.webp",
+          "/art/premium/alpine_winter/8.webp",
+          "/art/premium/alpine_winter/9.webp",
+          "/art/premium/alpine_winter/10.webp",
+          "/art/premium/alpine_winter/11.webp",
+          "/art/premium/alpine_winter/12.webp",
+          "/art/premium/alpine_winter/13.webp",
+          "/art/premium/alpine_winter/14.webp",
+          "/art/premium/alpine_winter/15.webp"
+        ]
+      }
+    ],
+    "cosmetics_catalog_specifications": [
+      {
+        "category": "avatars",
+        "id": "avatar_fox",
+        "name": "Rubi the Fox",
+        "price": 50,
+        "asset_path": "/art/premium/avatars/fox.webp",
+        "prompt": "Cute pastel red fox portrait in circular badge, wearing cozy scarf, 3D clay vector art."
+      },
+      {
+        "category": "avatars",
+        "id": "avatar_koala",
+        "name": "Koko the Koala",
+        "price": 50,
+        "asset_path": "/art/premium/avatars/koala.webp",
+        "prompt": "Cute pastel grey koala portrait in circular badge, eating eucalyptus leaf, 3D clay vector art."
+      },
+      {
+        "category": "avatars",
+        "id": "avatar_penguin",
+        "name": "Pipo the Penguin",
+        "price": 50,
+        "asset_path": "/art/premium/avatars/penguin.webp",
+        "prompt": "Cute pastel penguin portrait in circular badge with winter ear muffs, 3D clay vector art."
+      },
+      {
+        "category": "avatars",
+        "id": "avatar_shiba",
+        "name": "Nikko the Shiba",
+        "price": 50,
+        "asset_path": "/art/premium/avatars/shiba.webp",
+        "prompt": "Cute pastel shiba inu puppy portrait in circular badge, smiling, 3D clay vector art."
+      },
+      {
+        "category": "frames",
+        "id": "frame_sunset",
+        "name": "Sunset Gold Frame",
+        "price": 40,
+        "asset_path": "/art/premium/frames/sunset.webp",
+        "prompt": "Tactile circular avatar frame ornament, warm golden sunset gradient with 3D bevel and ink outline."
+      },
+      {
+        "category": "frames",
+        "id": "frame_mint",
+        "name": "Mint Leaf Frame",
+        "price": 40,
+        "asset_path": "/art/premium/frames/mint.webp",
+        "prompt": "Tactile circular avatar frame ornament, pastel mint green leaf motif with 3D bevel."
+      },
+      {
+        "category": "frames",
+        "id": "frame_moon",
+        "name": "Moonlight Pearl Frame",
+        "price": 40,
+        "asset_path": "/art/premium/frames/moon.webp",
+        "prompt": "Tactile circular avatar frame ornament, dreamy silver blue starlight theme."
+      },
+      {
+        "category": "surfaces",
+        "id": "skin_wood",
+        "name": "Artisan Wood Tile",
+        "price": 60,
+        "asset_path": "/art/premium/surfaces/wood.webp",
+        "prompt": "Rounded 3D tile surface texture, warm polished cedar wood grain with rounded bevels."
+      },
+      {
+        "category": "surfaces",
+        "id": "skin_jelly",
+        "name": "Crystal Jelly Tile",
+        "price": 60,
+        "asset_path": "/art/premium/surfaces/jelly.webp",
+        "prompt": "Rounded 3D tile surface texture, translucent glossy strawberry jelly with subtle inner glow."
+      },
+      {
+        "category": "surfaces",
+        "id": "skin_opal",
+        "name": "Opal Starlight Tile",
+        "price": 60,
+        "asset_path": "/art/premium/surfaces/opal.webp",
+        "prompt": "Rounded 3D tile surface texture, iridescent pearlescent opal finish with pastel reflections."
+      },
+      {
+        "category": "effects",
+        "id": "effect_blossom",
+        "name": "Sakura Blossom Burst",
+        "price": 45,
+        "asset_path": "/art/premium/effects/blossom.webp",
+        "prompt": "Match tile clear particle burst sprite sheet, floating pink cherry blossom petals."
+      },
+      {
+        "category": "effects",
+        "id": "effect_stars",
+        "name": "Starlight Sparkles",
+        "price": 45,
+        "asset_path": "/art/premium/effects/stars.webp",
+        "prompt": "Match tile clear particle burst sprite sheet, glowing golden starlight sparkler burst."
+      },
+      {
+        "category": "effects",
+        "id": "effect_confetti",
+        "name": "Celebration Confetti",
+        "price": 45,
+        "asset_path": "/art/premium/effects/confetti.webp",
+        "prompt": "Match tile clear particle burst sprite sheet, colorful pastel confetti explosion."
+      },
+      {
+        "category": "blocks",
+        "id": "block_ceramic",
+        "name": "Glazed Ceramic Block",
+        "price": 50,
+        "asset_path": "/art/premium/surfaces/ceramic.webp",
+        "prompt": "Block Puzzle grid piece texture, smooth glazed pastel pottery finish with rounded edges."
+      }
+    ]
   },
   "typography": {
     "font_family_heading": "Fredoka, sans-serif",
     "font_family_body": "Outfit, sans-serif",
-    "font_weights": {
-      "regular": 400,
-      "medium": 500,
-      "semibold": 600,
-      "bold": 700
-    },
     "hierarchy": {
-      "h1": "text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight",
-      "h2": "text-2xl sm:text-3xl font-bold tracking-tight",
-      "h3": "text-xl sm:text-2xl font-semibold",
-      "h4": "text-lg font-semibold",
-      "body": "text-sm sm:text-base leading-relaxed",
+      "h1": "text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#172337]",
+      "h2": "text-2xl sm:text-3xl font-bold tracking-tight text-[#172337]",
+      "h3": "text-xl sm:text-2xl font-semibold text-[#172337]",
+      "h4": "text-lg font-semibold text-[#172337]",
+      "body": "text-sm sm:text-base leading-relaxed text-[#172337]",
       "caption": "text-xs text-slate-500 font-medium tracking-wide uppercase"
     }
   },
   "colors": {
     "background_main": "#fffaf5",
+    "surface_card": "#ffffff",
     "text_primary": "#172337",
     "text_muted": "#5e6e82",
     "pastel_pink": "#ffb9cd",
     "pastel_green": "#c4efd9",
     "pastel_blue": "#c8e7fa",
     "pastel_yellow": "#ffe6a7",
+    "accent_orange": "#d97736",
+    "accent_purple": "#9b51e0",
     "border_ink": "#172337",
     "contrast_ratio_min": "4.5:1 for body text, 3:1 for large headers and buttons"
   },
   "visual_enhancers": {
-    "card_style": "2px solid #172337 ink border, 3px offset box-shadow (shadow-[3px_3px_0px_#172337]), rounded-2xl",
-    "glassmorphism": "backdrop-blur-md bg-white/80 border border-white/40 shadow-sm",
-    "textures": "warm paper grain texture overlay (opacity 0.03)"
+    "card_style": "2px solid #172337 ink border, 3px offset box-shadow (shadow-[3px_3px_0px_#172337]), rounded-2xl bg-white",
+    "button_primary": "bg-[#ffb9cd] hover:bg-[#ffa0bb] text-[#172337] font-bold border-2 border-[#172337] shadow-[3px_3px_0px_#172337] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all rounded-xl min-h-[44px]",
+    "glassmorphism": "backdrop-blur-md bg-white/90 border-2 border-[#172337] shadow-sm",
+    "textures": "warm paper grain overlay with 3% opacity"
   },
   "grids_and_layouts": {
-    "mobile_container": "max-w-[480px] mx-auto px-4 pb-20 pt-4 min-h-screen",
+    "mobile_container": "max-w-[480px] mx-auto px-4 pb-24 pt-4 min-h-screen relative",
     "bento_grid": "grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4",
     "touch_targets": "min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
   },
   "motion": {
-    "framers": "Framer Motion for spring transitions",
+    "framework": "Framer Motion for spring transitions & tile match bursts",
     "tile_connection_animation": "2x2 splits into horizontal/vertical dominoes, then 1x1 children, with themed particle bursts",
     "reduced_motion": "respect prefers-reduced-motion media query"
   },
   "accessibility": {
-    "test_id": "All interactive buttons, tiles, cards, navigation links must have data-testid in kebab-case format (e.g. data-testid='onet-tile-1', data-testid='shop-skin-wood-buy')",
-    "contrast": "APCA compliant text contrast against pastel backgrounds"
+    "testing_attribute": "MUST add data-testid attribute in kebab-case format to every interactive element (e.g. data-testid='level-select-card-1', data-testid='shop-item-buy-button-avatar_fox')",
+    "contrast": "Ensure all text meets APCA & WCAG AA contrast standards against pastel cards and backgrounds."
   },
   "media": {
-    "formats": ".png, .webp, .svg",
+    "formats": ".webp, .png, .svg",
     "responsive_height": "max-h-[80vh] on mobile viewports"
   },
   "3d_libraries": {
-    "recommendation": "Use Canvas 2D sprites or CSS3D for tile animations; R3F only for celebratory 3D particle bursts"
+    "recommendation": "Use Canvas 2D / CSS3D for tile rendering and board animations; Framer Motion for celebratory popups"
   },
   "image_urls": {
     "vanilla": "/src/assets/vanilla/tiles/",
@@ -135,20 +396,27 @@
     "galaxy": "/public/art/galaxy/",
     "meadow": "/public/art/meadow/",
     "fruit": "/public/art/fruit/",
+    "autumn_harvest": "/public/art/premium/autumn_harvest/",
+    "magic_atelier": "/public/art/premium/magic_atelier/",
+    "retro_arcade": "/public/art/premium/retro_arcade/",
+    "alpine_winter": "/public/art/premium/alpine_winter/",
     "skins": "/public/art/skins/",
     "avatars": "/public/art/avatars/",
     "brand": "/public/brand/"
   },
   "instructions_to_main_agent": [
-    "Ensure all .js and .jsx files reference the 5 pastel theme icon sets (Sakura, Bakery, Midnight Galaxy, Meadow, Fruit) as core selection options.",
-    "Keep all 15 vanilla matching tiles in the initial free Summer Club theme. Preserve prior generated Sakura/Bakery/Galaxy/Meadow/Fruit assets as separate reward editions. New bitmap assets live at /art/premium/; no in-app generator.",
-    "Tile skins must act as background/surface/frame textures behind match icons.",
-    "Apply kebab-case data-testid attributes to all buttons, tabs, input fields, modal dialogs, and game board tiles."
+    "Unify 100% of screens (including LevelSelectScreen, ChallengeScreen, Game Over modal, and ShopScreen) under the 2px ink border (#172337) and offset shadow ([3px_3px_0px_#172337]) visual language.",
+    "Enforce the 1 Button per Feature rule: duplicate play buttons across screens must be eliminated, routing all game launches through canonical LevelSelectScreen.",
+    "Playing tab and Game Over menu MUST use LevelSelectScreen state directly so returning to lobby/playing tab always keeps user on their selected level view.",
+    "Register the 4 NEW premium themes (Autumn Harvest, Magic Atelier, Retro Arcade, Alpine Winter) alongside the 15 existing themes in theme registry and shop catalog.",
+    "Add cosmetic catalog items (avatars, frames, tile skins, block textures, burst effects) with Permen coin pricing.",
+    "DO NOT modify or delete any existing images in /public/art/ or /src/assets/.",
+    "Add kebab-case data-testid to all interactive components."
   ],
   "UNIVERSAL GUIDELINES FOR MAIN AGENT": {
-    "testing_attribute": "MUST add data-testid to every interactive component (e.g., data-testid='play-onet-button')",
-    "anti_ai_slop": "Do not center everything, do not use boring single-weight Inter for headings. Keep tactile ink borders and distinct pastel contrast.",
-    "no_transparent_overlays": "Headers, menus, and modals must have non-transparent frosted glass or solid pastel backgrounds.",
-    "spacing": "Maintain 2-3x generous spacing in menus and modal dialogs for high touch usability."
+    "testing_attribute": "MUST add data-testid to every interactive component (e.g. data-testid='play-onet-button')",
+    "anti_ai_slop": "Avoid centered default layouts or generic flat gradients. Preserve tactile ink borders, organic pastel hues, and crisp typography.",
+    "no_transparent_overlays": "Headers, floating menus, and modals MUST have solid/frosted non-transparent backgrounds (bg-white/90 or solid #fffaf5 with backdrop-blur).",
+    "spacing": "Maintain generous 2-3x padding inside cards and modals to prevent touch target overlap on mobile."
   }
 }

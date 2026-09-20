@@ -16,6 +16,8 @@ import { GameLoader } from '../../components/GameLoader';
 
 import { BlockPuzzleHeader } from './components/BlockPuzzleHeader';
 import { BlockPuzzleFooter } from './components/BlockPuzzleFooter';
+import { BlockResults } from './components/BlockResults';
+import { GameParticles } from '../../components/GameParticles';
 
 const ObstacleOverlay = ({ type }: { type: string }) => {
   if (!type) return null;
@@ -42,6 +44,7 @@ const BlockPuzzleContent = () => {
   const { navigate,gameMode } = useGame();
   const infinity=gameMode==='infinity';
   const {profile}=useProfile(),skin=equippedCosmetic(profile,'block');
+  const animation=equippedCosmetic(profile,'blockAnimation');
   const [isPaused, setIsPaused] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [feedback,setFeedback]=useState('');
@@ -217,7 +220,7 @@ const BlockPuzzleContent = () => {
   const previewRows=previewCells.size?board.map((row,r)=>row.every((_,c)=>occupied(r,c))):[];
   const previewCols=previewCells.size?board[0].map((_,c)=>board.every((row,r)=>occupied(r,c))):[];
   return (
-    <div data-testid="block-game-screen" data-mode={infinity?'infinity':'level'} data-skin={skin?.id||'classic'} style={{'--block-skin':skin?`url(${cosmeticImage(skin)})`:'none'} as React.CSSProperties} className={`block-game-screen block-look-${skin?.asset||'classic'} absolute inset-0 bg-gray-900 z-50 flex flex-col md:p-6 lg:p-10 items-center overflow-hidden font-sans touch-none select-none`}>
+    <div data-testid="block-game-screen" data-mode={infinity?'infinity':'level'} data-animation={animation?.id||'classic'} data-motion={animation?.motion||'classic'} data-skin={skin?.id||'classic'} style={{'--block-skin':skin?`url(${cosmeticImage(skin)})`:'none'} as React.CSSProperties} className={`block-game-screen block-look-${skin?.asset||'classic'} absolute inset-0 bg-gray-900 z-50 flex flex-col md:p-6 lg:p-10 items-center overflow-hidden font-sans touch-none select-none`}>
       <div className="w-full h-full md:max-w-6xl md:mx-auto md:bg-[#f8fafc] md:rounded-[2rem] md:shadow-2xl md:border-4 md:border-white/30 flex flex-col md:flex-row items-center overflow-hidden">
         
         {/* Mobile Header */}
@@ -293,6 +296,7 @@ const BlockPuzzleContent = () => {
                   })
               )}
               
+              {animation&&clearingCells.slice(0,12).map(({r,c})=><span key={`particles-${r}-${c}`} className="block-particle-origin" style={{left:`${(c+.5)/BOARD_SIZE*100}%`,top:`${(r+.5)/BOARD_SIZE*100}%`}}><GameParticles item={animation} id={`block-clear-animation-${r}-${c}`} count={4}/></span>)}
               <AnimatePresence>
                 {comboText && (
                   <motion.div
@@ -336,6 +340,8 @@ const BlockPuzzleContent = () => {
                             row.map((val, c) => (
                               <div 
                                   key={`${r}-${c}`}
+                                  data-block-part={val?'filled':'empty'}
+                                  style={val?{backgroundImage:`url(${cosmeticImage(skin)})`,backgroundSize:'100% 100%'}:undefined}
                                   className={`w-5 h-5 rounded-[2px] ${val ? `${piece.colorClass} border-[1px] border-black/30 shadow-[inset_1px_1px_0px_rgba(255,255,255,0.4)]` : 'bg-transparent'}`}
                               />
                             ))
@@ -389,6 +395,7 @@ const BlockPuzzleContent = () => {
       {/* DRAGGING OVERLAY */}
       {dragState && dragState.isDragging && (
          <div 
+            data-testid="block-drag-preview" data-skin={skin?.id||'classic'}
             className="fixed pointer-events-none z-[100]"
             style={{
                left: Math.max(dragState.piece.shape[0].length*(getCellSize()+2)/2+6, Math.min(window.innerWidth-dragState.piece.shape[0].length*(getCellSize()+2)/2-6,dragState.x)),
@@ -408,6 +415,8 @@ const BlockPuzzleContent = () => {
                   row.map((val, c) => (
                      <div 
                         key={`${r}-${c}`}
+                        data-block-part={val?'filled':'empty'}
+                        style={val?{backgroundImage:`url(${cosmeticImage(skin)})`,backgroundSize:'100% 100%'}:undefined}
                         className={`w-full h-full rounded-sm ${val ? `${dragState.piece.colorClass} border-theme-sm border-black/30 shadow-[2px_2px_0px_rgba(0,0,0,0.5),inset_1px_1px_0px_rgba(255,255,255,0.4)] scale-105` : 'bg-transparent'}`}
                      />
                   ))
@@ -416,81 +425,7 @@ const BlockPuzzleContent = () => {
          </div>
       )}
 
-      {/* PAUSE MODAL */}
-      <KineticModal isOpen={isPaused} onClose={() => setIsPaused(false)} colorClass="bg-theme-surface-card-white" widthClass="w-full max-w-xs" className="text-center">
-        <h2 data-testid="block-paused-title" className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter mb-8">Jeda</h2>
-        <div className="flex flex-col gap-3">
-          <KineticButton data-testid="block-resume" onClick={() => setIsPaused(false)} colorClass="bg-green-400" className="w-full py-3 flex items-center justify-center gap-2">
-             <Play size={24} className="fill-gray-900" /> Lanjutkan
-          </KineticButton>
-          <KineticButton data-testid="block-pause-exit" onClick={() => navigate('levels')} colorClass="bg-theme-surface-card-white" className="w-full py-3 text-red-500 shadow-theme-sm">Kembali</KineticButton>
-        </div>
-      </KineticModal>
-
-      {/* GAME OVER MODAL */}
-      <KineticModal isOpen={gameState === 'gameover'} colorClass="bg-gray-900" widthClass="w-full max-w-sm" className="text-center pt-10">
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-rose-500 border-theme-lg border-white rounded-full flex items-center justify-center shadow-theme-base z-10">
-           <RefreshCw size={48} className="text-white" />
-        </div>
-        <h2 className="font-black text-3xl text-white uppercase tracking-tighter mt-4 mb-2">Penuh!</h2>
-        <p data-testid="block-result-caption" className="font-bold text-gray-400 text-sm mb-6">{infinity?'Tidak ada balok yang bisa ditempatkan.':'Belum berhasil kali ini.'}</p>
-        <p data-testid="block-final-score" className="text-white font-bold mb-3">{score.toLocaleString('id-ID')} skor · +{winReward?.xp||0} XP</p>
-        {infinity&&<p data-testid="infinity-final-record" className="text-amber-300 mb-4">Rekor: {Math.max(score,highScore).toLocaleString('id-ID')} · {linesClearedTotal} garis</p>}
-        
-        <div className="flex flex-col gap-2 mb-8 text-left bg-gray-800 p-4 rounded-xl border-theme-sm border-gray-700">
-           {(infinity?[]:currentLevelConfig.missions).map((m: any, i: number) => (
-             <div key={i} className="flex items-center gap-3">
-               <Star size={20} className="fill-gray-600 text-gray-500 flex-shrink-0" />
-               <span className="text-sm font-bold text-gray-500">{m.description}</span>
-             </div>
-           ))}
-        </div>
-        
-        <div className="flex gap-3">
-           <KineticButton onClick={() => navigate('levels')} colorClass="bg-theme-surface-card-white" className="flex-1 py-3 text-sm">Kembali</KineticButton>
-           <KineticButton data-testid="block-retry" onClick={restart} colorClass="bg-theme-primary-coral-pink" className="flex-1 py-3 text-sm border-white">Main Lagi</KineticButton>
-        </div>
-      </KineticModal>
-
-      {/* LEVEL WON MODAL */}
-      <KineticModal isOpen={gameState === 'won'} colorClass="bg-theme-surface-card-white" widthClass="w-full max-w-sm" className="text-center pt-10">
-        {gameState==='won'&&<VictoryBurst/>}
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-theme-primary-tropical-green border-theme-lg border-white rounded-full flex items-center justify-center shadow-theme-base z-10">
-           <Trophy size={48} className="text-white" />
-        </div>
-        <h2 className="font-black text-3xl text-theme-text-primary uppercase tracking-tighter mt-4 mb-2">Level Selesai!</h2>
-        
-        <div className="flex gap-2 justify-center mb-6 mt-4">
-           {[0, 1, 2].map(i => (
-              <Star key={i} size={48} className={missionResults[i] ? 'fill-theme-primary-canary-yellow text-amber-600 drop-shadow-md' : 'fill-gray-200 text-gray-300'} />
-           ))}
-        </div>
-        
-        <div className="flex flex-col gap-2 mb-4 text-left bg-gray-50 p-4 rounded-xl border-theme-sm border-gray-200">
-           {currentLevelConfig.missions.map((m: any, i: number) => (
-             <div key={i} className="flex items-center gap-3">
-               <Star size={20} className={missionResults[i] ? 'fill-amber-400 text-amber-500 flex-shrink-0' : 'fill-gray-200 text-gray-300 flex-shrink-0'} />
-               <span className={`text-sm font-bold ${missionResults[i] ? 'text-theme-text-primary' : 'text-gray-400 line-through'}`}>{m.description}</span>
-             </div>
-           ))}
-        </div>
-
-        <div data-testid="block-win-rewards" className="flex gap-3 mb-8">
-           <div className="flex-1 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl py-2 flex flex-col items-center shadow-theme-sm">
-              <span data-testid="block-earned-xp" className="font-black text-lg text-theme-primary-tropical-green">+{winReward?.xp||0} XP</span>
-              <span data-testid="block-account-level" className="font-black text-[9px] text-theme-text-secondary uppercase tracking-widest mt-0.5">{winReward?.leveledUp?`Naik ke Level ${winReward.accountLevel}!`:'Progres Akun'}</span>
-           </div>
-           <div className="flex-1 bg-theme-surface-card-white border-theme-base border-theme-border-main rounded-xl py-2 flex flex-col items-center shadow-theme-sm">
-              <span className="font-black text-lg text-blue-500">+{winReward?.chestPoints ?? 0}</span>
-              <span className="font-black text-[9px] text-theme-text-secondary uppercase tracking-widest mt-0.5">Peti PTS</span>
-           </div>
-        </div>
-        
-        <div className="flex gap-3">
-           <KineticButton onClick={() => navigate('levels')} colorClass="bg-gray-200" className="flex-1 py-3 text-sm border-gray-300 shadow-none">Kembali</KineticButton>
-           <KineticButton data-testid="block-next-level" onClick={restart} colorClass="bg-theme-primary-tropical-green" className="flex-1 py-3 text-sm border-white">Lanjut Level Berikutnya</KineticButton>
-        </div>
-      </KineticModal>
+      <BlockResults isPaused={isPaused} state={gameState} onResume={()=>setIsPaused(false)} onMenu={()=>navigate('levels')} onRestart={restart} score={score} reward={winReward} infinity={infinity} record={highScore} lines={linesClearedTotal} missions={currentLevelConfig.missions} results={missionResults}/>
 
     </div>
   );

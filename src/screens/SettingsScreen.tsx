@@ -12,7 +12,7 @@ import { useCDE } from '../core/cde';
 import { AccountDataPopup } from './AccountDataPopup';
 import { Smartphone, Cloud } from 'lucide-react';
 import { DynamicIcon } from '../components/theme/DynamicIcon';
-import { ModeToggle } from '../components/GameShell';
+import { ModeToggle,GameShell } from '../components/GameShell';
 import { hasPublicAuth } from '../lib/supabase';
 
 
@@ -67,28 +67,8 @@ export const SettingsScreen = () => {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: 20 }}
-      transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute inset-0 bg-[var(--club-paper)] z-[100] flex flex-col font-sans text-[var(--club-ink)]"
-    >
-      <div className="flex items-center gap-3 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
-        <button 
-           onClick={() => navigate('profile')} 
-           className="round-button"
-           aria-label="Kembali ke lobby"
-        >
-          <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-5 h-5 object-contain" />
-        </button>
-        <div>
-          <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">PREFERENSI</span>
-          <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">Pengaturan</h2>
-        </div>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4 max-w-xl mx-auto w-full pb-12">
+    <GameShell title="Pengaturan" eyebrow="PAS SESUAI SUASANAMU" back="profile">
+      <div className="flex flex-col gap-5" data-testid="settings-screen">
         
         {/* Appearance Settings */}
         <section className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex items-center justify-between">
@@ -153,7 +133,7 @@ export const SettingsScreen = () => {
         <section className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex flex-col gap-3.5">
           <h3 className="font-bold text-xs uppercase tracking-wider text-[var(--club-muted)]">Akun & Data</h3>
           
-          <div
+          <button data-testid="settings-account-data" type="button"
              onClick={() => setShowDataPopup(true)}
              className="bg-[var(--club-paper)] border-2 border-[var(--club-line)] rounded-xl p-3.5 shadow-[2px_2px_0_var(--club-line)] cursor-pointer active:translate-y-0.5 transition-all flex flex-col gap-2.5"
           >
@@ -163,7 +143,7 @@ export const SettingsScreen = () => {
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="font-bold text-[9px] uppercase tracking-wider text-[var(--club-muted)]">ID Pemain</span>
-                  <span className="font-bold text-sm text-[var(--club-ink)] truncate">PLAYER-{profile.id || Math.floor(Math.random() * 1000000)}</span>
+                  <span data-testid="settings-player-id" className="font-bold text-sm text-[var(--club-ink)] truncate">PLAYER-{profile.id || cde.account?.id || 'Lokal'}</span>
                 </div>
              </div>
              <div className="h-px w-full bg-[var(--club-line)]/10" />
@@ -176,10 +156,11 @@ export const SettingsScreen = () => {
                    {navigator.onLine ? (hasPublicAuth ? 'Akun terhubung' : 'Pratinjau lokal') : 'Offline'}
                 </span>
              </div>
-          </div>
+          </button>
           
           <div className="flex flex-col gap-2.5 mt-1">
              <button
+                data-testid="settings-logout"
                 onClick={handleLogout}
                 className="pop-button w-full py-2.5 flex items-center justify-center gap-2 font-bold text-xs"
              >
@@ -187,6 +168,7 @@ export const SettingsScreen = () => {
                 <span>Keluar dari Akun</span>
              </button>
              <button
+                data-testid="settings-reset"
                 onClick={handleReset}
                 className="pop-button pink w-full py-2.5 flex items-center justify-center gap-2 font-bold text-xs"
              >
@@ -206,7 +188,7 @@ export const SettingsScreen = () => {
         isOpen={showLogoutDialog}
         onClose={() => setShowLogoutDialog(false)}
         title="Keluar dari Akun?"
-        description="Data permainanmu sudah tersimpan dan kamu bisa masuk kembali nanti."
+        description={cde.pendingOpsCount?'Masih ada progres yang menunggu sinkronisasi. Batalkan dan sinkronkan dulu agar perubahan terbaru tersimpan.':'Kamu bisa masuk kembali untuk melanjutkan permainan.'}
         primaryAction={{ label: 'Keluar', onClick: executeLogout, colorClass: 'bg-theme-game-danger' }}
         secondaryAction={{ label: 'Batal', onClick: () => setShowLogoutDialog(false) }}
       />
@@ -224,9 +206,9 @@ export const SettingsScreen = () => {
         onClose={() => setShowDataPopup(false)}
         onLogout={handleLogout}
         onReset={handleReset}
-        profileId={profile.id || Math.floor(Math.random() * 1000000).toString()}
+        profileId={profile.id || cde.account?.id || 'Lokal'}
       />
-    </motion.div>
+    </GameShell>
 
   );
 };

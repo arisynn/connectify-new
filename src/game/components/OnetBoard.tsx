@@ -17,6 +17,7 @@ interface Props {
 export const OnetBoard = ({boardRef,board,selected,activePaths,hintTiles,directionErrorTiles,matchingTiles,floatingTexts,onTileClick}:Props) => {
   const {activeTheme}=useTheme(),reduced=useReducedMotion();
   const {profile}=useProfile();
+  const animation=equippedCosmetic(profile,'onetAnimation');
   const wrap=useRef<HTMLDivElement>(null),[width,setWidth]=useState(0);
   useLayoutEffect(()=>{
     if(!wrap.current)return;
@@ -30,7 +31,7 @@ export const OnetBoard = ({boardRef,board,selected,activePaths,hintTiles,directi
   const at=(p:any,r:number,c:number)=>p?.r===r&&p?.c===c;
   const point=({r,c}:any)=>({x:c===0?-12:c===COLS+1?width+12:(c-1)*step+size/2,y:r===0?-12:r===ROWS+1?height+12:(r-1)*step+size/2});
   const centers=matchingTiles.map(p=>{const tile=board[p.r]?.[p.c];const g=groupSize(tile);return {...p,tile,rows:g.rows,cols:g.cols,x:(p.c-1)*step+(g.cols*step-4)/2,y:(p.r-1)*step+(g.rows*step-4)/2};});
-  return <div ref={wrap} className="onet-board-wrap" data-testid="onet-board-area">
+  return <div ref={wrap} className="onet-board-wrap" data-testid="onet-board-area" data-animation={animation?.id||'classic'}>
     <div ref={boardRef} data-testid="onet-tile-grid" className="onet-grid" style={{width,height,gridTemplateColumns:`repeat(${COLS},minmax(0,1fr))`,gridTemplateRows:`repeat(${ROWS},minmax(0,1fr))`,visibility:width?'visible':'hidden'}}>
       {board.slice(1,ROWS+1).flatMap((row,ri)=>row.slice(1,COLS+1).map((tile,ci)=>{
         const r=ri+1,c=ci+1;
@@ -63,7 +64,7 @@ export const OnetBoard = ({boardRef,board,selected,activePaths,hintTiles,directi
       {!!activePaths.length&&width>0&&<svg className="onet-path-layer" aria-hidden="true">
         {activePaths.map(item=>{const points=item.path.map(point),d=points.map((p:any,i:number)=>`${i?'L':'M'} ${p.x} ${p.y}`).join(' ');
           return <g key={item.id}><motion.path d={d} fill="none" stroke="white" strokeWidth={8} strokeLinecap="round" strokeLinejoin="round" initial={{pathLength:0}} animate={{pathLength:1,opacity:[1,1,0]}} transition={{duration:.47}}/>
-            <motion.path d={d} fill="none" stroke={activeTheme.id==='candy'?'#e66e9a':'#35b8b0'} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" initial={{pathLength:0}} animate={{pathLength:1,opacity:[1,1,0]}} transition={{duration:.46}}/>
+            <motion.path d={d} fill="none" stroke={animation?.color||(activeTheme.id==='candy'?'#e66e9a':'#35b8b0')} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" initial={{pathLength:0}} animate={{pathLength:1,opacity:[1,1,0]}} transition={{duration:.46}}/>
             {centers.map(p=><motion.rect key={`${p.r}-${p.c}`} x={(p.c-1)*step-2} y={(p.r-1)*step-2} width={p.cols*step} height={p.rows*step} rx={12} fill="none" stroke="#39b693" strokeWidth={3} initial={{opacity:1}} animate={{opacity:0}} transition={{duration:.46}}/>)}</g>;
         })}
       </svg>}

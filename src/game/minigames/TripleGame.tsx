@@ -4,7 +4,7 @@ import { useTheme } from '../../core/theme/ThemeProvider';
 import { tileIdsFor } from '../../core/tileCatalog';
 import { DynamicIcon } from '../../components/theme/DynamicIcon';
 import { randomize,useMiniRound } from './useMiniRound';
-import { MiniGameFrame } from './MiniGameFrame';
+import { PuzzleGameFrame } from '../components/PuzzleGameFrame';
 
 const Round=({onRestart}:{onRestart:()=>void})=>{
   const {activeTheme}=useTheme(),round=useMiniRound('triple',120);
@@ -23,9 +23,9 @@ const Round=({onRestart}:{onRestart:()=>void})=>{
     if(items.filter(t=>t===id).length===3){setTray(items.filter(t=>t!==id));setCleared(n=>n+1);}else setTray(items);
     setStacks(next);
   };
-  return <MiniGameFrame title="Triple Match" description="Ambil tile teratas. Kumpulkan 3 gambar sama, jangan sampai 7 slot penuh." round={round} score={score} onRestart={onRestart} extra={<div className="triple-status"><span data-testid="triple-progress">{remaining} tile tersisa · {cleared}/12 trio</span><button data-testid="triple-undo" className="text-button" disabled={!undo||undoUsed||round.phase!=='playing'||round.paused} onClick={()=>{setStacks(undo.stacks);setTray(undo.tray);setCleared(undo.cleared);setUndoUsed(true);}}><Undo2 size={16}/>Undo {undoUsed?'0':'1'}</button></div>}>
+  return <PuzzleGameFrame title="Triple Match" description="Ambil tile teratas. Kumpulkan 3 gambar sama, jangan sampai 7 slot penuh." round={round} score={score} onRestart={onRestart} extra={<div className="triple-status"><span data-testid="triple-progress">{remaining} tile tersisa · {cleared}/12 trio</span><button data-testid="triple-undo" className="text-button" disabled={!undo||undoUsed||round.phase!=='playing'||round.paused} onClick={()=>{setStacks(undo.stacks);setTray(undo.tray);setCleared(undo.cleared);setUndoUsed(true);}}><Undo2 size={16}/>Undo {undoUsed?'0':'1'}</button></div>}>
     <div className="triple-grid">{stacks.map((stack,i)=><button key={i} data-testid={`triple-stack-${i}`} data-depth={stack.length} aria-label={stack.length?`Ambil ${stack[stack.length-1]}`:'Tumpukan kosong'} disabled={!stack.length} className={`triple-stack depth-${stack.length}`} onClick={()=>pick(i)}>{!!stack.length&&<><DynamicIcon name={stack[stack.length-1]} type="tiles" className="w-full h-full"/><span className="stack-count">{stack.length}</span></>}</button>)}</div>
     <div className={`triple-tray ${tray.length>=5?'warning':''}`} data-testid="triple-tray">{Array.from({length:7},(_,i)=><div key={i} data-testid={`triple-tray-slot-${i}`}>{tray[i]?<DynamicIcon name={tray[i]} type="tiles" className="w-full h-full"/>:<span/>}</div>)}</div>
-  </MiniGameFrame>;
+  </PuzzleGameFrame>;
 };
 export const TripleGame=()=>{const [key,setKey]=useState(0);return <Round key={key} onRestart={()=>setKey(n=>n+1)}/>;};

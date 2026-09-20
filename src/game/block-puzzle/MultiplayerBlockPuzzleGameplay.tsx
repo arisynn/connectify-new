@@ -11,6 +11,9 @@ import { MatchCountdown } from '../components/MatchCountdown';
 import { Piece } from './core/pieces';
 import { DynamicIcon } from '../../components/theme/DynamicIcon';
 import { GameLoader } from '../../components/GameLoader';
+import { equippedCosmetic } from '../../core/cosmetics';
+import { cosmeticImage } from '../../core/artAssets';
+import { GameParticles } from '../../components/GameParticles';
 
 export const MultiplayerBlockPuzzleGameplay = (props: any) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -24,6 +27,7 @@ export const MultiplayerBlockPuzzleGameplay = (props: any) => {
 
 const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, reportTimeUp, onAttemptLeave }: any) => {
   const { navigate } = useGame();
+  const skin=equippedCosmetic(profile,'block'),animation=equippedCosmetic(profile,'blockAnimation');
   const {
     board,
     tray,
@@ -208,7 +212,7 @@ const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, report
   };
 
   return (
-    <div className="absolute inset-0 bg-gray-900 z-50 flex flex-col md:p-6 lg:p-10 items-center overflow-hidden font-sans touch-none select-none">
+    <div data-testid="multiplayer-block-game" data-skin={skin?.id} className="multiplayer-block-screen absolute inset-0 bg-[var(--club-paper)] z-50 flex flex-col md:p-6 lg:p-10 items-center overflow-hidden font-sans touch-none select-none">
       <div className="w-full h-full md:max-w-6xl md:mx-auto md:bg-[#f8fafc] md:rounded-[2rem] md:shadow-2xl md:border-4 md:border-white/30 flex flex-col items-center overflow-hidden relative">
       
       {/* HEADER */}
@@ -273,6 +277,8 @@ const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, report
                   return (
                       <div 
                         key={`${r}-${c}`}
+                        data-testid={`multiplayer-block-cell-${r}-${c}`}
+                        style={cellColor||isPreview?{backgroundImage:`url(${cosmeticImage(skin)})`,backgroundSize:'100% 100%'}:undefined}
                         className={`w-full h-full rounded-sm transition-colors duration-150 border-theme-sm 
                             ${clearingCells.some(cell => cell.r === r && cell.c === c) ? 'bg-white brightness-150 scale-105 border-white shadow-[0_0_10px_rgba(255,255,255,0.8)] z-10' :
                               cellColor !== '' ? `${cellColor} border-black/20 shadow-[inset_1px_1px_0px_rgba(255,255,255,0.4)]` : 
@@ -285,6 +291,7 @@ const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, report
                 })
             )}
 
+            {animation&&clearingCells.slice(0,12).map(({r,c})=><span key={`particles-${r}-${c}`} className="block-particle-origin" style={{left:`${(c+.5)/BOARD_SIZE*100}%`,top:`${(r+.5)/BOARD_SIZE*100}%`}}><GameParticles item={animation} id={`multiplayer-block-animation-${r}-${c}`} count={4}/></span>)}
             <AnimatePresence>
               {comboText && (
                 <motion.div
@@ -310,6 +317,7 @@ const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, report
               <div key={i} className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
                 {piece && !(dragState?.trayIndex === i) && (
                     <div 
+                      data-testid={`multiplayer-block-piece-${i}`}
                       onPointerDown={(e) => handlePointerDown(e, piece, i)}
                       className="grid cursor-grab active:cursor-grabbing hover:scale-105 transition-transform"
                       style={{
@@ -322,6 +330,8 @@ const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, report
                           row.map((val, c) => (
                             <div 
                                 key={`${r}-${c}`}
+                                data-block-part={val?'filled':'empty'}
+                                style={val?{backgroundImage:`url(${cosmeticImage(skin)})`,backgroundSize:'100% 100%'}:undefined}
                                 className={`w-5 h-5 rounded-[2px] ${val ? `${piece.colorClass} border-[1px] border-black/30 shadow-[inset_1px_1px_0px_rgba(255,255,255,0.4)]` : 'bg-transparent'}`}
                             />
                           ))
@@ -341,6 +351,7 @@ const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, report
       {/* DRAGGING OVERLAY */}
       {dragState && dragState.isDragging && (
          <div 
+            data-testid="multiplayer-block-drag" data-skin={skin?.id}
             className="fixed pointer-events-none z-[100]"
             style={{
                left: dragState.x,
@@ -360,6 +371,8 @@ const MultiplayerBlockPuzzleContent = ({ room, user, profile, reportLoss, report
                   row.map((val, c) => (
                      <div 
                         key={`${r}-${c}`}
+                        data-block-part={val?'filled':'empty'}
+                        style={val?{backgroundImage:`url(${cosmeticImage(skin)})`,backgroundSize:'100% 100%'}:undefined}
                         className={`w-full h-full rounded-sm ${val ? `${dragState.piece.colorClass} border-theme-sm border-black/30 shadow-[2px_2px_0px_rgba(0,0,0,0.5),inset_1px_1px_0px_rgba(255,255,255,0.4)] scale-105` : 'bg-transparent'}`}
                      />
                   ))

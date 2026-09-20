@@ -65,6 +65,7 @@ export const StartupScreen = () => {
   return (
     <motion.div 
       data-testid="startup-play"
+      style={{pointerEvents:isLeaving?'none':'auto'}}
       role="button"
       tabIndex={0}
       aria-label="Ketuk untuk bermain"

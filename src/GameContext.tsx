@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
-export type Screen = 'boot' | 'startup' | 'login' | 'home' | 'play' | 'multiplayer' | 'peti' | 'toko' | 'misi' | 'tema' | 'prestasi' | 'statistik' | 'pesan' | 'profile' | 'levels' | 'block-puzzle' | 'settings' | 'koleksi' | 'edit-avatar' | 'challenges' | 'memory' | 'triple' | 'ledger';
+export type Screen = 'boot' | 'startup' | 'login' | 'home' | 'play' | 'multiplayer' | 'peti' | 'toko' | 'misi' | 'tema' | 'prestasi' | 'statistik' | 'pesan' | 'profile' | 'levels' | 'block-puzzle' | 'settings' | 'koleksi' | 'edit-avatar' | 'challenges' | 'memory' | 'triple' | 'ledger' | 'fruit-merge';
 
 export type GameMode = 'normal' | 'daily' | 'infinity';
 
@@ -20,6 +20,7 @@ const GameContext = createContext<GameContextType | null>(null);
 
 export const GameProvider = ({ children }: { children: React.ReactNode }) => {
   const [screen, setScreen] = useState<Screen>('boot');
+  const navigate=useCallback((next:Screen)=>setScreen(next==='challenges'?'levels':next),[]);
   const [user, setUser] = useState(defaultUser);
   const [gameMode, setGameMode] = useState<GameMode>('normal');
 
@@ -33,7 +34,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <GameContext.Provider value={{ screen, navigate: setScreen, gameMode, setGameMode, user, updateUsername, resetProgress }}>
+    <GameContext.Provider value={{ screen, navigate, gameMode, setGameMode, user, updateUsername, resetProgress }}>
       {children}
     </GameContext.Provider>
   );

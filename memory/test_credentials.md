@@ -1,5 +1,9 @@
 # Akun pengujian
 
+## Seasonal Stories — sesi saat ini
+- SeasonalVisual / ClubPlay2026! — akun yang dibuat untuk reproduksi Main → Memory → Kembali → Pusat Tantangan. Email internal seasonalvisual@connectify.com.
+- Auth pratinjau disimpan lokal pada konteks browser. Untuk konteks baru gunakan registrasi nama unik atau pulihkan state browser pengujian. Tidak ada kredensial produksi baru.
+
 Lingkungan saat ini menggunakan adaptor pratinjau bawaan, bukan akun Supabase produksi.
 - ClubTester / ClubPlay2026! — email internal clubtester@connectify.com
 - ClubVisual / ClubPlay2026! — email internal clubvisual@connectify.com

@@ -1,89 +1,41 @@
-# Connectify — Mobile & Gameplay Polish
+# Connectify Club — Seasonal Stories
 
-## Original problem statement (current request)
-Tolong update game web ku. Perbarui tampilan untuk versi mobile , versi dekstop udh bagus sepertinya, terus ini ( polish animasi nya soalnya kan animasi nya baru yang untuk tile 1×1 ya, nah tambahin sekarang, terus tile yang pecah tuh beda beda jenis keluar nya, apalagi yang udh jadi 1×1 harus beda beda, dan satu lagi, gunakan semua aset tile, klo gasalah asets vanila itu ada 15, untuk tema lain gatau aku lupa ) terus update engine level generator game onet dan block puzzle, update mekanik game nya, revamp mission nya, update tampilan menyeluruh, kalau emang tombol frontend atau logo nya klo ada yang perlu svg pake svg aja, kalo perlu assets pake asets, level akun juga perbarui, update yang paling rekomended, jangan terlalu banyak test, test nya kalau sudah perbarui semua aja biar sedikit hemat kredit. Animasi nya perbagus, terus isi menu app nya juga perbarui, pokonya polish jadi bagus yaa game nyaa !
+## Original request
+"Ini sebenernya game nya udh bagus ya udh bagus bngt. Nah cuman aku pengen konsistensi kan tampilan nya semuanya, soalnya belum konsisten kan sama tampilan baru nya, ini kayak 75% baru 25% masih yang lama, terus kalau bisa pakai 1 tombol untuk 1 fitur aja biar bagus, nah contoh nih di tab playing game harusnya tuh langsung pakai file yang level select, jadi pas game over terus ke menu tetep kembali ke layar itu, untuk yang sekarang kayak beda gitu frontend nya yang pusat tantangan kalo ga salah, atur saja deh analisis dulu ya biar makin bagus. Nah udh. Itu aja kayaknya. Terus aku pengen kamu update kali ini lebih fokus ke perbanyak tema, jual kosmetik, perbanyak asets gambar biar game nya bagus nggak pakai svg semua. Udh sih, cuma perbanyak trma sama assets gambar saja di prioritaskan. Nah sama assets gambar lama, itu klo bisa digunakan gunakan aja kalau gabisa gapapa hapus saja. Klo bisa kamu ngasih pertanyaan nya setelah kamu menganalisis game nya ya nanti aku jawab hal yang ga kamu pahami biar ga salah paham"
 
-User approved autonomous recommended changes, testing consolidated at end, optional extra assets, and explicitly preserving the existing game style. Additional input: "Kalau perlu asets tambahan tambahan aja biar game nya makin bagus ya ! Perbarui ui dan ux nya lebih bagus tapi tetep pertahankan style game nya. Kamu bebas memberikan saran tambahan apapun".
+## Explicit corrections and additional scope
+- ALL old image files must stay untouched: "Asets lama ga usah di apa apain udh bagus itu kesalahan prompt".
+- Onet tile skins sold as complete same-material sets for 1×1, domino 1×2 / 2×1, and 2×2; never separate purchases. Upgrade legacy partial owners freely.
+- Animated cosmetics for Onet, Block, and other games. Delete Challenge Center. All games equal/main games, no minor-game label.
+- Fix Block dragged pieces using default rendering instead of equipped bitmap skin. Refresh all popups and screen layouts.
+- Improve Memory with illustrated cards and mechanics. Fruit Merge with original fruit artwork requested but explicitly allowed to wait until current work is finished.
+- Update missions/achievements. Make achievements prominent. All completed-round progress feeds missions, achievements, statistics.
+- Home must fit one viewport without scrolling, retaining original features.
 
-## Architecture retained
-- Actual app is root `/app`: Vite + React + Tailwind 4 + motion, Express API (`server.ts`, `api/cde.ts`, `api/multiplayer.ts`), Supabase. NOT the standard FastAPI template.
-- Shared pure helpers under `src/core` power optimistic client updates and authoritative API updates.
-- Existing single-currency Permen economy preserved: direct gameplay awards XP/chest points and mission progress, not currency. Permen claimed through established mission/chest/achievement flows with existing 100/day cap.
-- Preview supervisor's `frontend` launcher runs the root Express/Vite app on PORT=3000 with API_PORT=8001. Unrelated starter Python backend is stopped to avoid occupying 8001.
-- Node 22 added via yarn as dev dependency for current Supabase package compatibility. Launcher uses node22 and tsx watch; excludes Vite's generated timestamp modules and `.preview` JSON to avoid restart loops.
-- `.env` holds PORT, API_PORT, REACT_APP_BACKEND_URL, PREVIEW_MODE=true, PREVIEW_DATA_FILE. No actual Supabase keys present here. Existing development-only Supabase/auth adapter enabled; server profile data persists at `/app/.preview/data.json`. Production still requires real Supabase configuration and rejects preview adapter use.
-- No new external integration, no new currency, no asset-generation service. Reused all 79 existing tile images; lucide SVG controls.
+## Architecture / preserved systems
+- Existing root-level Vite + React + TypeScript application, Express + API handlers, not FastAPI/React scaffold. State-screen navigation in GameContext.
+- Node 22 binary at node_modules/node/bin/node; `yarn install --frozen-lockfile --ignore-engines` needed under base container's Node 20. Build/lint through PATH=/app/node_modules/node/bin:$PATH.
+- Supervisor `frontend` runs root `yarn dev`, launches UI 3000 and API 8001; unused template `backend` supervisor process stopped. URLs/settings in .env; frontend/.env contains external backend URL for testing convention. No Supabase keys supplied. Existing PREVIEW_MODE store persists /app/.preview/data.json. Public production auth integration remains pre-existing configuration-dependent and was not changed.
+- CDE optimistic transactions/outbox plus authoritative server, central shared economy/cosmetics/reward modules. Existing Permen 100/day cap retained. No payment provider added.
+- Existing game mechanics, accounts, assets, achievements/mission claims preserved. Legacy `challenges` route redirects to `levels`; ChallengeScreen file deleted. navigate callback must remain stable to avoid boot effects firing again.
 
 ## Implemented
-### Onet
-- Full catalog participation: 15 vanilla/Summer Club, 16 each candy/ocean/forest/space. Removed previous hard 12-asset limit.
-- Hierarchy: 2×2 splits into horizontal OR vertical dominoes, dominoes into 1×1. Siblings get distinct new asset IDs; corresponding children of both parents remain valid matched pairs.
-- Pure deterministic split logic and seeded RNG. Daily boards now seeded by WIB date and theme. Regular levels vary hierarchy/footprints, recovery rounds, and timer budget (120–160s; daily timer retains its existing rule).
-- Full-board solver checks during bounded generation, constructive fallback, paired recovery when a board becomes stuck. Frame coordinates/slave cells preserved.
-- Full-footprint SVG match rings, path animation, separating image halves, spring-reveal children, 4 image shards + 8 deterministic themed particles per unit match. Reduced-motion support.
-- Responsive measured board area, compact mobile timer/score header, remaining cells/difficulty line, touch-friendly labeled boosters, revamped result/pause dialogs, XP/level-up feedback.
+1. Four themes: Autumn Harvest, Magic Atelier, Retro Arcade, Alpine Winter; 16 distinct WebP matching tiles each. 86 NEW processed image assets overall: 64 theme tiles, 16 cosmetics, 6 Memory card/face/deck images. Source sheets, manifests, extraction scripts retained in scripts/ and public/art/premium. Existing public/art and src/assets tracked files unchanged.
+2. Shared seasonal catalog with avatar, frame, block, victory effects, new skins. Ten complete tile sets (nine purchasable; Pearl free). Atomic ownership/equip across all three footprints. Existing individual skin owner derives full set ownership. Server rejects purchasing hidden individual tile parts.
+3. Twelve gameplay animation cosmetics: 4 each for Onet match/split, Block/Infinity line clear (also duel blocks), Memory matched cards. Four illustrated Memory backs (one free). Store previews use actual sprite animations, themed 16-image previews, confirmation dialogs, balance validation, equip/unequip, ownership filters.
+4. Canonical Choose Game screen for Onet, Block, Memory, Triple, Infinity, Sprint, multiplayer. Back/results lead to same screen. No Challenge Center UI. Selection-page scroll preserved.
+5. Refreshed Onet, Block results, Memory and Triple layouts. Block bitmap textures consistent in tray, ghost, drag overlay, placed cells, and multiplayer; holes remain empty. Uniform modals, keyboard focus traps, portal-backed store/account/room/settings dialogs. No duplicate close/buy-or-equip buttons.
+6. Memory: 6/8/12-pair difficulty choices (capped to available distinct art), 2.3s initial peek with frozen timer, 3D card flip, anti-double-click locks, match animation, +30 streak bonuses capped after five steps, remaining-time win bonus, accurate combo result payload.
+7. Unified GameShell for achievements, collection, chest, notification, settings, stats. Home grid fits viewport; headline/decorations scale down, XP/rounds/record/ready missions/wallet/profile/chests/notifications/nav remain. Added visible Achievement tile.
+8. Prominent Progres navigation (Misi / Pencapaian / Statistik), per-game stats and five new achievements. Dedicated daily/weekly Memory & Triple missions introduced without deleting existing progress/claims. Game-specific match events prevent Memory filling Onet missions. Results deduped by runId. Per-game matches/time/combo counters and newly claimable achievement notifications.
 
-### Block Puzzle
-- Actual weighted shape selection, distinct playable choices, crowd-aware weighting; choices consider obstacles and current free space. Does not promise the board remains solvable after arbitrary future player choices.
-- Replaced expensive/inaccurate synchronous bot PCG for levels >20 with deterministic bounded construction: 3×3 landing zone, per-row/column obstacle limits, chapter objectives, recovery pacing and feasible obstacle targets. First 20 authored levels retained.
-- Fixed perfect-clear detection to account for unique cells and surviving obstacles.
-- Live level objectives, clear animation, predictive line highlights while dragging, invalid-placement feedback, pointer-cancel protection, mobile board/tray/footer fit. Desktop boosters stacked to avoid clipping.
-
-### Missions / Account / Menus
-- New daily slots: welcome round, Onet, Block Puzzle, skill, arcade. Weekly slots include block and discovery objectives. No forced spending mission in new daily rotation.
-- Split and round-completion event tracking added. Existing active mission progress/claims preserved through period reset; archived rewards remain available.
-- Mission UI: daily/weekly/saved tabs, completion track, sorted claimable cards, game badges, Permen+XP rewards, direct play buttons, WIB reset countdown and empty state.
-- Real account XP from all four games and mission claims; separate from Onet campaign level. Idempotent run/claim awards; legacy progress converted once when first XP is awarded. Six account titles; lobby progress and profile journey.
-- Refined mobile lobby, five bottom tabs hidden during gameplay, direct Onet/Block shortcuts, preserved desktop two-column composition and original Fredoka/Outfit pastel tactile style.
-- Collection theme gallery displays all 79 tile images. Notifications mark read in one mutation and deep-link to appropriate rewards screens.
-- Profile/ledger/theme/settings shortcuts and improved mobile long-name handling. Authoritative account username included in get_profile and consumed on sync so restored accounts don't fall back to Player.
-
-## Verification and resolved issues
-- One consolidated testing-agent pass: `/app/test_reports/iteration_1.json`; helper tests `/app/tests/final_regression.ts` passed across 5 themes × 5 levels, splits, solvability, deterministic PCG, XP and claim idempotency; lint/build passed.
-- Initial API failures traced to missing PREVIEW_MODE flag, now configured. This also resolved hints not decrementing due missing initialized profile.
-- Targeted existing backend checks after fix: CDE 10/10, multiplayer 7/7. Reports under `/app/test_reports/pytest/*_after_fix.xml`.
-- Real browser play completed Onet L1 and L2, then matched 2×2 at L3 and observed four children with two distinct image IDs. Hint count 3→2. Three rapid pause/resume cycles and exit visibility passed.
-- Mission d_play claimed through UI; server GET independently confirmed 325 accountXP and 5 Permen, preserved after server restart and new browser context.
-- Final mobile 390×844 + desktop 1920×800 screenshots: no horizontal overflow. Desktop bomb button verified fully inside sidebar. Name restored correctly; profile shows level3. Screenshots `/app/final-verified-*.jpg`.
-- Production Supabase integration was NOT exercised because real project credentials are absent; pre-existing preview adapter is dev-only. No unresolved defects from this task's final tested paths. See final verification report for scope.
+## Verification state
+- TypeScript check and production build passed before last navigation stabilization; final rerun required.
+- Desktop screenshot flows passed: shop, full skin preview, dragged block uses equipped cloud.webp, game back returns Choose Game, Onet board visible, Home scrollHeight==clientHeight, Achievement screen accessible, six daily missions, Memory relaxed deck 12 cards + frozen 75s preview.
+- Comprehensive testing agent pending: purchases, legacy ownership, exact result/mission/achievement/statistics linkage, responsive 320/390/768/1920 and dark mode, no asset overwrites.
 
 ## Prioritized backlog / next tasks
-- P0: No outstanding blocker in verified preview flows. Validate existing real Supabase project/RPCs with actual credentials before claiming production persistence verified.
-- P1: Tune procedural Block levels using player sessions and difficulty telemetry (construction guarantees valid objectives/space, not a complete long-term solution).
-- P1: Optional weekly themed events with cosmetic rewards; keep current currency economy intact.
-- P2: Reduced-effects setting independent of OS, further theme-specific sound/haptics, accessible Onet keyboard grid navigation.
-- P2: Shared score/result cards and optional account-title cosmetic unlocks.
-
-## Prior implementation retained
-Existing shop, achievements, chest rewards/timers, inventory, avatars, theme ownership/equip, minigames, multiplayer, ledger, profile settings and statistics retained. Older PRD currency reward numbers were stale and are superseded by current `src/core/economy.js`, not changed as part of this polish.
-
-## Current asset update — 2026-09-20 (verified)
-### Latest user decisions (Indonesian)
-- "Hanya buat dan pasang aset baru: tidak perlu menambahkan fitur generator di aplikasi." No AI generator, AI keys, upload endpoints or AI SDK added to the app.
-- New high-quality set for all 5 themes + tile skins + avatars/brand; old generated files must stay as rewards. Rewards mixed account level, claimed achievements and daily login.
-- "Nah sekarang bagian rekomendasi dari kamu, tambahkan aset gambar apapun yang direkomendasikan oleh mu hehehe" — added coordinated minigame/menu/booster art, frames, victory particles and chest art.
-- "Jangan lupa update harga item yang dijual, sesuaikan berdasarkan kualitas" — quality-tiered permanent cosmetics and themes; consumable booster prices unchanged.
-- "Ga perlu di screenshot ya, aku sudah lihat kok di pratinjau!" — user has viewed preview; keep final verification consolidated and avoid repeated visual passes.
-### Implemented in current change
-- 124 new local transparent WebP assets (~1.49 MB combined): 80 icons (16 each Sakura, Bakery, Galaxy, Meadow, Fruit), 9 blank tile surfaces, 9 avatars, 3 profile rings, 3 victory particles, 3 chests, 16 game/menu/booster icons, one brand mark; plus PNG favicon/touch icon.
-- Actual generator reported Gemini 3.1 Flash Image preview, requested high quality. No GPT-6 image generator was used. Generated sources/provenance in `scripts/art_sources.json`; non-runtime originals in `scripts/art-originals/`; repeatable offline white-background removal and sprite slicing in `scripts/prepare_premium_art.py`. Old scripts/art and public/art assets not deleted or overwritten.
-- Vanilla matching tiles preserved. Summer Club remains initial active theme. New Meadow is free for every account. New default Pearl tile skins cover 1×1, both domino directions and 2×2; default block/arrow/effect assets are free.
-- Real bitmap cosmetics rendered in Onet, Block Puzzle, portraits, victory effects and store previews. Skins are blank material surfaces, not matching icons. Store excludes reward items. 1×1 cosmetic slot added with shared ownership/equip validation.
-- New logo in home, login/startup via theme, static boot loader, preloading and favicons. Updated minigame selection icons and home imagery; shared logo map replaces matching UI illustrations. Asset cache version bumped for clean files.
-- `tileCatalog.js`/theme registry now include 15 themes / 209 matching images: original 79 + new 80 + 50 legacy reward icons. Deep theme merge no longer mixes vanilla tile IDs into themed icon sets. Gallery counts dynamic.
-- 5 old generated theme sets become distinct reward editions; 12 old avatar/skin images wired as earned cosmetics. Legacy files/ownership retained, including older SVG sources not used for new store rendering.
-- Shared `artRewards.js`: account levels 3/5 for reward Sakura/Bakery, 3 achievement tiers for Galaxy, login days 3/7 for Meadow/Fruit. Other old skins/avatars unlock through mixed milestones. Collection > Gaya shows requirements, progress and equip. No reward-edition purchases accepted by server.
-- New idempotent `DAILY_CHECK_IN` gameplay reward mutation auto-queued on app opening / WIB date change; server ignores client dates and persists login day/statistics/reward ownership. No authentication logic modified. Unlocks also evaluated after existing gameplay/missions/achievement mutations.
-- Theme screen updated to club-style image catalog with normal/reward tabs; remaining legacy-screen redesign is still separate backlog.
-- Prices: free Meadow + defaults; Fruit 100, Bakery 110, Sakura 120, Galaxy 150 Permen. Bitmap cosmetics 35–90. Classic pre-existing themes retain 60–100 prices. Source-of-truth price is shared economy/catalog, used by frontend and authoritative CDE API. Existing owners not charged again.
-### Environment restoration
-- Fork omitted `.env` and root node_modules; restored root dependencies (Node22 existing dependency) and env-only previous Express/Vite setup. Root app on3000 + API8001, unrelated template backend stopped as in prior working setup. No supervisor configuration edited.
-- Preview URL is the value in `/app/frontend/.env` REACT_APP_BACKEND_URL. Existing Supabase/auth preview adapter remains MOCKED; real Supabase credentials absent, production persistence NOT verified.
-### Verification / remaining priorities
-- TypeScript lint and production build passed. Clean sprite review complete. Consolidated test pass: 25 backend tests passed (including actual priced purchase/debit/persistence, forged-price rejection, equip guards, free theme, check-in idempotency, alpha and asset delivery checks). Ten new/reward themes × levels 1/3/7 generated solvable boards with correct tile IDs.
-- Browser verified login/startup/home/store pricing and theme equip, no horizontal overflow on mobile390×844 and desktop1920×800. Targeted follow-up verified all60 actual Onet buttons have Pearl image backgrounds and correct Meadow icons. Initial reported missing-skin finding was a test-selector false positive: `[data-testid^='onet-tile-']` selected `onet-tile-grid`, not a tile. Use `button[data-tile-id]` for assertions.
-- Repeated-login issue was forced-click timing during entry animation, not reproduced with stable-button actionability checks. New registration, actual free Meadow equip, then sign-out/existing-account sign-in passed. No auth application code changed. Actual reward threshold/WIB-midnight/inherited ownership/idempotency assertions also passed.
-- Reports: `/app/test_reports/iteration_1.json` (original findings), `/app/test_reports/art_final_verification.json` (follow-up resolutions), `/app/test_reports/pytest/pytest_results_iteration_latest.xml`. Not all minigame rounds were played to completion in this asset pass; catalog delivery and procedural gameplay generation are covered. Real Supabase remains unverified/MOCKED in preview.
-- P0 current: none unresolved in the tested asset/pricing/reward scope. User review of subjective artwork/value remains welcome.
-- P1 carry-over: restyle remaining Achievements/Chests/Collection/Multiplayer/Block/Notifications to 100% club-v3; compact home; game-over returns to Level Select; distinguish Challenge Center vs Level Select.
-- P2: seasonal cosmetic collections, player feedback on perceived quality/value; real Supabase verification with existing project credentials remains untested.
+- P0: complete integrated QA, fix all findings, recheck mobile Home all features within viewport.
+- P1 NEXT (user deferred): Fruit Merge as a main game; original fruit progression artwork; merge/drop physics, loss/retry, score/combos, shared mission/achievement/statistics events, bitmap cosmetic previews. Do not create a nonfunctional menu button now.
+- P2: further card decks/theme seasons after feedback; improve artwork-specific animation variations without mechanical advantage.
+- Existing integration limitation: no production Supabase credentials in workspace; real-project cloud login was not part of this change. Preview account credentials in test_credentials.md.

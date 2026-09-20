@@ -10,7 +10,11 @@ export const DAILY_MISSIONS_POOL = [
     { id: 'd_onet_split', type: 'split', category: 'onet', title: 'Kejutan di Dalam Tile', desc: 'Pecahkan 6 pasangan tile gabungan di Onet.', target: 6, difficulty: 'Menengah' },
     { id: 'd_block_lines', type: 'blockLines', category: 'block', title: 'Beri Ruang Baru', desc: 'Bersihkan 3 baris atau kolom di Block Puzzle.', target: 3, difficulty: 'Mudah' },
     { id: 'd_block_lines_pro', type: 'blockLines', category: 'block', title: 'Arsitek Balok', desc: 'Bersihkan 8 baris atau kolom di Block Puzzle.', target: 8, difficulty: 'Menengah' },
-    { id: 'd_arcade', type: 'minigame', category: 'arcade', title: 'Petualangan Kecil', desc: 'Menangkan 1 Memory Flip atau Triple Match.', target: 1, difficulty: 'Mudah' },
+    { id: 'd_arcade', type: 'minigame', category: 'arcade', title: 'Pasangan & Tiga Serangkai', desc: 'Menangkan 1 Memory Flip atau Triple Match.', target: 1, difficulty: 'Mudah' },
+    { id:'d_memory_pairs',type:'memoryPairs',category:'memory',title:'Tersimpan di Ingatan',desc:'Temukan 6 pasangan Memory Flip, boleh dari beberapa ronde.',target:6,difficulty:'Mudah'},
+    { id:'d_memory_win',type:'memoryWin',category:'memory',title:'Semua Kartu Terbuka',desc:'Menangkan 1 ronde Memory Flip di kesulitan apa saja.',target:1,difficulty:'Mudah'},
+    { id:'d_triple_trios',type:'tripleTrios',category:'triple',title:'Tiga Itu Pas',desc:'Satukan 6 trio di Triple Match, boleh dari beberapa ronde.',target:6,difficulty:'Mudah'},
+    { id:'d_triple_win',type:'tripleWin',category:'triple',title:'Papan Tanpa Sisa',desc:'Menangkan 1 ronde Triple Match.',target:1,difficulty:'Menengah'},
     // Progress - Clear
     { id: "d_clear_easy", type: "clear", category: "progress", title: "Pemanasan", desc: "Selesaikan 2 level.", target: 2, difficulty: "Mudah" },
     { id: "d_clear_med", type: "clear", category: "progress", title: "Makin Jago", desc: "Selesaikan 4 level.", target: 4, difficulty: "Menengah" },
@@ -92,7 +96,8 @@ export const generateDailyMissions = function(profile) {
         ['onet'],
         ['block'],
         ['skill'],
-        ['arcade'] // A minigame mission is always available.
+        ['memory'],
+        ['triple']
     ];
 
     const selected = [];
@@ -149,10 +154,11 @@ const EVENT_TO_TYPE = {
     blockLines: 'blockLines',
     split: 'split',
     playGame: 'playGame',
+    memoryPairs:'memoryPairs',memoryCombo:'memoryCombo',memoryWin:'memoryWin',tripleTrios:'tripleTrios',tripleWin:'tripleWin',infinityRound:'infinityRound',
 };
 
 // "Peak" missions keep the best single value instead of accumulating.
-const PEAK_TYPES = new Set(['combo']);
+const PEAK_TYPES = new Set(['combo','memoryCombo']);
 
 const pushNotification = (p, title, message, type) => {
     if (!p.notifications) p.notifications = [];
@@ -206,8 +212,15 @@ export const checkDailyMissions = (profile) => {
         p.activeWeeklyMissions = generateWeeklyMissions(p).map(m => ({ ...m, progress: 0, claimed: false }));
         p.weeklyMissionsWeek = week;
     }
+    // Introduce dedicated game missions without erasing current progress or claims.
+    for(const [category,id] of [['memory','d_memory_pairs'],['triple','d_triple_trios']]){
+      if(!p.activeMissions.some(m=>m.category===category))p.activeMissions=[...p.activeMissions,{...DAILY_MISSIONS_POOL.find(m=>m.id===id),progress:0,claimed:false}];
+    }
+    for(const [category,id] of [['memory','w_memory_pairs'],['triple','w_triple_trios']]){
+      if(!p.activeWeeklyMissions.some(m=>m.category===category))p.activeWeeklyMissions=[...p.activeWeeklyMissions,{...WEEKLY_MISSIONS_POOL.find(m=>m.id===id),progress:0,claimed:false}];
+    }
     // Reprice pre-update missions without deleting earned progress or claims.
-    p.activeMissions = p.activeMissions.map(m => ({ ...m, rewardAmount: MISSION_REWARDS.daily[m.difficulty] || 5 }));
+    p.activeMissions = p.activeMissions.map(m => ({ ...m,...(m.id==='d_arcade'?{title:'Pasangan & Tiga Serangkai'}:{}), rewardAmount: MISSION_REWARDS.daily[m.difficulty] || 5 }));
     p.activeWeeklyMissions = p.activeWeeklyMissions.map(m => ({ ...m, rewardAmount: MISSION_REWARDS.weekly[m.difficulty] || 8 }));
     return p;
 };

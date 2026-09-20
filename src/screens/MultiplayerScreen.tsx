@@ -12,6 +12,7 @@ import { useTheme } from '../core/theme/ThemeProvider';
 import { useCDE } from '../core/cde';
 import { MultiplayerGameplay } from '../game/MultiplayerGameplay';
 import { MultiplayerBlockPuzzleGameplay } from '../game/block-puzzle/MultiplayerBlockPuzzleGameplay';
+import { artIcon } from '../core/artAssets';
 
 export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () => void, isEmbedded?: boolean }) => {
   const { navigate, user } = useGame();
@@ -25,6 +26,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
   const [showResultModal, setShowResultModal] = useState(false);
   const [showLeaveWarning, setShowLeaveWarning] = useState(false);
   const [joinCode, setJoinCode] = useState('');
+  const [actionError,setActionError]=useState('');
   
   const {
     room, error, isLoading,
@@ -48,21 +50,23 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
   };
 
   const handleCreate = async (gameMode: string) => {
+    setActionError('');
     try {
       await createRoom(gameMode);
       setShowCreateModal(false);
     } catch (e) {
-      alert(e);
+      setActionError(e instanceof Error?e.message:'Ruangan belum dapat dibuat. Coba lagi.');
     }
   };
 
   const handleJoin = async () => {
+    setActionError('');
     if (!joinCode) return;
     try {
       await joinRoom(joinCode);
       setShowJoinModal(false);
     } catch (e) {
-      alert(e);
+      setActionError(e instanceof Error?e.message:'Ruangan belum dapat ditemukan. Periksa kodenya.');
     }
   };
 
@@ -121,8 +125,9 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
     >
       {/* Standalone Header (Only if not embedded) */}
       {!isEmbedded && (
-        <div className="flex items-center gap-3 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
+        <div className="shell-header">
           <button
+              data-testid="multiplayer-back"
               onClick={room ? handleAttemptLeave : (onBack || (() => navigate('levels')))}
               className="round-button"
               aria-label="Kembali"
@@ -141,7 +146,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
       {!room ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto w-full">
            <div className="w-20 h-20 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl shadow-[4px_4px_0_var(--club-line)] flex items-center justify-center mb-5">
-              <Users size={40} className="text-[var(--club-ink)]" />
+              <img src={artIcon('multiplayer')} alt="" className="w-16 h-16 object-contain"/>
            </div>
            
            <h3 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] mb-1.5">Bermain Bersama</h3>
@@ -149,6 +154,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
            
            <div className="w-full flex flex-col gap-3">
               <button 
+                data-testid="multiplayer-create"
                 onClick={() => setShowCreateModal(true)} 
                 className="pop-button butter w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2" 
                 disabled={isLoading}
@@ -157,6 +163,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
                  <span>Buat Ruangan Baru</span>
               </button>
               <button 
+                data-testid="multiplayer-join"
                 onClick={() => setShowJoinModal(true)} 
                 className="pop-button mint w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2" 
                 disabled={isLoading}
@@ -277,7 +284,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
         )}
       </AnimatePresence>
 
-      <KineticModal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} widthClass="w-full max-w-sm" className="text-center">
+      <KineticModal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} title="Gabung ruangan" widthClass="w-full max-w-sm" className="text-center">
         <div className="flex flex-col items-center">
            <div className="w-14 h-14 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] mb-3">
                <Users size={28} className="text-[var(--club-ink)]" />
@@ -286,18 +293,19 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
            <p className="font-medium text-xs text-[var(--club-muted)] mb-5">Masukkan kode ruangan yang diberikan temanmu.</p>
            
            <div className="bg-[var(--club-paper)] border-2 border-[var(--club-line)] rounded-xl p-3 shadow-inner mb-5 w-full">
-              <input type="text" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} placeholder="KODE RUANGAN" className="w-full font-['Fredoka'] font-semibold text-2xl text-center text-[var(--club-ink)] uppercase outline-none placeholder:text-[var(--club-muted)]/50 bg-transparent" />
+              <input data-testid="multiplayer-room-code" aria-label="Kode ruangan" maxLength={12} type="text" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} placeholder="KODE RUANGAN" className="w-full font-['Fredoka'] font-semibold text-2xl text-center text-[var(--club-ink)] uppercase outline-none placeholder:text-[var(--club-muted)]/50 bg-transparent" />
            </div>
            
            <div className="flex flex-col gap-2.5 w-full">
-               <button onClick={handleJoin} className="pop-button mint w-full py-2.5 font-bold text-xs" disabled={isLoading || !joinCode}>GABUNG</button>
-               <button onClick={() => setShowJoinModal(false)} className="pop-button w-full py-2.5 font-bold text-xs">BATAL</button>
+               <button data-testid="multiplayer-join-confirm" onClick={handleJoin} className="pop-button mint w-full py-2.5 font-bold text-xs" disabled={isLoading || !joinCode.trim()}>Gabung</button>
+               {(actionError||error)&&<p role="alert" data-testid="multiplayer-join-error" className="text-sm text-red-600">{actionError||error}</p>}
            </div>
         </div>
       </KineticModal>
 
       <KineticModal 
         isOpen={showCreateModal} 
+        title="Buat ruangan"
         onClose={() => setShowCreateModal(false)}
         widthClass="w-full max-w-sm"
       >
@@ -310,6 +318,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
             
             <div className="flex flex-col gap-2.5 w-full">
                 <button 
+                    data-testid="multiplayer-create-onet"
                     onClick={() => handleCreate('onet')} 
                     className="pop-button butter w-full py-3 text-xs font-bold" 
                     disabled={isLoading}
@@ -317,18 +326,14 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
                     Main Connect Onet
                 </button>
                 <button 
+                    data-testid="multiplayer-create-block"
                     onClick={() => handleCreate('block-puzzle')} 
                     className="pop-button pink w-full py-3 text-xs font-bold" 
                     disabled={isLoading}
                 >
                     Main Block Puzzle
                 </button>
-                <button 
-                    onClick={() => setShowCreateModal(false)} 
-                    className="pop-button w-full py-2.5 text-xs font-bold mt-1"
-                >
-                    BATAL
-                </button>
+                {(actionError||error)&&<p role="alert" data-testid="multiplayer-create-error" className="text-sm text-red-600">{actionError||error}</p>}
             </div>
         </div>
       </KineticModal>
@@ -343,9 +348,9 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
         secondaryAction={{ label: 'Batal', onClick: () => setShowLeaveWarning(false) }}
       />
 
-      <KineticModal isOpen={showResultModal} onClose={() => { setShowResultModal(false); handleLeave(); }} widthClass="w-full max-w-sm" className="text-center pt-8">
+      <KineticModal isOpen={showResultModal} title="Hasil pertandingan" widthClass="w-full max-w-sm" className="text-center pt-8">
         <div className="w-16 h-16 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-[3px_3px_0_var(--club-line)] mx-auto mb-4">
-           <Trophy size={36} className="text-[var(--club-ink)]" />
+           <img src={artIcon('achievements')} alt="" className="w-14 h-14 object-contain"/>
         </div>
         
         {room?.winner === 'DRAW' ? (
@@ -356,7 +361,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
         ) : room?.winner === user.name ? (
             <>
                <h2 className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] mb-1">Kamu Menang!</h2>
-               <p className="font-medium text-xs text-[#16a34a] font-bold mb-6">Juara 1 Ronde Ini 🎉</p>
+               <p data-testid="multiplayer-win-caption" className="font-medium text-xs text-[#16a34a] font-bold mb-6">Juara ronde ini. Kerja bagus!</p>
                {room?.finishReason === 'DISCONNECT' && (
                   <p className="text-[11px] font-bold text-[#e11d48] -mt-4 mb-4 px-3 py-1 bg-red-50 border border-red-200 rounded-full inline-block">Lawan Keluar dari Pertandingan</p>
                )}
@@ -368,7 +373,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
             </>
         )}
         
-        <button onClick={() => { setShowResultModal(false); handleLeave(); }} className="pop-button mint w-full py-2.5 font-bold text-xs">Tutup</button>
+        <button data-testid="multiplayer-result-menu" onClick={() => { setShowResultModal(false); handleLeave(); }} className="pop-button mint w-full py-2.5 font-bold text-xs">Pilih permainan</button>
       </KineticModal>
     </motion.div>
   );

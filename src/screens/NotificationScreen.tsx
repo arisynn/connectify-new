@@ -1,0 +1,10 @@
+import React,{useEffect} from 'react';
+import {GameShell} from '../components/GameShell';
+import {useProfile} from '../core/profile/ProfileContext';
+import {useGame} from '../GameContext';
+import {artIcon} from '../core/artAssets';
+export const NotificationScreen=()=>{
+  const {profile,updateProfile}=useProfile(),{navigate}=useGame();
+  useEffect(()=>{if(profile.notifications?.some((n:any)=>!n.read))updateProfile({notifications:profile.notifications.map((n:any)=>({...n,read:true}))});},[profile.notifications,updateProfile]);
+  return <GameShell title="Kabar klub" eyebrow="HADIAH, PROGRES, DAN CERITA BARU"><div className="notification-list" data-testid="notification-list">{profile.notifications?.length?profile.notifications.map((n:any)=>{const icon=n.type==='mission'?'missions':n.type==='achievement'?'achievements':'notifications',minutes=Math.max(0,Math.floor((Date.now()-n.timestamp)/60000));return <article data-testid={`notification-${n.id}`} key={n.id} className="notification-entry"><img src={artIcon(icon)} alt=""/><div><h2 data-testid={`notification-title-${n.id}`}>{n.title}</h2><small data-testid={`notification-time-${n.id}`}>{minutes<1?'Baru saja':minutes<60?`${minutes} menit lalu`:minutes<1440?`${Math.floor(minutes/60)} jam lalu`:`${Math.floor(minutes/1440)} hari lalu`}</small><p data-testid={`notification-message-${n.id}`}>{n.message}</p>{['mission','achievement','chest'].includes(n.type)&&<button data-testid={`notification-open-${n.id}`} className="text-button" onClick={()=>navigate(n.type==='mission'?'misi':n.type==='achievement'?'prestasi':'peti')}>Lihat {n.type==='mission'?'misi':n.type==='achievement'?'pencapaian':'peti'} →</button>}</div></article>;}):<div className="empty-state" data-testid="notifications-empty"><img className="result-art" src={artIcon('notifications')} alt=""/><h2 data-testid="notifications-empty-title">Belum ada kabar baru.</h2><p data-testid="notifications-empty-copy">Hadiah dan progresmu akan muncul di sini.</p></div>}</div></GameShell>;
+};

@@ -1,0 +1,49 @@
+{
+  "source": "https://static.prod-images.emergentagent.com/jobs/0b8cb69b-dec7-4561-bae8-f56ff8e79c27/images/e2472f118b2e13618ddde945de5ad89b1baed5e7653b7c746b85e43da67f7ce0.jpeg",
+  "boxes": {
+    "mint": [
+      40,
+      25,
+      330,
+      420
+    ],
+    "autumn": [
+      340,
+      25,
+      635,
+      420
+    ],
+    "celestial": [
+      645,
+      25,
+      935,
+      420
+    ],
+    "arcade": [
+      45,
+      430,
+      340,
+      835
+    ],
+    "front": [
+      470,
+      430,
+      780,
+      835
+    ],
+    "deck": [
+      830,
+      450,
+      1250,
+      835
+    ]
+  },
+  "assets": [
+    "/art/premium/cards/mint.webp",
+    "/art/premium/cards/autumn.webp",
+    "/art/premium/cards/celestial.webp",
+    "/art/premium/cards/arcade.webp",
+    "/art/premium/cards/front.webp",
+    "/art/premium/cards/deck.webp"
+  ]
+}

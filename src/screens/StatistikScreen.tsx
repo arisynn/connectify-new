@@ -1,78 +1,23 @@
 import React from 'react';
-import { useGame } from '../GameContext';
-import { ArrowLeft, BarChart2, Star, Target, Zap, Clock } from 'lucide-react';
-import { motion } from 'motion/react';
-import { useProfile } from '../core/profile/ProfileContext';
-import { DynamicIcon } from '../components/theme/DynamicIcon';
-
-const StatCard = ({ title, value, icon: Icon, colorClass = "bg-[var(--club-card)]" }: { title: string, value: string, icon: any, colorClass?: string }) => (
-  <div className={`border-2 border-[var(--club-line)] rounded-2xl p-4 shadow-[3px_3px_0_var(--club-line)] flex flex-col items-center justify-center text-center ${colorClass} text-[var(--club-ink)]`}>
-     <div className="w-10 h-10 bg-white/80 border-2 border-[var(--club-line)] rounded-xl flex items-center justify-center mb-2 shadow-xs">
-        <Icon size={20} className="text-[var(--club-ink)]" />
-     </div>
-     <span className="font-['Fredoka'] font-semibold text-2xl text-[var(--club-ink)] leading-none mb-1">{value}</span>
-     <span className="font-bold text-[10px] text-[var(--club-muted)] uppercase tracking-wider">{title}</span>
-  </div>
-);
-
-export const StatistikScreen = () => {
-  const { navigate } = useGame();
-  const { profile } = useProfile();
-  
-  const stats = profile?.statistics || {};
-  const totalPlay = (stats.totalGames || 0).toLocaleString('id-ID');
-  
-  const formatNumber = (num: number) => {
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-    return num.toString();
-  };
-  
-  const highScore = formatNumber(stats.highestScore || 0);
-  const highestLevel = (profile?.highestLevel || 1).toString();
-  const maxCombo = 'x' + (stats.highestCombo || 0);
-  
-  const totalPlaySeconds = Math.floor((stats.totalPlayTimeMs || 0) / 1000);
-  const hours = Math.floor(totalPlaySeconds / 3600);
-  const minutes = Math.floor((totalPlaySeconds % 3600) / 60);
-  const playTimeStr = hours > 0 ? `${hours}j ${minutes}m` : `${minutes}m`;
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: 20 }} 
-      transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute inset-0 bg-[var(--club-paper)] z-[100] flex flex-col font-sans text-[var(--club-ink)]"
-    >
-      <div className="flex items-center gap-3 px-5 py-3.5 z-10 shrink-0 bg-[var(--club-paper)] border-b-2 border-[var(--club-line)]">
-        <button
-            onClick={() => navigate('profile')}
-            className="round-button"
-            aria-label="Kembali ke profil"
-        >
-          <DynamicIcon name="back" type="logo" LucideFallback={ArrowLeft} className="w-5 h-5 object-contain text-[var(--club-ink)]" />
-        </button>
-        <div>
-          <span className="text-[9px] font-bold tracking-[1.2px] text-[var(--club-muted)] uppercase block">CATATAN PERMAINAN</span>
-          <h2 className="font-['Fredoka'] font-semibold text-xl text-[var(--club-ink)] leading-tight">Statistik</h2>
-        </div>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto p-5 grid grid-cols-2 gap-3.5 content-start max-w-lg mx-auto w-full">
-         <div className="col-span-2 bg-[var(--club-butter)] border-2 border-[var(--club-line)] rounded-2xl p-5 shadow-[3px_3px_0_var(--club-line)] flex items-center justify-between text-[var(--club-ink)]">
-            <div>
-               <span className="font-bold text-[10px] uppercase tracking-wider text-[var(--club-muted)] block mb-0.5">Total Permainan</span>
-               <span className="font-['Fredoka'] font-semibold text-4xl text-[var(--club-ink)]">{totalPlay}</span>
-            </div>
-            <div className="w-14 h-14 bg-white/80 border-2 border-[var(--club-line)] rounded-2xl flex items-center justify-center shadow-xs">
-              <BarChart2 size={32} className="text-[var(--club-ink)]" />
-            </div>
-         </div>
-         <StatCard title="Skor Tertinggi" value={highScore} icon={Star} colorClass="bg-[var(--club-card)]" />
-         <StatCard title="Level Tertinggi" value={highestLevel} icon={Target} colorClass="bg-[var(--club-sky)]" />
-         <StatCard title="Max Combo" value={maxCombo} icon={Zap} colorClass="bg-[var(--club-pink)]" />
-         <StatCard title="Waktu Main" value={playTimeStr} icon={Clock} colorClass="bg-[var(--club-card)]" />
-      </div>
-    </motion.div>
-  );
+import {GameShell} from '../components/GameShell';
+import {ProgressNav} from '../components/ProgressNav';
+import {useProfile} from '../core/profile/ProfileContext';
+import {artIcon} from '../core/artAssets';
+export const StatistikScreen=()=>{
+  const {profile}=useProfile(),s=profile.statistics||{},number=(n:number)=>Number(n||0).toLocaleString('id-ID');
+  const games=[
+    {id:'onet',name:'Onet',art:'onet',rounds:s.onetGames,wins:s.onetWins,record:s.onetHighScore,detail:`Level ${profile.highestLevel||1} · ${number(s.onetMatches)} pasangan`},
+    {id:'block',name:'Block Puzzle',art:'block',rounds:s.blockGames||s.blockPuzzleGames,wins:s.blockWins,record:s.blockHighScore||s.blockPuzzleHighScore,detail:`Level ${profile.highestBlockPuzzleLevel||profile.blockPuzzleLevel||1} · ${number(s.blockPuzzleStars)} bintang`},
+    {id:'infinity',name:'Block Infinity',art:'block',rounds:s.infinityGames,record:s.infinityHighScore,detail:`${number(s.infinityLines)} garis dibersihkan`},
+    {id:'memory',name:'Memory Flip',art:'memory',rounds:s.memoryGames,wins:s.memoryWins,record:s.memoryHighScore,detail:`${number(s.memoryMatches)} pasangan · Combo terbaik ×${number(s.memoryBestCombo)}`},
+    {id:'triple',name:'Triple Match',art:'triple',rounds:s.tripleGames,wins:s.tripleWins,record:s.tripleHighScore,detail:`${number(s.tripleMatches)} trio terbentuk`}
+  ];
+  const minutes=Math.floor((s.totalPlayTimeMs||0)/60000),time=minutes>=60?`${Math.floor(minutes/60)}j ${minutes%60}m`:`${minutes}m`;
+  return <GameShell title="Statistik permainan" eyebrow="SATU AKUN. SEMUA PERJALANANMU." wide><ProgressNav/>
+    <div className="club-page-banner"><div><span className="eyebrow" data-testid="stats-caption">CATATAN KLUB</span><h2 data-testid="stats-total-rounds">{number(s.totalGames)} ronde dimainkan</h2><p data-testid="stats-total-wins">{number(s.totalWins)} kemenangan · {time} waktu bermain</p></div><img src={artIcon('stats')} alt=""/></div>
+    <div className="stats-summary-grid">{[['score','Total skor',number(s.totalScore)],['record','Skor tertinggi',number(s.highestScore)],['combo','Combo terbaik',`×${number(s.highestCombo)}`],['missions','Misi diklaim',number(s.totalDailyMissionsCompleted)]].map(([id,label,value])=><div key={id}><b data-testid={`stats-${id}`}>{value}</b><span data-testid={`stats-${id}-label`}>{label}</span></div>)}</div>
+    <div className="stats-game-grid">{games.map(game=><article className="stats-game-card" data-testid={`stats-game-${game.id}`} key={game.id}><header><img src={artIcon(game.art)} alt=""/><h2 data-testid={`stats-game-name-${game.id}`}>{game.name}</h2></header><dl><div><dt>Ronde</dt><dd data-testid={`stats-${game.id}-rounds`}>{number(game.rounds)}</dd></div>{game.id!=='infinity'&&<div><dt>Menang</dt><dd data-testid={`stats-${game.id}-wins`}>{number(game.wins)}</dd></div>}<div><dt>Rekor</dt><dd data-testid={`stats-${game.id}-record`}>{number(game.record)}</dd></div></dl><p data-testid={`stats-${game.id}-detail`}>{game.detail}</p></article>)}</div>
+    <div className="stats-mode-note" data-testid="stats-submodes"><h2 data-testid="stats-submode-title">Cara lain menikmati game</h2><p data-testid="stats-sprint">Onet Sprint: {number(s.sprintGames)} ronde · {number(s.sprintWins)} menang</p><p data-testid="stats-multiplayer">Duel teman: {number(s.multiplayerGames)} ronde · {number(s.multiplayerWins)} menang</p><small data-testid="stats-mode-explainer">Mode ini sudah termasuk dalam rekap Onet / Block, bukan ronde tambahan.</small></div>
+    <p className="fine-print" data-testid="stats-sync-note">Setiap ronde selesai dicatat satu kali. Detail pasangan, trio, dan waktu per game mulai dilacak sejak pembaruan ini; total progres lama tetap tersimpan.</p>
+  </GameShell>;
 };

@@ -188,6 +188,11 @@ export const ACHIEVEMENTS_DATA = [
     ...a, tiers: a.tiers.map((tier, index) => ({ ...tier, reward: { permen: Math.min(10, 5 + index * 2) } }))
 }));
 ACHIEVEMENTS_DATA.push(
+  {id:'memory_pairs',category:'mastery',title:'Pasangan dalam Ingatan',desc:n=>`Temukan ${n} pasangan kartu Memory Flip.`,tiers:[6,40,150].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.memoryMatches||0},
+  {id:'memory_combo',category:'mastery',title:'Ingatan Beruntun',desc:n=>`Raih ${n} pasangan berturut-turut di Memory Flip.`,tiers:[3,6,12].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.memoryBestCombo||0},
+  {id:'triple_trios',category:'mastery',title:'Racikan Tiga',desc:n=>`Satukan ${n} trio di Triple Match.`,tiers:[12,60,240].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.tripleMatches||0},
+  {id:'infinity_explorer',category:'progression',title:'Selalu Ada Ruang',desc:n=>`Tuntaskan ${n} ronde Block Infinity.`,tiers:[1,5,25].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.infinityGames||0},
+  {id:'club_explorer',category:'progression',title:'Kenal Seluruh Klub',desc:n=>`Mainkan ${n} jenis game berbeda hingga selesai.`,tiers:[2,4,5].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>['onet','block','memory','triple','block-infinity'].filter(game=>(p.statistics?.[`${game}Games`]||0)>0).length},
   { id: 'first_win', category: 'progression', title: 'Langkah Pertama', desc: n => `Menangkan ${n} permainan.`, tiers: [{ target: 1, reward: { permen: 5 } }], getProgress: p => p.statistics?.totalWins || 0 },
   { id: 'memory_master', category: 'mastery', title: 'Ingatan Tajam', desc: n => `Menangkan ${n} Memory Flip.`, tiers: [1, 5, 20].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.memoryWins || 0 },
   { id: 'triple_master', category: 'mastery', title: 'Tiga Serangkai', desc: n => `Menangkan ${n} Triple Match.`, tiers: [1, 5, 20].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.tripleWins || 0 },
