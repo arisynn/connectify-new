@@ -11,7 +11,7 @@ export const StatistikScreen=()=>{
     {id:'infinity',name:'Block Infinity',art:'block',rounds:s.infinityGames,record:s.infinityHighScore,detail:`${number(s.infinityLines)} garis dibersihkan`},
     {id:'memory',name:'Memory Flip',art:'memory',rounds:s.memoryGames,wins:s.memoryWins,record:s.memoryHighScore,detail:`${number(s.memoryMatches)} pasangan · Combo terbaik ×${number(s.memoryBestCombo)}`},
     {id:'triple',name:'Triple Match',art:'triple',rounds:s.tripleGames,wins:s.tripleWins,record:s.tripleHighScore,detail:`${number(s.tripleMatches)} trio terbentuk`},
-    {id:'fruit',name:'Fruit Merge',art:'fruit-merge',rounds:s.fruitGames,wins:s.fruitWins,record:s.fruitHighScore,detail:`${number(s.fruitMerges)} gabungan · Buah tingkat ${number(s.fruitBestStage)} · ${number(s.fruitWatermelons)} semangka`}
+    {id:'star',name:'Star Patrol',art:'star-patrol',rounds:s.starGames,wins:s.starWins,record:s.starHighScore,detail:`${number(s.starKills)} musuh · ${number(s.starBosses)} boss · Sektor ${profile.starLevel||1}`}
   ];
   const minutes=Math.floor((s.totalPlayTimeMs||0)/60000),time=minutes>=60?`${Math.floor(minutes/60)}j ${minutes%60}m`:`${minutes}m`;
   return <GameShell title="Statistik permainan" eyebrow="SATU AKUN. SEMUA PERJALANANMU." wide><ProgressNav/>

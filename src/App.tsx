@@ -18,7 +18,7 @@ import { useAudio } from './core/audio/AudioEngine';
 const GameApp = () => {
   const { screen, navigate } = useGame();
   const audio=useAudio();
-  React.useEffect(()=>{if(['boot','login'].includes(screen))audio.stopBgm();else if(['play','block-puzzle','memory','triple','fruit-merge','multiplayer'].includes(screen))audio.playGameBgm();else audio.playMenuBgm();},[screen,audio.playMenuBgm,audio.playGameBgm,audio.stopBgm]);
+  React.useEffect(()=>{if(['boot','login'].includes(screen))audio.stopBgm();else if(['play','block-puzzle','memory','triple','star-patrol','multiplayer'].includes(screen))audio.playGameBgm();else audio.playMenuBgm();},[screen,audio.playMenuBgm,audio.playGameBgm,audio.stopBgm]);
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {

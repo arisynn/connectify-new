@@ -2,7 +2,7 @@ import React from 'react';
 import { Home, Gamepad2, Target, ShoppingBag, UserRound } from 'lucide-react';
 import { Screen, useGame } from '../GameContext';
 const tabs:{id:Screen,label:string,icon:any}[]=[{id:'home',label:'Beranda',icon:Home},{id:'levels',label:'Main',icon:Gamepad2},{id:'misi',label:'Progres',icon:Target},{id:'toko',label:'Toko',icon:ShoppingBag},{id:'profile',label:'Profil',icon:UserRound}];
-const hidden=['boot','startup','login','play','block-puzzle','memory','triple','fruit-merge','multiplayer','pesan'];
+const hidden=['boot','startup','login','play','block-puzzle','memory','triple','star-patrol','multiplayer','pesan'];
 export const MobileNav=()=>{
   const {screen,navigate}=useGame();
   if(hidden.includes(screen))return null;

@@ -3,6 +3,7 @@ import { getDefaultProfile } from './defaultProfile';
 import { CDE } from '../cde/CDE';
 import { unlockArtRewards } from '../artRewards';
 import { getTodayKey } from '../economy';
+import { migrateStarProfile } from '../starPatrol';
 
 
 interface ProfileContextType {
@@ -71,7 +72,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
       }
       
-      return unlockArtRewards(base);
+      return unlockArtRewards(migrateStarProfile(base));
   }, [cdeState]);
 
   const clearProfile = useCallback(() => {

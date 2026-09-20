@@ -4,8 +4,8 @@ import { cosmeticImage, artIcon } from '../core/artAssets';
 import { GameParticles } from './GameParticles';
 export const CosmeticPreview=({item,context='catalog'}:{item:any;context?:string})=>{
   const testId=`${context}-art-${item.id}`;
+  if(['ship','laser','upgrade'].includes(item.category))return <div className={`product-art star-product-art ${item.category}`} data-testid={testId}><img src={item.image} alt={item.name}/></div>;
   if(item.category==='card')return <div className="product-art memory-card-product" data-testid={testId}><img src={cosmeticImage(item)} alt={`Belakang kartu ${item.name}`}/><img src="/art/premium/cards/front.webp" alt="Depan kartu"/></div>;
-  if(item.category==='basket')return <div className="product-art" data-testid={testId}><div className="basket-preview" style={{['--basket-skin' as any]:`url(${cosmeticImage(item)})`}}><img src="/art/premium/fruit-merge/0.webp" alt=""/><img src="/art/premium/fruit-merge/4.webp" alt=""/><img src="/art/premium/fruit-merge/1.webp" alt=""/></div></div>;
   if(item.category==='animation') return <div className="product-art animation" data-testid={testId}><div className="animation-stage"><span className="animation-demo-tile"/><GameParticles item={item} id={`${testId}-particles`} loop/></div></div>;
   if(item.members) return <div className="product-art skin-pack-preview" data-testid={testId}>{['single','duo','cube'].map((shape,i)=><span className={`pack-piece ${shape}`} key={shape} style={{backgroundImage:`url(${cosmeticImage(item)})`}}><small data-testid={`${testId}-${shape}`}>{['1×1','1×2 / 2×1','2×2'][i]}</small></span>)}</div>;
   if(item.category==='help') return <div className="product-art help"><img data-testid={testId} src={artIcon(item.id)} alt={item.name}/></div>;

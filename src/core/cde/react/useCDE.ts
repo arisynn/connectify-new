@@ -34,6 +34,7 @@ export const useCDE = () => {
         },
         queueMutation: async (type: any, payload: any) => {
             await CDE.queueMutation(type, payload);
-        }
+        },
+        commitMutation: async (type:any,payload:any) => CDE.commitMutation(type,payload)
     };
 };

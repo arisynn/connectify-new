@@ -11,6 +11,7 @@ import { claimAchievement } from '../achievements';
 import { claimMissionReward, updateMissions } from '../misiHarian';
 import { getItemPrice, ITEM_FIELD, DEFAULT_ITEM_COUNT, recordTransaction, TRANSACTION_LABELS } from '../economy';
 import { unlockAvatars } from '../avatars';
+import { migrateStarProfile, starUpgradeItem, purchaseStarUpgrade } from '../starPatrol';
 import { apiFetch as fetch } from '../../lib/api';
 
 export class CDEngine {
@@ -211,7 +212,7 @@ export class CDEngine {
       }
   }
 
-  async queueMutation(type: CDEOperationType, payload: any): Promise<void> {
+  async queueMutation(type: CDEOperationType, payload: any): Promise<string> {
       if (type === 'MUTATE_PERMEN') throw new Error('Permen hanya tersedia dari peti, misi, dan pencapaian.');
       if (!this.state.account || !this.state.profile) {
           throw new Error("Cannot mutate: CDE not initialized or no profile");
@@ -231,7 +232,7 @@ export class CDEngine {
 
       // Optimistic update (mirrors the authoritative logic in api/cde.ts using the same pure helpers)
       let newProfile = { ...this.state.profile };
-      const prof = () => ({ ...(newProfile.profile_data?.profile || {}) });
+      const prof = () => migrateStarProfile({ ...(newProfile.profile_data?.profile || {}) });
       const patchProfile = (patch: any) => {
           const { permen, coins, ...rest } = patch || {};
           newProfile.profile_data = {
@@ -244,7 +245,7 @@ export class CDEngine {
       if (type === 'DAILY_CHECK_IN') {
           patchProfile(checkInArtRewards(prof()));
       } else if (type === 'UPDATE_PROFILE') {
-          patchProfile(payload);
+          patchProfile({...payload,...(payload.equippedCosmetics?{equippedCosmetics:{...prof().equippedCosmetics,...payload.equippedCosmetics}}:{})});
       } else if (type === 'UPDATE_GAME_STATE') {
           newProfile.profile_data = {
               ...newProfile.profile_data,
@@ -268,7 +269,9 @@ export class CDEngine {
           if (itemId.startsWith('theme_') && ownsTheme(prof(), itemId.slice(6))) throw new Error('ALREADY_OWNED');
           if (cost !== null && (newProfile.permen || 0) >= cost) {
               addPermen(-cost);
-              if (cosmeticById(itemId)) {
+              if (starUpgradeItem(itemId)) {
+                  patchProfile(purchaseStarUpgrade(prof(),itemId));
+              } else if (cosmeticById(itemId)) {
                   patchProfile({ownedCosmetics:[...(prof().ownedCosmetics||[]),itemId]});
               } else if (itemId.startsWith('theme_')) {
                   const themeId = itemId.replace('theme_', '');
@@ -324,6 +327,24 @@ export class CDEngine {
       
       this.updateStatus('PENDING');
       this.triggerSync();
+      return opId;
+  }
+
+  // A queued write is not a confirmed save. Critical UI waits for the exact operation.
+  private receipts = new Map<string, {error?:string}>();
+  async commitMutation(type:CDEOperationType,payload:any):Promise<void> {
+      if(!navigator.onLine)throw new Error('OFFLINE');
+      const pending=await this.getPendingOperations();
+      const existing=pending.find(op=>op.type===type&&JSON.stringify(op.payload)===JSON.stringify(payload));
+      const id=existing?.opId||await this.queueMutation(type,payload);
+      const deadline=Date.now()+25000;
+      while(Date.now()<deadline){
+          const receipt=this.receipts.get(id);
+          if(receipt){this.receipts.delete(id);if(receipt.error)throw new Error(receipt.error);return;}
+          if(!this.isSyncing)void this.sync();
+          await new Promise(resolve=>setTimeout(resolve,100));
+      }
+      throw new Error('SAVE_PENDING');
   }
 
   private triggerSync() {
@@ -438,6 +459,8 @@ export class CDEngine {
                           this.updateState({ profile: updatedProfile });
                           await this.db.setProfile(updatedProfile);
                       }
+                      this.receipts.set(op.opId, data.ignored?{error:data.reason||'SAVE_REJECTED'}:{});
+                      if(this.receipts.size>200)this.receipts.delete(this.receipts.keys().next().value);
                   } else if (res.status === 409) {
                       op.status = 'CONFLICT';
                       await this.db.updateOperation(op);
@@ -476,6 +499,7 @@ export class CDEngine {
                       // membebaskan antrean di belakangnya dari deadlock.
                       op.status = 'FAILED';
                       op.error = err.message;
+                      this.receipts.set(op.opId,{error:err.message});
                       await this.db.updateOperation(op);
                       continue; // Lanjutkan ke operasi berikutnya (Lompati yang gagal ini)
                   }

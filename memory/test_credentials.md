@@ -1,5 +1,11 @@
 # Akun pengujian
 
+## Status terbaru — Star Patrol
+- Lingkungan SAAT INI menggunakan Supabase asli, bukan adaptor pratinjau lokal. Catatan lama di bawah hanya arsip.
+- Akun dari pengujian sebelumnya: QaAll4505061 / ClubPlay2026! — email qaall4505061@connectify.com.
+- Akun lain laporan iteration_1: QaFruit8319945, QaShop6109939, QaMis2214729 / ClubPlay2026! (email nama lowercase @connectify.com).
+- Pengujian terbaru akan memperbarui bagian ini dengan akun aktual yang digunakan; jangan mengubah kredensial akun pengguna.
+
 ## Seasonal Stories — sesi saat ini
 - SeasonalVisual / ClubPlay2026! — akun yang dibuat untuk reproduksi Main → Memory → Kembali → Pusat Tantangan. Email internal seasonalvisual@connectify.com.
 - Auth pratinjau disimpan lokal pada konteks browser. Untuk konteks baru gunakan registrasi nama unik atau pulihkan state browser pengujian. Tidak ada kredensial produksi baru.

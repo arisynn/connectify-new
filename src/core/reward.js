@@ -12,7 +12,7 @@ export const RewardEngine = {
       linesCleared = 0, stars = 0, isDailyChallenge = false, runId, level = 1 } = payload;
     const empty = { profile, rewardResult: { chestPoints: 0, permen: 0, dailyBonus: 0, xp: 0, leveledUp: false, accountLevel: getAccountProgress(profile).level } };
     if (runId && (profile.processedRuns || []).includes(runId)) return empty;
-    const xp = isWinner ? 100 + (isFlawless ? 25 : 0) + Math.min(25, highestCombo * 2) : Math.min(40, Math.floor(score / (game === 'fruit' ? 20 : 100)));
+    const xp = isWinner ? 100 + (isFlawless ? 25 : 0) + Math.min(25, highestCombo * 2) : Math.min(40, Math.floor(score / 100));
     const previousLevel = getAccountProgress(profile).level;
     let p = { ...awardXP(profile, xp), statistics: { ...profile.statistics } };
     const s = p.statistics;
@@ -36,7 +36,7 @@ export const RewardEngine = {
       s.totalWins = (s.totalWins || 0) + 1;
       s[`${game}Wins`] = (s[`${game}Wins`] || 0) + 1;
       if (isFlawless) s.totalFlawless = (s.totalFlawless || 0) + 1;
-      if (game === 'onet' && !isMultiplayer && !isDailyChallenge && level <= (p.highestLevel || 1)) p.highestLevel = Math.max(p.highestLevel || 1, level + 1);
+      if (game === 'onet' && !isMultiplayer && !isDailyChallenge && level <= (p.highestLevel || 1)) {p.highestLevel = Math.max(p.highestLevel || 1, level + 1);p.currentLevel=p.highestLevel;}
       if (game === 'onet' && timeElapsed > 0 && timeElapsed < 45000) s.speedrunLevels = (s.speedrunLevels || 0) + 1;
       if (game === 'onet' && payload.progress >= 50) s.survivorLevels = (s.survivorLevels || 0) + 1;
       if (game === 'onet' && payload.remainingTime > 0 && payload.remainingTime <= 1) s.nearDeathEscapes = (s.nearDeathEscapes || 0) + 1;
@@ -53,17 +53,16 @@ export const RewardEngine = {
       s.blockPuzzleHighScore = Math.max(s.blockPuzzleHighScore || 0, score);
       s.blockLines = (s.blockLines || 0) + linesCleared;
       s.blockCombo = Math.max(s.blockCombo || 0, highestCombo);
-      if (isWinner) { p.highestBlockPuzzleLevel = Math.max(p.highestBlockPuzzleLevel || 1, level + 1); p.blockPuzzleLevel = Math.max(p.blockPuzzleLevel || 1, level + 1); }
+      if (isWinner && !isMultiplayer && level <= (p.highestBlockPuzzleLevel || 1)) { p.highestBlockPuzzleLevel = Math.max(p.highestBlockPuzzleLevel || 1, level + 1); p.blockPuzzleLevel = p.highestBlockPuzzleLevel; }
     }
-    if (game === 'fruit') {
-      const stage = Math.min(11, Math.max(0, Math.floor(payload.fruitStage || 0))) + 1;
-      s.fruitMerges = (s.fruitMerges || 0) + matches;
-      s.fruitBestStage = Math.max(s.fruitBestStage || 0, stage);
-      s.fruitWatermelons = (s.fruitWatermelons || 0) + (payload.watermelons || (stage >= 12 ? 1 : 0));
-      p = updateMissions(p, 'fruitRound', 1);
-      if (matches > 0) p = updateMissions(p, 'fruitMerges', matches);
-      p = updateMissions(p, 'fruitStage', stage);
-      if (stage >= 12) p = updateMissions(p, 'fruitWatermelon', 1);
+    if (game === 'star') {
+      s.starKills=(s.starKills||0)+(payload.kills||0);
+      s.starBosses=(s.starBosses||0)+(payload.bosses||0);
+      s.starBestSector=Math.max(s.starBestSector||0,isWinner?level:0);
+      if(isWinner&&level<=(p.starLevel||1))p.starLevel=Math.max(p.starLevel||1,level+1);
+      p=updateMissions(p,'starKills',payload.kills||0);
+      p=updateMissions(p,'starBosses',payload.bosses||0);
+      p=updateMissions(p,'starRound',1);
     }
     if (isMultiplayer) {
       s.multiplayerGames = (s.multiplayerGames || 0) + 1;
@@ -77,7 +76,7 @@ export const RewardEngine = {
         s.dailyChallengesWon = (s.dailyChallengesWon || 0) + 1;
       }
     }
-    const chestPoints = isWinner ? 2 + (isFlawless ? 1 : 0) + (highestCombo >= 8 ? 1 : 0) : (game === 'fruit' && matches >= 10 ? 1 : 0);
+    const chestPoints = isWinner ? 2 + (isFlawless ? 1 : 0) + (highestCombo >= 8 ? 1 : 0) : (game === 'star' && payload.kills >= 10 ? 1 : 0);
     p = addChestProgress(p, chestPoints);
     if (isWinner) p = updateMissions(p, 'winLevel', 1);
     if (isWinner && isFlawless) p = updateMissions(p, 'flawless', 1);

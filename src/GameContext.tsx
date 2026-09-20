@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
-export type Screen = 'boot' | 'startup' | 'login' | 'home' | 'play' | 'multiplayer' | 'peti' | 'toko' | 'misi' | 'tema' | 'prestasi' | 'statistik' | 'pesan' | 'profile' | 'levels' | 'block-puzzle' | 'settings' | 'koleksi' | 'edit-avatar' | 'challenges' | 'memory' | 'triple' | 'ledger' | 'fruit-merge';
+export type Screen = 'boot' | 'startup' | 'login' | 'home' | 'play' | 'multiplayer' | 'peti' | 'toko' | 'misi' | 'tema' | 'prestasi' | 'statistik' | 'pesan' | 'profile' | 'levels' | 'block-puzzle' | 'settings' | 'koleksi' | 'edit-avatar' | 'challenges' | 'memory' | 'triple' | 'ledger' | 'star-patrol' | 'star-hangar';
 
 export type GameMode = 'normal' | 'daily' | 'infinity';
 

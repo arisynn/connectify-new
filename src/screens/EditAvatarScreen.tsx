@@ -1,26 +1,27 @@
 import React,{useState} from 'react';
-import {Check} from 'lucide-react';
+import {Check,Lock} from 'lucide-react';
 import {GameShell} from '../components/GameShell';
-import {AvatarGallery} from '../components/AvatarGallery';
 import {PlayerPortrait} from '../components/PlayerPortrait';
 import {useProfile} from '../core/profile/ProfileContext';
 import {useCDE} from '../core/cde';
 import {useGame} from '../GameContext';
 import {COSMETICS,ownsCosmetic,equippedCosmetic} from '../core/cosmetics';
-import {cosmeticImage} from '../core/artAssets';
-const COLORS=[['#bde0fe','Langit'],['#fcf6bd','Mentega'],['#d0f4de','Mint'],['#ffdac1','Persik'],['#ffd1dc','Mawar'],['#1e3a8a','Malam'],['#0f766e','Laut'],['#9f1239','Beri']];
+import {AVATARS,isAvatarUnlocked} from '../core/avatars';
+import '../simple-club.css';
+const COLORS=[['#bde0fe','Langit'],['#fcf6bd','Kuning'],['#d0f4de','Mint'],['#ffdac1','Persik'],['#ffd1dc','Mawar'],['#0f766e','Laut']];
 export const EditAvatarScreen=()=>{
   const {profile}=useProfile(),cde=useCDE(),{navigate}=useGame(),current=equippedCosmetic(profile,'avatar');
-  const [selection,setSelection]=useState(current?`cosmetic:${current.id}`:`base:${profile.activeAvatarId||'avatar_male'}`),[bg,setBg]=useState(profile.activeAvatarBackground||COLORS[0][0]),[busy,setBusy]=useState(false),[error,setError]=useState('');
-  const [kind,id]=selection.split(':'),cosmetics=COSMETICS.filter(c=>c.category==='avatar'&&ownsCosmetic(profile,c.id));
-  const patch={...(kind==='base'?{activeAvatarId:id,avatar:id}:{}),activeAvatarBackground:bg,equippedCosmetics:{...profile.equippedCosmetics,avatar:kind==='cosmetic'?id:null}};
-  const changed=selection!==(current?`cosmetic:${current.id}`:`base:${profile.activeAvatarId||'avatar_male'}`)||bg!==profile.activeAvatarBackground;
-  const save=async()=>{if(busy)return;setBusy(true);setError('');try{await cde.queueMutation('UPDATE_PROFILE',patch);navigate('profile');}catch{setError('Avatar belum tersimpan. Coba lagi setelah akun tersambung.');}finally{setBusy(false);}};
-  return <GameShell title="Gaya profilmu" eyebrow="SATU PILIHAN. TAMPIL DI SELURUH KLUB." back="profile" wide>
-    <div className="avatar-editor-preview" data-testid="avatar-live-preview"><PlayerPortrait id="avatar-editor-portrait" profileOverride={{...profile,...patch}}/><div><h2 data-testid="avatar-preview-title">Ini tampilan barumu.</h2><p data-testid="avatar-preview-copy">Ganti avatar atau warnanya. Bingkai dan kosmetik lain tetap dipertahankan.</p></div></div>
-    <div className="section-heading"><h2 data-testid="avatar-background-heading">Warna latar</h2></div><div className="avatar-colors">{COLORS.map(([color,label],i)=><button key={color} data-testid={`avatar-color-${i}`} aria-label={`Warna ${label}`} aria-pressed={bg===color} onClick={()=>setBg(color)} style={{backgroundColor:color}}>{bg===color&&<Check size={18}/>}</button>)}</div>
-    {cosmetics.length>0&&<><div className="section-heading"><h2 data-testid="avatar-cosmetics-title">Karakter dari koleksimu</h2></div><div className="avatar-gallery">{cosmetics.map(c=><button data-testid={`avatar-cosmetic-${c.id}`} key={c.id} aria-pressed={selection===`cosmetic:${c.id}`} className={`avatar-card unlocked ${selection===`cosmetic:${c.id}`?'active':''}`} onClick={()=>setSelection(`cosmetic:${c.id}`)}><div className="avatar-portrait"><img src={cosmeticImage(c)} alt={c.name}/>{selection===`cosmetic:${c.id}`&&<span className="avatar-check"><Check size={18}/></span>}</div><b>{c.name}</b><small>Milikmu</small></button>)}</div></>}
-    <div className="section-heading"><h2 data-testid="avatar-base-title">Teman dari petualangan</h2></div><p className="page-lede" data-testid="avatar-intro">Avatar ini terbuka lewat progres permainan. Pilihan terkunci tidak dapat dipakai.</p><AvatarGallery selected={kind==='base'?id:''} onSelect={id=>setSelection(`base:${id}`)}/>
-    {error&&<p data-testid="avatar-save-error" role="alert" className="shop-message">{error}</p>}<div className="avatar-save-bar"><button data-testid="avatar-save" className="pop-button pink" disabled={busy||!changed} onClick={save}>{busy?'Menyimpan…':'Simpan perubahan'}<Check size={17}/></button><p data-testid="avatar-save-note">Belum disimpan? Tombol kembali tidak mengubah profilmu.</p></div>
-  </GameShell>;
+  const original=current?`cosmetic:${current.id}`:`base:${profile.activeAvatarId||'avatar_male'}`;
+  const [selection,setSelection]=useState(original),[bg,setBg]=useState(profile.activeAvatarBackground||COLORS[0][0]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[locked,setLocked]=useState(false);
+  const [kind,id]=selection.split(':');
+  const patch={...(kind==='base'?{activeAvatarId:id,avatar:id}:{}),activeAvatarBackground:bg,equippedCosmetics:{avatar:kind==='cosmetic'?id:null}};
+  const options=[...AVATARS.map(a=>({...a,key:`base:${a.id}`,unlocked:isAvatarUnlocked(profile,a)})),...COSMETICS.filter(c=>c.category==='avatar'&&ownsCosmetic(profile,c.id)).map(c=>({...c,key:`cosmetic:${c.id}`,unlocked:true,requirement:'Koleksimu'}))];
+  const save=async()=>{if(busy)return;setBusy(true);setError('');try{await cde.commitMutation('UPDATE_PROFILE',patch);navigate('profile');}catch(e:any){setError(e.message==='AVATAR_LOCKED'?'Avatar ini belum terbuka. Pilih avatar milikmu.':e.message==='SAVE_PENDING'?'Penyimpanan masih menunggu koneksi. Buka profil setelah akun tersambung.':'Foto profil belum tersimpan. Coba simpan lagi saat tersambung.');}finally{setBusy(false);}};
+  return <GameShell title="Foto profil" eyebrow="PROFIL" back="profile"><div className="simple-avatar-editor">
+    <div className="simple-avatar-preview" data-testid="avatar-live-preview"><PlayerPortrait id="avatar-editor-portrait" profileOverride={{...profile,...patch,equippedCosmetics:{...profile.equippedCosmetics,...patch.equippedCosmetics}}}/><span data-testid="avatar-preview-name">{options.find(o=>o.key===selection)?.name||'Avatar'}</span></div>
+    <div className="avatar-colors">{COLORS.map(([color,label],i)=><button disabled={busy} key={color} data-testid={`avatar-color-${i}`} aria-label={`Warna ${label}`} aria-pressed={bg===color} onClick={()=>setBg(color)} style={{backgroundColor:color}}>{bg===color&&<Check size={17}/>}</button>)}</div>
+    <div className="simple-avatar-tabs" role="tablist" aria-label="Koleksi avatar"><button role="tab" data-testid="avatar-tab-owned" aria-selected={!locked} onClick={()=>setLocked(false)}>Milikmu</button><button role="tab" data-testid="avatar-tab-locked" aria-selected={locked} onClick={()=>setLocked(true)}>Belum terbuka</button></div>
+    <div className="simple-avatar-grid">{options.filter(o=>locked?!o.unlocked:o.unlocked).map(o=>{const [type,avatarId]=o.key.split(':');return <button key={o.key} data-testid={type==='base'?`avatar-select-${o.id}`:`avatar-cosmetic-${o.id}`} disabled={!o.unlocked||busy} aria-pressed={selection===o.key} aria-label={o.name} onClick={()=>setSelection(o.key)}><PlayerPortrait id={`avatar-option-${o.id}`} profileOverride={{...profile,activeAvatarId:avatarId,equippedCosmetics:{avatar:type==='cosmetic'?avatarId:null},activeAvatarBackground:bg}}/><b>{o.name}</b>{selection===o.key&&<Check className="avatar-selected-check" size={16}/>}<small data-testid={`avatar-requirement-${o.id}`}>{!o.unlocked?<><Lock size={11}/>{o.requirement}</>:' '}</small></button>;})}</div>
+    {error&&<p data-testid="avatar-save-error" role="alert" className="shop-message">{error}</p>}<div className="avatar-save-bar"><button data-testid="avatar-save" className="pop-button mint" disabled={busy||(selection===original&&bg===profile.activeAvatarBackground)} onClick={save}>{busy?'Menyimpan…':'Simpan'}<Check size={17}/></button></div>
+  </div></GameShell>;
 };

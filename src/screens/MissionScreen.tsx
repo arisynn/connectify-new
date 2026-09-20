@@ -33,7 +33,7 @@ export const MissionScreen=()=>{
     if(mission.type==='blockLines')navigate('block-puzzle');
     else if(mission.type.startsWith('memory'))navigate('memory');
     else if(mission.type.startsWith('triple'))navigate('triple');
-    else if(mission.type.startsWith('fruit'))navigate('fruit-merge');
+    else if(mission.type.startsWith('star'))navigate('star-patrol');
     else if(mission.type==='infinityRound'){setGameMode('infinity');navigate('block-puzzle');}
     else if(mission.type==='minigame')navigate('levels');
     else if(mission.type==='openChest')navigate('peti');

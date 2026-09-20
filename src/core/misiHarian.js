@@ -15,9 +15,9 @@ export const DAILY_MISSIONS_POOL = [
     { id:'d_memory_win',type:'memoryWin',category:'memory',title:'Semua Kartu Terbuka',desc:'Menangkan 1 ronde Memory Flip di kesulitan apa saja.',target:1,difficulty:'Mudah'},
     { id:'d_triple_trios',type:'tripleTrios',category:'triple',title:'Tiga Itu Pas',desc:'Satukan 6 trio di Triple Match, boleh dari beberapa ronde.',target:6,difficulty:'Mudah'},
     { id:'d_triple_win',type:'tripleWin',category:'triple',title:'Papan Tanpa Sisa',desc:'Menangkan 1 ronde Triple Match.',target:1,difficulty:'Menengah'},
-    { id:'d_fruit_round',type:'fruitRound',category:'fruit',title:'Isi Keranjang',desc:'Tuntaskan 1 ronde Fruit Merge.',target:1,difficulty:'Mudah'},
-    { id:'d_fruit_merges',type:'fruitMerges',category:'fruit',title:'Buah Bertemu Buah',desc:'Gabungkan 20 buah di Fruit Merge, boleh dari beberapa ronde.',target:20,difficulty:'Mudah'},
-    { id:'d_fruit_stage',type:'fruitStage',category:'fruit',title:'Tumbuh Sampai Pir',desc:'Capai buah tingkat 7 (Pir) dalam satu ronde Fruit Merge.',target:7,difficulty:'Menengah'},
+    { id:'d_star_round',type:'starRound',category:'star',title:'Pilot Bertugas',desc:'Tuntaskan 1 ronde Star Patrol minimal 5 detik.',target:1,difficulty:'Mudah'},
+    { id:'d_star_kills',type:'starKills',category:'star',title:'Langit Aman',desc:'Kalahkan 15 musuh di Star Patrol.',target:15,difficulty:'Mudah'},
+    { id:'d_star_boss',type:'starBosses',category:'star',title:'Sektor Terkendali',desc:'Kalahkan 1 boss Star Patrol.',target:1,difficulty:'Menengah'},
     // Progress - Clear
     { id: "d_clear_easy", type: "clear", category: "progress", title: "Pemanasan", desc: "Selesaikan 2 level.", target: 2, difficulty: "Mudah" },
     { id: "d_clear_med", type: "clear", category: "progress", title: "Makin Jago", desc: "Selesaikan 4 level.", target: 4, difficulty: "Menengah" },
@@ -101,7 +101,7 @@ export const generateDailyMissions = function(profile) {
         ['skill'],
         ['memory'],
         ['triple'],
-        ['fruit']
+        ['star']
     ];
 
     const selected = [];
@@ -159,11 +159,11 @@ const EVENT_TO_TYPE = {
     split: 'split',
     playGame: 'playGame',
     memoryPairs:'memoryPairs',memoryCombo:'memoryCombo',memoryWin:'memoryWin',tripleTrios:'tripleTrios',tripleWin:'tripleWin',infinityRound:'infinityRound',
-    fruitRound:'fruitRound',fruitMerges:'fruitMerges',fruitStage:'fruitStage',fruitWatermelon:'fruitWatermelon',
+    starRound:'starRound',starKills:'starKills',starBosses:'starBosses',
 };
 
 // "Peak" missions keep the best single value instead of accumulating.
-const PEAK_TYPES = new Set(['combo','memoryCombo','fruitStage']);
+const PEAK_TYPES = new Set(['combo','memoryCombo']);
 
 const pushNotification = (p, title, message, type) => {
     if (!p.notifications) p.notifications = [];
@@ -205,6 +205,11 @@ export const checkDailyMissions = (profile) => {
         }
       }
     };
+    // Retired-game completions stay claimable; unfinished tasks cannot block today's set.
+    for(const [field,period,scope] of [['activeMissions',p.dailyMissionsDate,'daily'],['activeWeeklyMissions',p.weeklyMissionsWeek,'weekly']]){
+      archive((p[field]||[]).filter(m=>m.category==='fruit'),period,scope);
+      if(p[field])p[field]=p[field].filter(m=>m.category!=='fruit');
+    }
     if (!p.activeMissions || p.activeMissions.length === 0 || p.dailyMissionsDate !== today) {
         archive(p.activeMissions,p.dailyMissionsDate,'daily');
         p.activeMissions = generateDailyMissions(p).map(m => ({ ...m, progress: 0, claimed: false }));
@@ -218,10 +223,10 @@ export const checkDailyMissions = (profile) => {
         p.weeklyMissionsWeek = week;
     }
     // Introduce dedicated game missions without erasing current progress or claims.
-    for(const [category,id] of [['memory','d_memory_pairs'],['triple','d_triple_trios'],['fruit','d_fruit_merges']]){
+    for(const [category,id] of [['memory','d_memory_pairs'],['triple','d_triple_trios'],['star','d_star_kills']]){
       if(!p.activeMissions.some(m=>m.category===category))p.activeMissions=[...p.activeMissions,{...DAILY_MISSIONS_POOL.find(m=>m.id===id),progress:0,claimed:false}];
     }
-    for(const [category,id] of [['memory','w_memory_pairs'],['triple','w_triple_trios'],['fruit','w_fruit_merges']]){
+    for(const [category,id] of [['memory','w_memory_pairs'],['triple','w_triple_trios'],['star','w_star_kills']]){
       if(!p.activeWeeklyMissions.some(m=>m.category===category))p.activeWeeklyMissions=[...p.activeWeeklyMissions,{...WEEKLY_MISSIONS_POOL.find(m=>m.id===id),progress:0,claimed:false}];
     }
     // Reprice pre-update missions without deleting earned progress or claims.

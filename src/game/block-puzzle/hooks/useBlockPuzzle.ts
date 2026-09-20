@@ -39,7 +39,7 @@ export const useBlockPuzzle = (infinity=false) => {
   const [combo, setCombo] = useState(0);
   const [highScore, setHighScore] = useState((infinity?profile.statistics?.infinityHighScore:profile.statistics?.blockPuzzleHighScore) || 0);
   const [gameState, setGameState] = useState<'playing' | 'gameover' | 'won'>('playing');
-  const [currentLevel, setCurrentLevel] = useState(profile.blockPuzzleLevel || 1);
+  const [currentLevel, setCurrentLevel] = useState(Math.max(profile.blockPuzzleLevel || 1,profile.highestBlockPuzzleLevel || 1));
   
   const [moves, setMoves] = useState(0);
   const [linesClearedTotal, setLinesClearedTotal] = useState(0);

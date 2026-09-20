@@ -19,6 +19,7 @@
     "lucide-react": "^0.354.0",
     "matter-js": "^0.20.0",
     "motion": "^12.0.0",
+    "phaser": "3.90.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^4.0.0"

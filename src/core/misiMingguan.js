@@ -6,9 +6,8 @@ export const WEEKLY_MISSIONS_POOL = [
     {id:'w_memory_pairs',type:'memoryPairs',category:'memory',title:'Memori Pekan Ini',desc:'Temukan 40 pasangan Memory Flip sepanjang minggu.',target:40,difficulty:'Menengah'},
     {id:'w_memory_combo',type:'memoryCombo',category:'memory',title:'Enam Tanpa Putus',desc:'Raih 6 pasangan berturut-turut di Memory Flip.',target:6,difficulty:'Menengah'},
     {id:'w_triple_trios',type:'tripleTrios',category:'triple',title:'Racikan Mingguan',desc:'Satukan 36 trio di Triple Match.',target:36,difficulty:'Menengah'},
-    {id:'w_fruit_merges',type:'fruitMerges',category:'fruit',title:'Panen Sepekan',desc:'Gabungkan 120 buah di Fruit Merge sepanjang minggu.',target:120,difficulty:'Menengah'},
-    {id:'w_fruit_stage',type:'fruitStage',category:'fruit',title:'Sampai Nanas',desc:'Capai buah tingkat 10 (Nanas) dalam satu ronde Fruit Merge.',target:10,difficulty:'Sulit'},
-    {id:'w_fruit_watermelon',type:'fruitWatermelon',category:'fruit',title:'Semangka Perdana',desc:'Bentuk 1 semangka di Fruit Merge.',target:1,difficulty:'Sangat Sulit'},
+    {id:'w_star_kills',type:'starKills',category:'star',title:'Patroli Sepekan',desc:'Kalahkan 100 musuh Star Patrol.',target:100,difficulty:'Menengah'},
+    {id:'w_star_bosses',type:'starBosses',category:'star',title:'Pemburu Boss',desc:'Kalahkan 3 boss Star Patrol.',target:3,difficulty:'Sulit'},
     {id:'w_infinity_rounds',type:'infinityRound',category:'block',title:'Jangan Kehabisan Ide',desc:'Tuntaskan 3 ronde Block Infinity.',target:3,difficulty:'Menengah'},
     { id: 'w_block_lines', type: 'blockLines', category: 'block', title: 'Ruang untuk Kombo', desc: 'Bersihkan 25 baris atau kolom di Block Puzzle.', target: 25, difficulty: 'Menengah' },
     { id: 'w_split_tiles', type: 'split', category: 'discovery', title: 'Lapisan Kejutan', desc: 'Pecahkan 20 pasangan tile gabungan di Onet.', target: 20, difficulty: 'Menengah' },
@@ -82,7 +81,7 @@ export const generateWeeklyMissions = function(profile) {
         ['block'],
         ['memory'],
         ['triple'],
-        ['fruit'],
+        ['star'],
         ['progression'],
         ['skill_peak']
     ];

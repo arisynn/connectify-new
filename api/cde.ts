@@ -3,6 +3,7 @@ import { getSupabase } from './supabase.js';
 import { verifiedMultiplayerResult } from './multiplayer.js';
 import { unlockAvatars, AVATARS, isAvatarUnlocked } from '../src/core/avatars.js';
 import { recordTransaction, TRANSACTION_LABELS } from '../src/core/economy.js';
+import { migrateStarProfile, starUpgradeItem, purchaseStarUpgrade } from '../src/core/starPatrol.js';
 
 
 async function getUserWithRetry(supabase, token) {
@@ -372,6 +373,7 @@ export default async function handler(req: Request, res: Response) {
             if (!opId || !type || !payload) {
                 return res.status(400).json({ error: 'INVALID_PAYLOAD' });
             }
+            if(typeof opId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(opId))return res.status(400).json({error:'INVALID_OPERATION_ID'});
 
             const { data: userData } = await getUserWithRetry(supabase, token);
             const accountId = userData?.user?.id;
@@ -411,13 +413,15 @@ export default async function handler(req: Request, res: Response) {
                 mergedProfileData.profile = { ...(mergedProfileData.profile || {}), ...patch };
             };
             const currentProf = () => (mergedProfileData.profile || {});
+            applyProfilePatch(migrateStarProfile(currentProf()));
 
             if (type === 'DAILY_CHECK_IN') {
                  applyProfilePatch(ART.checkInArtRewards(currentProf()));
             } else if (type === 'UPDATE_PROFILE') {
                  const writable = ['playerName', 'avatar', 'activeAvatarId', 'activeAvatarBackground', 'activeTheme', 'settings', 'notifications', 'currentLevel', 'blockPuzzleLevel', 'blockPuzzleSkill', 'equippedCosmetics'];
-                 const safePayload = Object.fromEntries(Object.entries(payload).filter(([key]) => writable.includes(key)));
+                 const safePayload:any = Object.fromEntries(Object.entries(payload).filter(([key]) => writable.includes(key)));
                  if (safePayload.equippedCosmetics !== undefined && !COSMETIC.validateCosmeticEquip(currentProf(), safePayload.equippedCosmetics)) return res.status(400).json({error:'COSMETIC_LOCKED'});
+                 if(safePayload.equippedCosmetics)safePayload.equippedCosmetics={...currentProf().equippedCosmetics,...safePayload.equippedCosmetics};
                  if (safePayload.activeTheme && !ART.ownsTheme(currentProf(), safePayload.activeTheme)) return res.status(400).json({ error: 'THEME_LOCKED' });
                  for (const key of ['avatar', 'activeAvatarId']) {
                    if (safePayload[key] && !AVATARS.some(a => a.id === safePayload[key] && isAvatarUnlocked(currentProf(), a))) return res.status(400).json({ error: 'AVATAR_LOCKED' });
@@ -452,7 +456,9 @@ export default async function handler(req: Request, res: Response) {
                  if ((currentProfile.permen || 0) < cost) return res.status(400).json({ error: 'INSUFFICIENT_PERMEN' });
                  permenDelta = -cost;
 
-                 if (COSMETIC.cosmeticById(itemId)) {
+                 if (starUpgradeItem(itemId)) {
+                      try{applyProfilePatch(purchaseStarUpgrade(currentProf(),itemId));}catch{return res.status(400).json({error:'INVALID_UPGRADE_LEVEL'});}
+                 } else if (COSMETIC.cosmeticById(itemId)) {
                       if (COSMETIC.ownsCosmetic(currentProf(), itemId)) return res.status(400).json({error:'ALREADY_OWNED'});
                       applyProfilePatch({ownedCosmetics:[...(currentProf().ownedCosmetics||[]),itemId]});
                  } else if (itemId.startsWith('theme_')) {
@@ -484,10 +490,11 @@ export default async function handler(req: Request, res: Response) {
                    const verified=await verifiedMultiplayerResult(payload.runId,owner?.username);
                    if(!verified||verified.game!==payload.game||verified.isWinner!==payload.isWinner) return res.status(400).json({error:'UNVERIFIED_MULTIPLAYER_RESULT'});
                  }
-                 if (!['onet', 'block', 'block-infinity', 'memory', 'triple', 'fruit'].includes(payload.game) || !payload.runId || typeof payload.runId !== 'string' || (payload.game==='block-infinity'&&payload.isWinner!==false)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
-                 for (const [key, max] of Object.entries({ score: 1000000, matches: 200, splits: 100, highestCombo: 100, timeElapsed: 86400000, blocksCleared: 10000, linesCleared: 1000, stars: 3, level: 10000, fruitStage: 11, watermelons: 50 })) {
+                 if (!['onet', 'block', 'block-infinity', 'memory', 'triple', 'star'].includes(payload.game) || !payload.runId || typeof payload.runId !== 'string' || (payload.game==='block-infinity'&&payload.isWinner!==false)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
+                 for (const [key, max] of Object.entries({ score: 1000000, matches: 200, splits: 100, highestCombo: 100, timeElapsed: 86400000, blocksCleared: 10000, linesCleared: 1000, stars: 3, level: 10000, kills: 500, waves: 3, bosses: 1 })) {
                    if (payload[key] !== undefined && (!Number.isFinite(payload[key]) || payload[key] < 0 || payload[key] > max)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
                  }
+                 if(payload.game==='star' && (typeof payload.isWinner!=='boolean'||!Number.isInteger(payload.level)||payload.level<1||payload.level>(currentProf().starLevel||1)||!Number.isInteger(payload.kills)||!Number.isInteger(payload.waves)||!Number.isInteger(payload.bosses)||payload.timeElapsed<5000||payload.timeElapsed>300000||payload.kills>Math.floor(payload.timeElapsed/400)+5||payload.score!==payload.kills*100+payload.bosses*1000||(payload.isWinner&&(payload.bosses!==1||payload.waves!==3||payload.timeElapsed<20000))))return res.status(400).json({error:'INVALID_STAR_RESULT'});
                  const { RewardEngine } = await import('../src/core/reward.js');
                  const { profile: newProfile, rewardResult } = RewardEngine.processWin(currentProf(), payload);
                  permenDelta = (rewardResult.permen || 0) + (rewardResult.dailyBonus || 0);
