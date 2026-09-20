@@ -1,0 +1,28 @@
+.bitmap-frame { position:relative; }
+.player-portrait.bitmap-frame {border:0;box-shadow:none;background:transparent;padding:12px;aspect-ratio:1;height:auto!important;}
+.bitmap-frame .frame-overlay {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;}
+.preview-frame.bitmap-frame {aspect-ratio:1;height:auto;padding:12px;}
+.bitmap-tile {border:0;box-shadow:none;border-radius:12px;max-width:100%;}
+.bitmap-burst i {width:25px;height:25px;background-size:contain;background-repeat:no-repeat;clip-path:none;border-radius:0;}
+.art-edition {font-size:9px;font-weight:600;letter-spacing:0;color:var(--club-muted);display:block;margin:0 0 8px;}
+.art-reward-grid,.theme-art-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.art-reward-progress {font-size:11px;color:var(--club-muted);margin:8px 0;}
+.theme-art-tabs {display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+.theme-art-tabs button {border:1px solid var(--club-line);padding:10px 16px;border-radius:10px;font-size:12px;min-height:44px;}
+.theme-art-tabs button[aria-pressed="true"] {background:var(--club-mint);color:#172337;}
+.theme-art-grid .product-art {aspect-ratio:1.6;}
+.theme-art-grid .product-art>img {max-width:29%;}
+.theme-art-requirement {min-height:44px;display:grid;place-items:center;text-align:center;font-size:11px;line-height:1.5;color:var(--club-muted);}
+.club-mark {width:46px;height:46px;object-fit:contain;flex-shrink:0;}
+.home-v3-header>[data-testid="home-wordmark"] {flex:1;min-width:0;font:500 23px 'Fredoka',sans-serif;}
+.home-v3-header>[data-testid="home-wordmark"]>span {display:block;font:600 8px 'Outfit',sans-serif;letter-spacing:2px;margin-top:4px;}
+.home-mochi {width:34%;right:3%;bottom:36px;transform:rotate(4deg);}
+.art-reward-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+.art-reward-title {font:500 18px 'Fredoka',sans-serif;margin:24px 0 16px;}
+.art-reward-card {border:1.5px solid var(--club-line);border-radius:14px;overflow:hidden;background:var(--club-card);display:flex;flex-direction:column;}
+.art-reward-card .product-copy {flex:1;}
+.art-reward-card progress {width:100%;height:5px;accent-color:#60a98b;}
+.art-reward-card h3 {overflow-wrap:anywhere;}
+.art-reward-card .product-action {width:100%;margin-top:auto;}
+@media(max-width:767px){.theme-art-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;}.club-mark{width:36px;height:36px;}.home-v3-header{gap:8px;}.home-v3-header>[data-testid="home-wordmark"] {font-size:20px;}.art-reward-grid{gap:12px;}}
+@media(prefers-reduced-motion:reduce){.bitmap-burst{display:none;}}

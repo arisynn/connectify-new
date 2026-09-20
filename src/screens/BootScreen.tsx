@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 // Properly import assets so Vite resolves their hashed paths in production
 import bgGlobal from '../assets/vanilla/background/global_background.webp';
 import bgPopup from '../assets/vanilla/background/popup_background.webp';
-import logoSrc from '../assets/vanilla/logo/connectify_logo.png';
+import { BRAND_MARK as logoSrc } from '../core/artAssets';
 import playIcon from '../assets/vanilla/logo/play.png';
 import settingsIcon from '../assets/vanilla/logo/settings.png';
 import beachBall from '../assets/vanilla/tiles/beach_ball.png';

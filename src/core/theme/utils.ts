@@ -3,6 +3,7 @@ import vanillaThemeData from '../../assets/vanilla/theme.json';
 import { ThemeManifest } from './types';
 import globalBg from '../../assets/vanilla/background/global_background.webp';
 import popupBg from '../../assets/vanilla/background/popup_background.webp';
+import { BRAND_LOGOS } from '../artAssets';
 
 export const vanillaTheme = vanillaThemeData as unknown as ThemeManifest;
 
@@ -36,9 +37,13 @@ for (const path in tiles) {
 
 export const resolveTheme = (customTheme?: Partial<ThemeManifest> | null): ThemeManifest => {
   if (!customTheme) return vanillaTheme;
-  return merge({}, vanillaTheme, customTheme);
+  const resolved = merge({}, vanillaTheme, customTheme);
+  // A matching theme must not accidentally inherit vanilla tile keys through deep merge.
+  if (customTheme.assets?.tiles) resolved.assets.tiles = { ...customTheme.assets.tiles };
+  return resolved;
 };
 
 ['fox','frog','cat','space','robot','bunny','lion','owl','penguin'].forEach((name,index)=>{
   vanillaTheme.assets.logo[`avatar_${name}`]=`/art/avatars/${index}.webp`;
 });
+Object.assign(vanillaTheme.assets.logo, BRAND_LOGOS);

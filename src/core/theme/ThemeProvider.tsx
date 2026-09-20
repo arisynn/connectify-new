@@ -4,6 +4,7 @@ import { resolveTheme } from './utils';
 import { DEFAULT_THEMES } from './registry';
 import { useProfile } from '../profile/ProfileContext';
 import { enableAssetCache,warmImages } from '../../lib/assetCache';
+import { ownsTheme } from '../artRewards';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -29,7 +30,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   React.useEffect(() => {
     if (!savedTheme) return;
     const unlocked = profile?.unlockedThemes || ['sweets'];
-    if (DEFAULT_THEMES[savedTheme] && savedTheme !== 'sweets' && unlocked.includes(savedTheme)) {
+    if (DEFAULT_THEMES[savedTheme] && savedTheme !== 'sweets' && ownsTheme(profile, savedTheme)) {
       setCustomTheme(DEFAULT_THEMES[savedTheme]);
     } else if (savedTheme === 'sweets' || savedTheme === 'vanilla') {
       setCustomTheme(null);
@@ -84,7 +85,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       activeTheme, 
       setCustomTheme,
       setTheme: (id: string) => { 
-        if (DEFAULT_THEMES[id]) {
+        if (DEFAULT_THEMES[id] && ownsTheme(profile, id)) {
           setCustomTheme(DEFAULT_THEMES[id]);
         } else if (id === 'vanilla' || id === 'sweets') {
           setCustomTheme(null);

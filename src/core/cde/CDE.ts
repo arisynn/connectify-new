@@ -1,5 +1,6 @@
 import { supabase } from '../../lib/supabase';
 import { cosmeticById, ownsCosmetic } from '../cosmetics';
+import { checkInArtRewards, unlockArtRewards, ownsTheme } from '../artRewards';
 import { CDEIndexedDB, CDE_SCHEMA_VERSION } from './persistence/CDEIndexedDB';
 import { CDEState, CDEProfile, CDEOperation, CDEOperationType, CDESyncStatus } from './types/cde.types';
 import { CDEEventEmitter } from './events/CDEEventEmitter';
@@ -240,7 +241,9 @@ export class CDEngine {
       };
       const addPermen = (delta: number) => { newProfile.permen = Math.max(0, (newProfile.permen || 0) + delta); };
 
-      if (type === 'UPDATE_PROFILE') {
+      if (type === 'DAILY_CHECK_IN') {
+          patchProfile(checkInArtRewards(prof()));
+      } else if (type === 'UPDATE_PROFILE') {
           patchProfile(payload);
       } else if (type === 'UPDATE_GAME_STATE') {
           newProfile.profile_data = {
@@ -259,8 +262,10 @@ export class CDEngine {
       } else if (type === 'PURCHASE_ITEM') {
           const itemId = payload.itemId;
           const cost = getItemPrice(itemId);
+          if (cost === null) throw new Error('INVALID_ITEM');
+          if ((newProfile.permen || 0) < cost) throw new Error('INSUFFICIENT_PERMEN');
           if (cosmeticById(itemId) && ownsCosmetic(prof(), itemId)) throw new Error('ALREADY_OWNED');
-          if (itemId.startsWith('theme_') && (prof().unlockedThemes || ['sweets']).includes(itemId.slice(6))) return;
+          if (itemId.startsWith('theme_') && ownsTheme(prof(), itemId.slice(6))) throw new Error('ALREADY_OWNED');
           if (cost !== null && (newProfile.permen || 0) >= cost) {
               addPermen(-cost);
               if (cosmeticById(itemId)) {
@@ -312,7 +317,7 @@ export class CDEngine {
       const delta = newProfile.permen - this.state.profile.permen;
       const label = TRANSACTION_LABELS[type];
       if (delta && label) patchProfile(recordTransaction(prof(), { id: opId, amount: delta, source: type, label: type === 'PURCHASE_ITEM' ? `${label}: ${payload.itemId}` : label, balance: newProfile.permen }));
-      patchProfile(unlockAvatars(prof()));
+      patchProfile(unlockArtRewards(unlockAvatars(prof())));
       this.updateState({ profile: newProfile });
 
       await this.db.addOperation(op);

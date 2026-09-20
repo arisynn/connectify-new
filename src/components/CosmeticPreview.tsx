@@ -1,10 +1,13 @@
 import React from 'react';
-import {ArrowUp, Sparkles, RefreshCw, Lightbulb, Hammer, Bomb} from 'lucide-react';
-export const CosmeticPreview=({item}:{item:any})=>{
-  const Icons:any={shuffle:RefreshCw,hint:Lightbulb,hammer:Hammer,bomb:Bomb};const Icon=Icons[item.id]||Sparkles;
-  if(item.category==='help')return <div className="product-art help" aria-hidden="true"><Icon size={39}/></div>;
-  if(item.category==='theme')return <div className="product-art theme" aria-hidden="true">{item.images?.map((src:string,i:number)=><img key={i} src={src} alt=""/>)}</div>;
-  if(item.category==='avatar'||item.category==='effect')return <div className={`product-art ${item.category}`}><img data-testid={`product-art-${item.id}`} src={`/art/atelier/${item.asset}.svg`} alt={item.name}/></div>;
-  if(item.category==='frame')return <div className="product-art"><div className={`preview-frame frame-${item.asset}`}><img src="/art/atelier/mochi.svg" alt=""/></div></div>;
-  return <div className="product-art" aria-hidden="true"><div className={`preview-tile slot-${item.slot}`} style={{backgroundImage:`url(/art/atelier/${item.asset}.svg)`}}>{item.slot==='arrow'?<ArrowUp size={34}/>:item.category==='block'?<div className="skin-grid">{[0,1,2,3].map(n=><i key={n} style={{backgroundImage:`url(/art/atelier/${item.asset}.svg)`}}/>)}</div>:<img src="/art/candy/0.webp" alt=""/>}</div></div>;
+import { ArrowUp } from 'lucide-react';
+import { cosmeticImage, artIcon } from '../core/artAssets';
+export const CosmeticPreview=({item,context='catalog'}:{item:any;context?:string})=>{
+  const testId=`${context}-art-${item.id}`;
+  if(item.category==='help') return <div className="product-art help"><img data-testid={testId} src={artIcon(item.id)} alt={item.name}/></div>;
+  if(item.category==='theme') return <div className="product-art theme" data-testid={testId}>{item.images?.map((src:string,i:number)=><img key={src} src={src} alt={`${item.name} ${i+1}`}/>)}</div>;
+  if(['avatar','effect'].includes(item.category)) return <div className={`product-art ${item.category}`}><img data-testid={testId} src={cosmeticImage(item)} alt={item.name}/></div>;
+  if(item.category==='frame') return <div className="product-art"><div className="preview-frame bitmap-frame"><img src="/art/premium/avatars/mochi.webp" alt=""/><img data-testid={testId} className="frame-overlay" src={cosmeticImage(item)} alt={item.name}/></div></div>;
+  return <div className="product-art" data-testid={testId}><div className={`preview-tile bitmap-tile slot-${item.slot}`} style={{backgroundImage:`url(${cosmeticImage(item)})`}}>
+    {item.slot==='arrow'?<ArrowUp size={28}/>:item.category==='block'?<div className="skin-grid">{[0,1,2,3].map(n=><i key={n} style={{backgroundImage:`url(${cosmeticImage(item)})`}}/>)}</div>:null}
+  </div></div>;
 };

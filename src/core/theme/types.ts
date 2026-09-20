@@ -41,6 +41,7 @@ export interface ThemeManifest {
   price?: number;
   currency?: string;
   data?: string[]; // for backward compatibility of emojis or legacy tiles
+  reward?: { kind: string; target: number };
   colors: ThemeColors;
   geometry?: ThemeGeometry;
   shadow?: {

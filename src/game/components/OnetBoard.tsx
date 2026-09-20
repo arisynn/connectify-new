@@ -7,6 +7,7 @@ import { TileBurst } from './TileBurst';
 import { ArrowUp } from 'lucide-react';
 import { useProfile } from '../../core/profile/ProfileContext';
 import { equippedCosmetic } from '../../core/cosmetics';
+import { cosmeticImage } from '../../core/artAssets';
 
 interface Props {
   boardRef: RefObject<HTMLDivElement>; board: any[][]; selected: any; activePaths: any[];
@@ -39,14 +40,14 @@ export const OnetBoard = ({boardRef,board,selected,activePaths,hintTiles,directi
         const selectedHere=at(selected,r,c),hint=at(hintTiles?.p1,r,c)||at(hintTiles?.p2,r,c);
         const matching=matchingTiles.some(p=>at(p,r,c)),error=directionErrorTiles.some(p=>at(p,r,c));
         const cutVertical=rows*cols===4?tile.splitAxis==='vertical':cols>1;
-        const skin=equippedCosmetic(profile,rows*cols===4?'tile4':'tile2');
+        const skin=equippedCosmetic(profile,rows*cols===4?'tile4':joined?'tile2':'tile1');
         const arrowSkin=equippedCosmetic(profile,'arrow');
         return <motion.button key={`tile-${r}-${c}-${tile.splitAnimKey||tile.id}`}
           data-testid={`onet-tile-${r}-${c}`} data-tile-id={tile.id} data-master={`${r}-${c}`} data-group={`${cols}x${rows}`} data-split-depth={tile.splitDepth||0}
           aria-label={`${tile.id.replaceAll('_',' ')}, baris ${r}, kolom ${c}, ${cols} kali ${rows}`} aria-pressed={selectedHere}
           onClick={()=>onTileClick(r,c)} className={`onet-cell ${joined?'joined-unified':''} ${selectedHere?'selected':''} ${hint?'hinted':''} ${error?'invalid':''}`}
-          data-open-side={tile.openSide||''} data-skin={joined?skin?.id||'default':'default'}
-          style={{gridRow:`${r} / span ${rows}`,gridColumn:`${c} / span ${cols}`,backgroundImage:joined&&skin?`url(/art/atelier/${skin.asset}.svg)`:undefined,backgroundSize:'100% 100%'}}
+          data-open-side={tile.openSide||''} data-skin={skin?.id||'default'}
+          style={{gridRow:`${r} / span ${rows}`,gridColumn:`${c} / span ${cols}`,backgroundImage:`url(${cosmeticImage(skin)})`,backgroundSize:'100% 100%'}}
           initial={tile.justSplit&&!reduced?{scale:.72,opacity:.3,x:(tile.splitFromX||0)*size*.3,y:(tile.splitFromY||0)*size*.3}:false}
           animate={{scale:matching?(joined?[1,1.06,.97]:[1,1.13,.2]):1,opacity:matching&&!joined?0:1,x:error&&!reduced?[0,-5,5,-3,0]:0,y:0}}
           transition={matching?{duration:reduced?.05:.42}:error?{duration:.3}:{type:'spring',stiffness:380,damping:20}}
@@ -55,7 +56,7 @@ export const OnetBoard = ({boardRef,board,selected,activePaths,hintTiles,directi
             style={{clipPath:cutVertical?(i?'inset(0 0 0 50%)':'inset(0 50% 0 0)'):(i?'inset(50% 0 0 0)':'inset(0 0 50% 0)')}}
             animate={{x:cutVertical?(i?9:-9):0,y:cutVertical?0:(i?9:-9),rotate:i?3:-3,opacity:[1,1,.1]}} transition={{duration:.46}}/>)
             : <img src={activeTheme.assets.tiles[tile.id]} alt="" draggable={false} className={`w-full h-full object-contain pointer-events-none ${joined?'p-2':'p-1'}`}/>}
-          {tile.openSide&&<span data-testid={`onet-arrow-${r}-${c}`} className={`onet-arrow arrow-${arrowSkin?.asset||'default'}`} style={{transform:`rotate(${({up:0,right:90,down:180,left:270} as any)[tile.openSide]}deg)`}}><ArrowUp size={13}/></span>}
+          {tile.openSide&&<span data-testid={`onet-arrow-${r}-${c}`} data-skin={arrowSkin?.id} className="onet-arrow" style={{backgroundImage:`url(${cosmeticImage(arrowSkin)})`,backgroundSize:'100% 100%',transform:`rotate(${({up:0,right:90,down:180,left:270} as any)[tile.openSide]}deg)`}}><ArrowUp size={13}/></span>}
           {joined&&<span className="group-tag" data-testid={`onet-group-${r}-${c}`}>{cols}×{rows}</span>}
         </motion.button>;
       }))}

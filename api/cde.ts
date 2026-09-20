@@ -405,17 +405,20 @@ export default async function handler(req: Request, res: Response) {
 
             const ECON = await import('../src/core/economy.js');
             const COSMETIC = await import('../src/core/cosmetics.js');
+            const ART = await import('../src/core/artRewards.js');
             const applyProfilePatch = (patch: any) => {
                 profilePatch = { ...profilePatch, ...patch };
                 mergedProfileData.profile = { ...(mergedProfileData.profile || {}), ...patch };
             };
             const currentProf = () => (mergedProfileData.profile || {});
 
-            if (type === 'UPDATE_PROFILE') {
+            if (type === 'DAILY_CHECK_IN') {
+                 applyProfilePatch(ART.checkInArtRewards(currentProf()));
+            } else if (type === 'UPDATE_PROFILE') {
                  const writable = ['playerName', 'avatar', 'activeAvatarId', 'activeAvatarBackground', 'activeTheme', 'settings', 'notifications', 'currentLevel', 'blockPuzzleLevel', 'blockPuzzleSkill', 'equippedCosmetics'];
                  const safePayload = Object.fromEntries(Object.entries(payload).filter(([key]) => writable.includes(key)));
                  if (safePayload.equippedCosmetics !== undefined && !COSMETIC.validateCosmeticEquip(currentProf(), safePayload.equippedCosmetics)) return res.status(400).json({error:'COSMETIC_LOCKED'});
-                 if (safePayload.activeTheme && !['sweets', ...(currentProf().unlockedThemes || [])].includes(safePayload.activeTheme)) return res.status(400).json({ error: 'THEME_LOCKED' });
+                 if (safePayload.activeTheme && !ART.ownsTheme(currentProf(), safePayload.activeTheme)) return res.status(400).json({ error: 'THEME_LOCKED' });
                  for (const key of ['avatar', 'activeAvatarId']) {
                    if (safePayload[key] && !AVATARS.some(a => a.id === safePayload[key] && isAvatarUnlocked(currentProf(), a))) return res.status(400).json({ error: 'AVATAR_LOCKED' });
                  }
@@ -455,7 +458,7 @@ export default async function handler(req: Request, res: Response) {
                  } else if (itemId.startsWith('theme_')) {
                       const themeId = itemId.replace('theme_', '');
                       const owned = currentProf().unlockedThemes || ['sweets'];
-                      if (owned.includes(themeId)) return res.status(400).json({ error: 'ALREADY_OWNED' });
+                      if (ART.ownsTheme(currentProf(), themeId)) return res.status(400).json({ error: 'ALREADY_OWNED' });
                       const stats = { ...(currentProf().statistics || {}) };
                       stats.totalThemesBought = (stats.totalThemesBought || 0) + 1;
                       applyProfilePatch({ unlockedThemes: [...owned, themeId], statistics: stats });
@@ -525,7 +528,7 @@ export default async function handler(req: Request, res: Response) {
 
             const label = TRANSACTION_LABELS[type];
             if (label && permenDelta) applyProfilePatch(recordTransaction(currentProf(), { id: opId, amount: permenDelta, source: type, label: type === 'PURCHASE_ITEM' ? `${label}: ${payload.itemId}` : label, balance: Number(currentProfile.permen || 0) + permenDelta }));
-            applyProfilePatch(unlockAvatars(currentProf()));
+            applyProfilePatch(ART.unlockArtRewards(unlockAvatars(currentProf())));
 
             // Perform transactional update using RPC
             let updatedProfile;

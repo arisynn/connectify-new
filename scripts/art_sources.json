@@ -1,0 +1,17 @@
+{
+  "provider": "gemini-3.1-flash-image-preview",
+  "quality_requested": "high",
+  "base_url": "https://static.prod-images.emergentagent.com/jobs/fd0dd8d0-9b16-40e3-95bf-cbf552d5cdd0/images/",
+  "sheets": {
+    "sakura": "9b3a80004d1ac098cb382a185a686f9764ea4c2a6a06e1890244b5cbe7988fed",
+    "bakery": "cfa52bbf427dfa64ea075afe0e4dc81cf463e99d83ecb73c989bde8e1202931d",
+    "galaxy": "48b4a667dc6b1cf1d646587576bc741549a09029b39b6c791b4a44fb04d866ec",
+    "meadow": "34a6d0a023be5237b9c4cc5ba865b5c3b8ab8341b22bcdd9091f91ca396a1b30",
+    "fruit": "82474f121ca1b713c8be3434bef35ca90d190bebbdd3f44bc7d4914e0e49919c",
+    "surfaces": "105cdead2c9e408b58033a2210f0b2a748b07c2a0e5a23729171718b2eca5401",
+    "ui": "a46b69720acba64fe3c7da3f40b834f061bd7cb3e10aee5426506bd418278874",
+    "avatars": "f5ba26a7ae91f3f8f4796110439c7fa999d6016aa10d7087d05ea065324444c1",
+    "details": "5cc50b2e249ff5c316c458ec297f43bfa2d82371d7b658b2a8be91151e8fdf57",
+    "brand": "0561c9dfa650357bad4124ec1a0480cb69be9ab0f67ae38d137b82ed244cef38"
+  }
+}

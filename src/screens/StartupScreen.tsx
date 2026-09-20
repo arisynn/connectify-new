@@ -89,7 +89,7 @@ export const StartupScreen = () => {
         }}
         className="z-10 flex flex-col items-center mb-10"
       >
-        <div className="w-40 h-40 sm:w-52 sm:h-52 mb-4 relative pointer-events-none">
+        <div data-testid="startup-brand" className="w-52 aspect-square sm:w-64 mb-4 relative pointer-events-none">
            <DynamicIcon name="connectify_logo" type="logo" className="w-full h-full object-contain drop-shadow-md" />
         </div>
         <span className="text-[10px] font-bold tracking-[2px] text-[var(--club-muted)] uppercase block">CONNECTIFY CLUB</span>

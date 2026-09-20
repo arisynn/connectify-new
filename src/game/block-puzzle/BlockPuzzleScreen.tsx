@@ -9,6 +9,7 @@ import { ArrowLeft, RefreshCw, Trophy, Play, Star } from 'lucide-react';
 import { Piece } from './core/pieces';
 import { useProfile } from '../../core/profile/ProfileContext';
 import { equippedCosmetic } from '../../core/cosmetics';
+import { cosmeticImage } from '../../core/artAssets';
 import { VictoryBurst } from '../../components/VictoryBurst';
 import { DynamicIcon } from '../../components/theme/DynamicIcon';
 import { GameLoader } from '../../components/GameLoader';
@@ -216,7 +217,7 @@ const BlockPuzzleContent = () => {
   const previewRows=previewCells.size?board.map((row,r)=>row.every((_,c)=>occupied(r,c))):[];
   const previewCols=previewCells.size?board[0].map((_,c)=>board.every((row,r)=>occupied(r,c))):[];
   return (
-    <div data-testid="block-game-screen" data-mode={infinity?'infinity':'level'} data-skin={skin?.asset||'classic'} style={{'--block-skin':skin?`url(/art/atelier/${skin.asset}.svg)`:'none'} as React.CSSProperties} className={`block-game-screen block-look-${skin?.asset||'classic'} absolute inset-0 bg-gray-900 z-50 flex flex-col md:p-6 lg:p-10 items-center overflow-hidden font-sans touch-none select-none`}>
+    <div data-testid="block-game-screen" data-mode={infinity?'infinity':'level'} data-skin={skin?.id||'classic'} style={{'--block-skin':skin?`url(${cosmeticImage(skin)})`:'none'} as React.CSSProperties} className={`block-game-screen block-look-${skin?.asset||'classic'} absolute inset-0 bg-gray-900 z-50 flex flex-col md:p-6 lg:p-10 items-center overflow-hidden font-sans touch-none select-none`}>
       <div className="w-full h-full md:max-w-6xl md:mx-auto md:bg-[#f8fafc] md:rounded-[2rem] md:shadow-2xl md:border-4 md:border-white/30 flex flex-col md:flex-row items-center overflow-hidden">
         
         {/* Mobile Header */}

@@ -4,6 +4,7 @@ import {GameShell} from '../components/GameShell';
 import {useGame,GameMode,Screen} from '../GameContext';
 import {useProfile} from '../core/profile/ProfileContext';
 import {getOnetDifficulty} from '../core/difficulty';
+import {artIcon} from '../core/artAssets';
 export const LevelSelectScreen=()=>{
   const {navigate,setGameMode}=useGame(),{profile,updateProfile}=useProfile();
   const games=[
@@ -16,5 +17,5 @@ export const LevelSelectScreen=()=>{
     {id:'friends',route:'multiplayer',mode:'normal',name:'Main bareng',tag:'DUEL TEMAN',copy:'Buat ruang atau masuk dengan kode teman.',asset:'/art/atelier/orbit.svg',icon:Users,color:'mint'}
   ];
   const start=(game:any)=>{setGameMode(game.mode as GameMode);if(game.id==='onet')updateProfile({currentLevel:profile.highestLevel||1});navigate(game.route as Screen);};
-  return <GameShell title="Mau main apa?" eyebrow="PILIH SESUAI SUASANA HATI" wide><p className="page-lede" data-testid="games-intro">Satu tempat untuk semua permainanmu.</p><div className="play-library">{games.map(game=><button data-testid={`play-${game.id}`} key={game.id} className={`play-library-card ${game.color}`} onClick={()=>start(game)}><span className="play-library-art"><img src={game.asset} alt=""/><game.icon size={18}/></span><span className="play-library-copy"><small>{game.tag}</small><b>{game.name}</b><span>{game.copy}</span></span><ArrowUpRight size={21}/></button>)}</div></GameShell>;
+  return <GameShell title="Mau main apa?" eyebrow="PILIH SESUAI SUASANA HATI" wide><p className="page-lede" data-testid="games-intro">Satu tempat untuk semua permainanmu.</p><div className="play-library">{games.map(game=><button data-testid={`play-${game.id}`} key={game.id} className={`play-library-card ${game.color}`} onClick={()=>start(game)}><span className="play-library-art"><img data-testid={`play-art-${game.id}`} src={artIcon(({infinity:'block',sprint:'onet',friends:'multiplayer'} as any)[game.id]||game.id)} alt={game.name}/>{['infinity','sprint'].includes(game.id)&&<game.icon size={18}/>}</span><span className="play-library-copy"><small data-testid={`play-tag-${game.id}`}>{game.tag}</small><b data-testid={`play-name-${game.id}`}>{game.name}</b><span>{game.copy}</span></span><ArrowUpRight size={21}/></button>)}</div></GameShell>;
 };

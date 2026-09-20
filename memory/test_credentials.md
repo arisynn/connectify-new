@@ -8,3 +8,9 @@ Lingkungan saat ini menggunakan adaptor pratinjau bawaan, bukan akun Supabase pr
 - t1reg750006, t1reg750063, t1reg750120, t1reg750176, t1reg750256 / ClubPlay2026! — akun uji final pertama, browser-lokal
 
 Registrasi/login adaptor pratinjau tersimpan di browser yang membuat akun. Pengujian browser baru harus mendaftarkan nama unik. Profil server adaptor pratinjau tidak menggantikan Supabase asli. Kredensial Supabase asli tidak tersedia di lingkungan ini.
+
+## Asset verification 2026-09-20
+- AtelierArtCheck / ClubPlay2026! — internal email atelierartcheck@connectify.com; CREATED and verified registration + existing-account sign-in. Free Meadow equipped, all60 live Onet tile skin backgrounds validated; account profile persisted by existing preview adapter (not production auth).
+
+## Testing update 2026-09-20
+- t1ui1789903629 / ClubPlay2026! — created during store/asset/playflow UI verification.

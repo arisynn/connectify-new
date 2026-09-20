@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { getDefaultProfile } from './defaultProfile';
 import { CDE } from '../cde/CDE';
+import { unlockArtRewards } from '../artRewards';
+import { getTodayKey } from '../economy';
 
 
 interface ProfileContextType {
@@ -16,6 +18,19 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cdeState, setCdeState] = useState(CDE.getState());
+  const checkInFlight = React.useRef('');
+  useEffect(() => {
+    const checkIn = () => {
+      const state = CDE.getState();
+      const day = getTodayKey(), key = `${state.account?.id}:${day}`;
+      if (!state.initialized || !state.account || !state.profile || state.profile.profile_data?.profile?.artCheckInDay === day || checkInFlight.current === key) return;
+      checkInFlight.current = key;
+      CDE.queueMutation('DAILY_CHECK_IN', {}).catch(() => { checkInFlight.current = ''; });
+    };
+    checkIn();
+    const timer = window.setInterval(checkIn, 60000);
+    return () => window.clearInterval(timer);
+  }, [cdeState.initialized, cdeState.account?.id, cdeState.profile]);
 
   useEffect(() => {
     const unsub = CDE.subscribe(() => {
@@ -56,7 +71,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
       }
       
-      return base;
+      return unlockArtRewards(base);
   }, [cdeState]);
 
   const clearProfile = useCallback(() => {

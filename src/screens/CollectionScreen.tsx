@@ -12,6 +12,9 @@ import { CHEST_TYPES } from '../core/chest';
 import { AVATARS, isAvatarUnlocked } from '../core/avatars';
 import { AvatarGallery } from '../components/AvatarGallery';
 import { TileGallery } from '../components/TileGallery';
+import { CosmeticCollection } from '../components/CosmeticCollection';
+import { ownsTheme, artRewardLabel } from '../core/artRewards';
+import { COSMETICS, ownsCosmetic } from '../core/cosmetics';
 
 const ALL_AVATARS = AVATARS.map(a=>a.id);
 
@@ -32,10 +35,10 @@ export const CollectionScreen = () => {
   const { profile, updateProfile } = useProfile();
   const { activeTheme, setTheme, availableThemes } = useTheme();
   const audio = useAudio();
-  const [section, setSection] = useState<'avatar' | 'tema' | 'lencana' | 'item'>('avatar');
+  const [section, setSection] = useState<'avatar' | 'tema' | 'lencana' | 'item' | 'gaya'>('avatar');
 
   const themes = Object.values(availableThemes);
-  const unlockedThemes: string[] = profile?.unlockedThemes || ['sweets'];
+  const unlockedThemes: string[] = themes.filter(theme=>ownsTheme(profile,theme.id)).map(theme=>theme.id);
   const avatarsOwned = AVATARS.filter(a=>isAvatarUnlocked(profile,a)).map(a=>a.id);
 
   const badges = useMemo(() => ACHIEVEMENTS_DATA.map(a => {
@@ -51,8 +54,8 @@ export const CollectionScreen = () => {
     { id: 'bomb', label: 'Bomb', count: profile?.bombs ?? 0, icon: Bomb, colorClass: 'bg-red-100' },
   ];
 
-  const totalUnlocked = avatarsOwned.length + unlockedThemes.length + badgesEarned;
-  const totalPossible = ALL_AVATARS.length + themes.length + ACHIEVEMENTS_DATA.length;
+  const totalUnlocked = avatarsOwned.length + unlockedThemes.length + badgesEarned + COSMETICS.filter(item=>ownsCosmetic(profile,item.id)).length;
+  const totalPossible = ALL_AVATARS.length + themes.length + ACHIEVEMENTS_DATA.length + COSMETICS.length;
 
   const handleEquipTheme = (id: string) => {
     audio.playUiClick();
@@ -70,6 +73,7 @@ export const CollectionScreen = () => {
     { id: 'tema', label: 'Tema', icon: Palette },
     { id: 'lencana', label: 'Lencana', icon: Trophy },
     { id: 'item', label: 'Item', icon: Package },
+    { id: 'gaya', label: 'Gaya', icon: Sparkles },
   ] as const;
 
   return (
@@ -119,7 +123,7 @@ export const CollectionScreen = () => {
 
       {/* Section tabs */}
       <div className="px-5 pt-3 shrink-0 max-w-xl mx-auto w-full">
-        <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-1 grid grid-cols-4 gap-1 shadow-[2px_2px_0_var(--club-line)]">
+        <div className="bg-[var(--club-card)] border-2 border-[var(--club-line)] rounded-2xl p-1 grid grid-cols-5 gap-1 shadow-[2px_2px_0_var(--club-line)]">
           {tabs.map(t => (
             <button
               key={t.id}
@@ -134,6 +138,7 @@ export const CollectionScreen = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 pb-12 max-w-xl mx-auto w-full">
+        {section === 'gaya' && <CosmeticCollection/>}
         {section === 'avatar' && (
           <div>
             <SectionTitle icon={UserRound} title="Avatar Karakter" count={`${avatarsOwned.length}/${ALL_AVATARS.length}`} colorClass="bg-[var(--club-butter)]" />
@@ -162,6 +167,8 @@ export const CollectionScreen = () => {
                       <div className="w-full py-1.5 rounded-xl bg-[var(--club-paper)] border border-[var(--club-line)] flex items-center justify-center gap-1 font-bold text-xs text-[var(--club-muted)]"><Check size={14} strokeWidth={2.5} /> Dipakai</div>
                     ) : unlocked ? (
                       <button data-testid={`collection-equip-${theme.id}`} onClick={() => handleEquipTheme(theme.id)} className="pop-button pink w-full py-1.5 text-xs font-bold">Pakai</button>
+                    ) : theme.reward ? (
+                      <span className="theme-art-requirement" data-testid={`collection-requirement-${theme.id}`}>{artRewardLabel(theme.reward)}</span>
                     ) : (
                       <button data-testid={`collection-buy-${theme.id}`} onClick={() => navigate('toko')} className="pop-button butter w-full py-1.5 text-xs font-bold">Beli di Toko</button>
                     )}

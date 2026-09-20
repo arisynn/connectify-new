@@ -56,3 +56,34 @@ User approved autonomous recommended changes, testing consolidated at end, optio
 
 ## Prior implementation retained
 Existing shop, achievements, chest rewards/timers, inventory, avatars, theme ownership/equip, minigames, multiplayer, ledger, profile settings and statistics retained. Older PRD currency reward numbers were stale and are superseded by current `src/core/economy.js`, not changed as part of this polish.
+
+## Current asset update — 2026-09-20 (verified)
+### Latest user decisions (Indonesian)
+- "Hanya buat dan pasang aset baru: tidak perlu menambahkan fitur generator di aplikasi." No AI generator, AI keys, upload endpoints or AI SDK added to the app.
+- New high-quality set for all 5 themes + tile skins + avatars/brand; old generated files must stay as rewards. Rewards mixed account level, claimed achievements and daily login.
+- "Nah sekarang bagian rekomendasi dari kamu, tambahkan aset gambar apapun yang direkomendasikan oleh mu hehehe" — added coordinated minigame/menu/booster art, frames, victory particles and chest art.
+- "Jangan lupa update harga item yang dijual, sesuaikan berdasarkan kualitas" — quality-tiered permanent cosmetics and themes; consumable booster prices unchanged.
+- "Ga perlu di screenshot ya, aku sudah lihat kok di pratinjau!" — user has viewed preview; keep final verification consolidated and avoid repeated visual passes.
+### Implemented in current change
+- 124 new local transparent WebP assets (~1.49 MB combined): 80 icons (16 each Sakura, Bakery, Galaxy, Meadow, Fruit), 9 blank tile surfaces, 9 avatars, 3 profile rings, 3 victory particles, 3 chests, 16 game/menu/booster icons, one brand mark; plus PNG favicon/touch icon.
+- Actual generator reported Gemini 3.1 Flash Image preview, requested high quality. No GPT-6 image generator was used. Generated sources/provenance in `scripts/art_sources.json`; non-runtime originals in `scripts/art-originals/`; repeatable offline white-background removal and sprite slicing in `scripts/prepare_premium_art.py`. Old scripts/art and public/art assets not deleted or overwritten.
+- Vanilla matching tiles preserved. Summer Club remains initial active theme. New Meadow is free for every account. New default Pearl tile skins cover 1×1, both domino directions and 2×2; default block/arrow/effect assets are free.
+- Real bitmap cosmetics rendered in Onet, Block Puzzle, portraits, victory effects and store previews. Skins are blank material surfaces, not matching icons. Store excludes reward items. 1×1 cosmetic slot added with shared ownership/equip validation.
+- New logo in home, login/startup via theme, static boot loader, preloading and favicons. Updated minigame selection icons and home imagery; shared logo map replaces matching UI illustrations. Asset cache version bumped for clean files.
+- `tileCatalog.js`/theme registry now include 15 themes / 209 matching images: original 79 + new 80 + 50 legacy reward icons. Deep theme merge no longer mixes vanilla tile IDs into themed icon sets. Gallery counts dynamic.
+- 5 old generated theme sets become distinct reward editions; 12 old avatar/skin images wired as earned cosmetics. Legacy files/ownership retained, including older SVG sources not used for new store rendering.
+- Shared `artRewards.js`: account levels 3/5 for reward Sakura/Bakery, 3 achievement tiers for Galaxy, login days 3/7 for Meadow/Fruit. Other old skins/avatars unlock through mixed milestones. Collection > Gaya shows requirements, progress and equip. No reward-edition purchases accepted by server.
+- New idempotent `DAILY_CHECK_IN` gameplay reward mutation auto-queued on app opening / WIB date change; server ignores client dates and persists login day/statistics/reward ownership. No authentication logic modified. Unlocks also evaluated after existing gameplay/missions/achievement mutations.
+- Theme screen updated to club-style image catalog with normal/reward tabs; remaining legacy-screen redesign is still separate backlog.
+- Prices: free Meadow + defaults; Fruit 100, Bakery 110, Sakura 120, Galaxy 150 Permen. Bitmap cosmetics 35–90. Classic pre-existing themes retain 60–100 prices. Source-of-truth price is shared economy/catalog, used by frontend and authoritative CDE API. Existing owners not charged again.
+### Environment restoration
+- Fork omitted `.env` and root node_modules; restored root dependencies (Node22 existing dependency) and env-only previous Express/Vite setup. Root app on3000 + API8001, unrelated template backend stopped as in prior working setup. No supervisor configuration edited.
+- Preview URL is the value in `/app/frontend/.env` REACT_APP_BACKEND_URL. Existing Supabase/auth preview adapter remains MOCKED; real Supabase credentials absent, production persistence NOT verified.
+### Verification / remaining priorities
+- TypeScript lint and production build passed. Clean sprite review complete. Consolidated test pass: 25 backend tests passed (including actual priced purchase/debit/persistence, forged-price rejection, equip guards, free theme, check-in idempotency, alpha and asset delivery checks). Ten new/reward themes × levels 1/3/7 generated solvable boards with correct tile IDs.
+- Browser verified login/startup/home/store pricing and theme equip, no horizontal overflow on mobile390×844 and desktop1920×800. Targeted follow-up verified all60 actual Onet buttons have Pearl image backgrounds and correct Meadow icons. Initial reported missing-skin finding was a test-selector false positive: `[data-testid^='onet-tile-']` selected `onet-tile-grid`, not a tile. Use `button[data-tile-id]` for assertions.
+- Repeated-login issue was forced-click timing during entry animation, not reproduced with stable-button actionability checks. New registration, actual free Meadow equip, then sign-out/existing-account sign-in passed. No auth application code changed. Actual reward threshold/WIB-midnight/inherited ownership/idempotency assertions also passed.
+- Reports: `/app/test_reports/iteration_1.json` (original findings), `/app/test_reports/art_final_verification.json` (follow-up resolutions), `/app/test_reports/pytest/pytest_results_iteration_latest.xml`. Not all minigame rounds were played to completion in this asset pass; catalog delivery and procedural gameplay generation are covered. Real Supabase remains unverified/MOCKED in preview.
+- P0 current: none unresolved in the tested asset/pricing/reward scope. User review of subjective artwork/value remains welcome.
+- P1 carry-over: restyle remaining Achievements/Chests/Collection/Multiplayer/Block/Notifications to 100% club-v3; compact home; game-over returns to Level Select; distinguish Challenge Center vs Level Select.
+- P2: seasonal cosmetic collections, player feedback on perceived quality/value; real Supabase verification with existing project credentials remains untested.
