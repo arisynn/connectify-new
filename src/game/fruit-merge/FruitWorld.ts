@@ -3,7 +3,7 @@ import {FRUITS,FRUIT_WIDTH,FRUIT_HEIGHT,DANGER_LINE} from './catalog';
 type FruitBody=Body & {plugin:{level:number;born:number}};
 export class FruitWorld{
   engine=Engine.create({enableSleeping:true});phase:'ready'|'playing'|'paused'|'over'='ready';
-  score=0;merges=0;largest=0;drops=0;bestCombo=0;combo=0;current=0;next=0;dangerSince=0;lastDrop=-999;lastMerge=-999;
+  score=0;merges=0;largest=0;drops=0;bestCombo=0;combo=0;current=0;next=0;dangerSince=0;lastDrop=-999;lastMerge=-999;watermelons=0;
   effects:{id:number;x:number;y:number;born:number}[]=[];private mergeQueue:[FruitBody,FruitBody][]=[];private queued=new Set<number>();private effectId=0;
   constructor(private random=()=>Math.random()){
     this.engine.gravity.y=1.1;
@@ -21,6 +21,16 @@ export class FruitWorld{
     Composite.add(this.engine.world,fruit);return fruit;
   }
   drop(x:number){if(this.phase!=='playing'||this.cooldown>0)return false;this.createFruit(this.current,x,28);this.drops++;this.lastDrop=this.time;this.current=this.next;this.next=this.pick();return true;}
+  // Power-up: swap the fruit in hand with the next one. Cosmetic-free, no score impact.
+  swap(){if(this.phase!=='playing'||this.current===this.next)return false;[this.current,this.next]=[this.next,this.current];return true;}
+  // Power-up: pick every fruit of the smallest size currently in the basket.
+  pop(){
+    if(this.phase!=='playing'||!this.fruits.length)return 0;
+    const smallest=Math.min(...this.fruits.map(f=>f.plugin.level));
+    const picked=this.fruits.filter(f=>f.plugin.level===smallest);
+    for(const f of picked){this.effects.push({id:++this.effectId,x:f.position.x,y:f.position.y,born:this.time});}
+    Composite.remove(this.engine.world,picked);this.dangerSince=0;return picked.length;
+  }
   update(delta:number){
     if(this.phase!=='playing')return;
     Engine.update(this.engine,Math.min(delta,1000/60));
@@ -28,6 +38,7 @@ export class FruitWorld{
       const level=a.plugin.level,next=level+1,x=(a.position.x+b.position.x)/2,y=(a.position.y+b.position.y)/2;
       Composite.remove(this.engine.world,[a,b]);
       if(next<FRUITS.length){const fruit=this.createFruit(next,x,y);Body.setVelocity(fruit,{x:(a.velocity.x+b.velocity.x)/3,y:Math.min(0,(a.velocity.y+b.velocity.y)/3)});}
+      else this.watermelons++;
       this.score+=FRUITS[Math.min(next,FRUITS.length-1)].points;this.merges++;this.largest=Math.max(this.largest,Math.min(next,FRUITS.length-1));
       this.combo=this.time-this.lastMerge<1300?this.combo+1:1;this.bestCombo=Math.max(this.bestCombo,this.combo);this.lastMerge=this.time;
       this.effects.push({id:++this.effectId,x,y,born:this.time});
@@ -37,6 +48,6 @@ export class FruitWorld{
     if(overflow){if(!this.dangerSince)this.dangerSince=this.time;if(this.time-this.dangerSince>2300)this.phase='over';}else this.dangerSince=0;
     if(this.fruits.length>110)this.phase='over';
   }
-  snapshot(){return {phase:this.phase,score:this.score,merges:this.merges,largest:this.largest,drops:this.drops,bestCombo:this.bestCombo,current:this.current,next:this.next,cooldown:this.cooldown,time:this.time,danger:this.dangerSince>0,dangerLeft:this.dangerSince?Math.max(0,2300-(this.time-this.dangerSince)):2300,effects:[...this.effects],fruits:this.fruits.map(b=>({id:b.id,level:b.plugin.level,x:b.position.x,y:b.position.y,angle:b.angle}))};}
+  snapshot(){return {phase:this.phase,score:this.score,merges:this.merges,largest:this.largest,drops:this.drops,bestCombo:this.bestCombo,current:this.current,next:this.next,cooldown:this.cooldown,time:this.time,watermelons:this.watermelons,danger:this.dangerSince>0,dangerLeft:this.dangerSince?Math.max(0,2300-(this.time-this.dangerSince)):2300,effects:[...this.effects],fruits:this.fruits.map(b=>({id:b.id,level:b.plugin.level,x:b.position.x,y:b.position.y,angle:b.angle}))};}
   destroy(){Events.off(this.engine,'collisionStart');Composite.clear(this.engine.world,false);Engine.clear(this.engine);}
 }

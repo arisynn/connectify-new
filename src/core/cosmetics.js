@@ -42,7 +42,7 @@ const ATELIER_PRICES = {avatar_mochi:65,avatar_orbit:90,portrait_panda:60,portra
 for (const cosmetic of COSMETICS) {
   if (ATELIER_PRICES[cosmetic.id] !== undefined) cosmetic.price = ATELIER_PRICES[cosmetic.id];
 }
-export const DEFAULT_COSMETICS = {tile1:'tile1_pearl',tile2:'tile2_pearl',tile4:'tile4_pearl',arrow:'arrow_pearl',block:'block_pearl',effect:'effect_blossom',memoryCard:'card_mint'};
+export const DEFAULT_COSMETICS = {tile1:'tile1_pearl',tile2:'tile2_pearl',tile4:'tile4_pearl',arrow:'arrow_pearl',block:'block_pearl',effect:'effect_blossom',memoryCard:'card_mint',fruitBasket:'basket_rattan'};
 // A single purchase owns all three Onet footprints. Existing single-skin owners
 // receive the rest of their material family without a second charge.
 export const SKIN_PACKS = [
@@ -60,10 +60,13 @@ export const SKIN_PACKS = [
 });
 COSMETICS.push(...SKIN_PACKS);
 for(const [id,name,price] of [['mint','Club Garden',0],['autumn','Autumn Letters',65],['celestial','Celestial Notes',80],['arcade','Arcade Stories',70]]) COSMETICS.push({...item(`card_${id}`,name,'card','memoryCard',price,id,'Bagian belakang kartu bergambar untuk Memory Flip. Depan kartu tetap jelas untuk mencocokkan gambar.','cards'),edition:'seasonal'});
-for (const game of ['onet','block','memory']) for (const [asset,name,price,motion,color] of [
+for (const game of ['onet','block','memory','fruit']) for (const [asset,name,price,motion,color] of [
   ['autumn','Autumn Drift',65,'drift','#ce7c35'],['magic','Magic Orbit',80,'orbit','#a178cb'],
   ['pixel','Pixel Pop',70,'pop','#438bc1'],['snow','Frost Bloom',75,'bloom','#53b4cb']
-]) COSMETICS.push({...item(`anim_${game}_${asset}`,`${name} · ${{onet:'Onet',block:'Block',memory:'Memory'}[game]}`,'animation',`${game}Animation`,price,asset,game==='onet'?'Animasi pasangan dan pecahan tile. Hanya tampilan, bukan booster.':game==='memory'?'Partikel saat kamu menemukan pasangan kartu. Hanya tampilan.':'Animasi saat baris atau kolom bersih, termasuk mode Infinity.','effects'),motion,color,edition:'seasonal'});
+]) COSMETICS.push({...item(`anim_${game}_${asset}`,`${name} · ${{onet:'Onet',block:'Block',memory:'Memory',fruit:'Fruit'}[game]}`,'animation',`${game}Animation`,price,asset,game==='onet'?'Animasi pasangan dan pecahan tile. Hanya tampilan, bukan booster.':game==='memory'?'Partikel saat kamu menemukan pasangan kartu. Hanya tampilan.':game==='fruit'?'Percikan saat dua buah menyatu di Fruit Merge. Hanya tampilan.':'Animasi saat baris atau kolom bersih, termasuk mode Infinity.','effects'),motion,color,edition:'seasonal'});
+// Fruit Merge baskets: original basket illustrations drawn as the board frame; fruit art and physics never change.
+for (const [key,name,price] of [['rattan','Keranjang Rotan',0],['candy','Keranjang Stroberi',60],['frost','Keranjang Es',70],['night','Keranjang Malam',75],['pixel','Keranjang Piksel',65],['meadow','Keranjang Padang',60]])
+  COSMETICS.push({...item(`basket_${key}`,name,'basket','fruitBasket',price,key,price===0?'Keranjang bawaan Fruit Merge.':'Ilustrasi keranjang baru untuk papan Fruit Merge. Buah dan fisika tetap sama.','baskets'),edition:'seasonal'});
 export const cosmeticById = id => COSMETICS.find(item=>item.id===id);
 export const ownsCosmetic = (profile,id) => {
   const cosmetic=cosmeticById(id);if(!cosmetic)return false;
@@ -77,4 +80,4 @@ export const equippedCosmetic = (profile,slot) => {
 };
 export const isCosmeticEquipped = (profile,item) => item.members?item.members.every(id=>equippedCosmetic(profile,cosmeticById(id).slot)?.id===id):equippedCosmetic(profile,item.slot)?.id===item.id;
 export const cosmeticEquipPatch = (profile,item,remove=false) => ({equippedCosmetics:{...profile.equippedCosmetics,...Object.fromEntries((item.members||[item.id]).map(id=>[cosmeticById(id).slot,remove?null:id]))}});
-export const validateCosmeticEquip = (profile,equipped) => !!equipped && typeof equipped==='object' && !Array.isArray(equipped) && Object.entries(equipped).every(([slot,id])=>['avatar','frame','tile1','tile2','tile4','arrow','block','effect','onetAnimation','blockAnimation','memoryAnimation','memoryCard'].includes(slot) && (id===null || (cosmeticById(id)?.slot===slot&&ownsCosmetic(profile,id))));
+export const validateCosmeticEquip = (profile,equipped) => !!equipped && typeof equipped==='object' && !Array.isArray(equipped) && Object.entries(equipped).every(([slot,id])=>['avatar','frame','tile1','tile2','tile4','arrow','block','effect','onetAnimation','blockAnimation','memoryAnimation','fruitAnimation','memoryCard','fruitBasket'].includes(slot) && (id===null || (cosmeticById(id)?.slot===slot&&ownsCosmetic(profile,id))));

@@ -79,24 +79,6 @@ export const useMultiplayer = () => {
         setRoom(data);
     };
 
-    const proposeWager = async (amount: number, currency: string = 'coins') => {
-        if (!room) return;
-        const data = await apiCall('propose_wager', { roomId: room.id, host: user.name, amount, currency });
-        setRoom(data);
-    };
-
-    const acceptWager = async (offerId: string) => {
-        if (!room) return;
-        const data = await apiCall('accept_wager', { roomId: room.id, name: user.name, offerId });
-        setRoom(data);
-    };
-
-    const rejectWager = async (offerId: string) => {
-        if (!room) return;
-        const data = await apiCall('reject_wager', { roomId: room.id, name: user.name, offerId });
-        setRoom(data);
-    };
-
     const startMatch = async (board?: any[][]) => {
         if (!room) return;
         const data = await apiCall('start_match', { roomId: room.id, host: user.name, board });
@@ -157,7 +139,7 @@ export const useMultiplayer = () => {
     return {
         room, error, isLoading,
         createRoom, joinRoom, leaveRoom, setReady,
-        changeMode, proposeWager, acceptWager, rejectWager,
+        changeMode,
         startMatch, readyForGame, completeMatch, reportLoss, reportTimeUp
     };
 };

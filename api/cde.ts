@@ -425,7 +425,7 @@ export default async function handler(req: Request, res: Response) {
                  for (const [key, highest] of [['currentLevel', 'highestLevel'], ['blockPuzzleLevel', 'highestBlockPuzzleLevel']]) {
                    if (safePayload[key] !== undefined && (!Number.isInteger(safePayload[key]) || Number(safePayload[key]) < 1 || Number(safePayload[key]) > (currentProf()[highest] || 1))) return res.status(400).json({ error: 'LEVEL_LOCKED' });
                  }
-                 const protectedFields = ['hints', 'shuffles', 'hammers', 'bombs', 'chestSlots', 'chestProgress', 'activeMissions', 'activeWeeklyMissions', 'weeklyMissions', 'dailyMissionsDate', 'weeklyMissionsWeek', 'dailyBonusClaimed', 'dailyChallengeDate', 'achievements', 'winStreak', 'statistics', 'coins', 'permen'];
+                 const protectedFields = ['hints', 'shuffles', 'hammers', 'bombs', 'fruitSwaps', 'fruitPops', 'chestSlots', 'chestProgress', 'activeMissions', 'activeWeeklyMissions', 'weeklyMissions', 'dailyMissionsDate', 'weeklyMissionsWeek', 'dailyBonusClaimed', 'dailyChallengeDate', 'achievements', 'winStreak', 'statistics', 'coins', 'permen'];
                  for (const f of protectedFields) {
                      delete safePayload[f];
                  }
@@ -481,11 +481,11 @@ export default async function handler(req: Request, res: Response) {
             } else if (type === 'PROCESS_WIN') {
                  if(payload.isMultiplayer){
                    const {data:owner}=await supabase.from('cde_accounts').select('username').eq('id',accountId).single();
-                   const verified=verifiedMultiplayerResult(payload.runId,owner?.username);
+                   const verified=await verifiedMultiplayerResult(payload.runId,owner?.username);
                    if(!verified||verified.game!==payload.game||verified.isWinner!==payload.isWinner) return res.status(400).json({error:'UNVERIFIED_MULTIPLAYER_RESULT'});
                  }
-                 if (!['onet', 'block', 'block-infinity', 'memory', 'triple'].includes(payload.game) || !payload.runId || typeof payload.runId !== 'string' || (payload.game==='block-infinity'&&payload.isWinner!==false)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
-                 for (const [key, max] of Object.entries({ score: 1000000, matches: 200, splits: 100, highestCombo: 100, timeElapsed: 86400000, blocksCleared: 10000, linesCleared: 1000, stars: 3, level: 10000 })) {
+                 if (!['onet', 'block', 'block-infinity', 'memory', 'triple', 'fruit'].includes(payload.game) || !payload.runId || typeof payload.runId !== 'string' || (payload.game==='block-infinity'&&payload.isWinner!==false)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
+                 for (const [key, max] of Object.entries({ score: 1000000, matches: 200, splits: 100, highestCombo: 100, timeElapsed: 86400000, blocksCleared: 10000, linesCleared: 1000, stars: 3, level: 10000, fruitStage: 11, watermelons: 50 })) {
                    if (payload[key] !== undefined && (!Number.isFinite(payload[key]) || payload[key] < 0 || payload[key] > max)) return res.status(400).json({ error: 'INVALID_GAME_RESULT' });
                  }
                  const { RewardEngine } = await import('../src/core/reward.js');

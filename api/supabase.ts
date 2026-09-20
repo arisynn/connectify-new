@@ -28,6 +28,7 @@ const UNIQUE_KEYS: Record<string, string[]> = {
   cde_operations_log: ['idempotency_key'],
   cde_recovery_codes: ['account_id'],
   profiles: ['player_name'],
+  mp_rooms: ['id'],
 };
 
 const uniqueViolation = (table: string, col: string) => ({

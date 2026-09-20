@@ -10,7 +10,10 @@ export const useFruitMerge=()=>{
     const hidden=()=>{if(document.hidden&&game.phase==='playing'){game.phase='paused';setState(game.snapshot());}};document.addEventListener('visibilitychange',hidden);
     return()=>{cancelAnimationFrame(frame);document.removeEventListener('visibilitychange',hidden);game.destroy();world.current=undefined;};
   },[]);
-  const phase=(next:FruitWorld['phase'])=>{if(world.current){world.current.phase=next;setState(world.current.snapshot());}};
-  const drop=(x:number)=>{if(world.current?.drop(x)){sound.current.playUiClick();setState(world.current.snapshot());}};
-  return {state,phase,drop};
+  const refresh=()=>{if(world.current)setState(world.current.snapshot());};
+  const phase=(next:FruitWorld['phase'])=>{if(world.current){world.current.phase=next;refresh();}};
+  const drop=(x:number)=>{if(world.current?.drop(x)){sound.current.playUiClick();refresh();}};
+  const swap=()=>{const ok=!!world.current?.swap();if(ok){sound.current.playUiClick();refresh();}return ok;};
+  const pop=()=>{const n=world.current?.pop()||0;if(n){sound.current.playSfx('uiMatch');refresh();}return n;};
+  return {state,phase,drop,swap,pop};
 };

@@ -1,0 +1,11 @@
+{
+  "source": "baskets.png",
+  "assets": [
+    "/art/premium/baskets/rattan.webp",
+    "/art/premium/baskets/candy.webp",
+    "/art/premium/baskets/frost.webp",
+    "/art/premium/baskets/night.webp",
+    "/art/premium/baskets/pixel.webp",
+    "/art/premium/baskets/meadow.webp"
+  ]
+}
