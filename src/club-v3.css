@@ -1,5 +1,5 @@
 /* Club 3: a single navigation system, quiet editorial home and permanent cosmetic atelier. */
-.mobile-nav {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));flex-shrink:0;gap:6px;padding:9px max(18px,calc((100vw - 730px)/2));background:var(--club-card);border-top:1.5px solid var(--club-line);z-index:115;}
+.mobile-nav {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex-shrink:0;gap:6px;padding:9px max(18px,calc((100vw - 730px)/2));background:var(--club-card);border-top:1.5px solid var(--club-line);z-index:115;}
 .mobile-nav button {display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;border-radius:13px;color:var(--club-muted);font-size:12px;font-weight:600;transition:background-color .2s,transform .2s;}
 .mobile-nav button.active {background:var(--club-pink);color:#172337;}.mobile-nav button:active {transform:scale(.96);}
 .home-v3 {position:absolute;inset:0;overflow-y:auto;background:var(--club-paper);color:var(--club-ink);background-image:radial-gradient(#ac978526 .8px,transparent .8px);background-size:15px 15px;}

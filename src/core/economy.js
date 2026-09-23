@@ -1,4 +1,4 @@
-// One currency. All grants go through the same daily budget, on client and server.
+// One shared currency (Permen) for the hub and every game. All grants go through the same daily budget, on client and server.
 import { cosmeticById } from './cosmetics.js';
 import { SEASONAL_THEMES } from './seasonalCatalog.js';
 import { starUpgradeItem } from './starPatrol.js';
@@ -33,5 +33,5 @@ export const recordTransaction = (profile, { id, amount, source, label, balance 
 };
 export const TRANSACTION_LABELS = {
   CLAIM_MISSION_REWARD: 'Hadiah misi', CLAIM_ACHIEVEMENT_REWARD: 'Hadiah pencapaian',
-  OPEN_CHEST: 'Hadiah peti', PURCHASE_ITEM: 'Pembelian', SPEED_UP_CHEST: 'Percepat peti'
+  CLAIM_LOGIN_REWARD: 'Hadiah login', PURCHASE_ITEM: 'Pembelian'
 };

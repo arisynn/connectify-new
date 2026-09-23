@@ -92,12 +92,12 @@ export const useOnetGame = (initialBoard?:any[][], isMultiplayer?:boolean, onCom
   };
   const useHint=()=>{
     if(lock.current||isPaused||gameState!=='playing')return;
-    if((CDE.getState().profile?.profile_data?.profile?.hints??3)<=0){showToast('Hint habis. Dapatkan dari peti atau toko.');return;}
+    if((CDE.getState().profile?.profile_data?.profile?.hints??3)<=0){showToast('Petunjuk habis. Beli di toko Onet.');return;}
     const hint=findHint(board);if(hint){cde.queueMutation('USE_ITEM',{itemId:'hint'});setHintTiles(hint);}
   };
   const useShuffle=()=>{
     if(lock.current||isPaused||gameState!=='playing')return;
-    if((CDE.getState().profile?.profile_data?.profile?.shuffles??3)<=0){showToast('Shuffle habis. Dapatkan dari peti atau toko.');return;}
+    if((CDE.getState().profile?.profile_data?.profile?.shuffles??3)<=0){showToast('Acak habis. Beli di toko Onet.');return;}
     cde.queueMutation('USE_ITEM',{itemId:'shuffle'});audio.playSfx('shuffle');setBoard(b=>guaranteedShuffle(b,Math.random,level.current));setSelected(null);setHintTiles(null);showToast('Papan diacak, tantangan tetap sesuai level!');
   };
   return {board,selected,activePaths,hintTiles,directionErrorTiles,matchingTiles,score,combo,floatingTexts,time,isPaused,setIsPaused,gameState,toastMsg,winReward,isDailyChallenge,dailyChallengeDone:profile.dailyChallengeDate===getTodayKey(),levelTime,currentLevel:level.current,boardRef,handleTileClick,useHint,useShuffle,initGame,profile,updateProfile,navigate};

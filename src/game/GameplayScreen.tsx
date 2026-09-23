@@ -22,6 +22,6 @@ const GameplayContent=()=>{
     </div><aside className="onet-play-tools"><div className="onet-theme-note"><span className="eyebrow" data-testid="onet-theme-label">TEMA PILIHANMU</span><div>{Object.values(activeTheme.assets.tiles).slice(0,3).map((src,i)=><img key={src} data-testid={`onet-theme-sample-${i}`} src={src} alt=""/>)}</div><h2 data-testid="onet-theme-name">{activeTheme.name}</h2><p data-testid="onet-rules">Gambar dan ukuran sama, maksimal 2 belokan. Tile besar pecah jadi pasangan baru.</p></div><div className="onet-boosters">
       <button data-testid="onet-shuffle" className="pop-button sky" onClick={useShuffle}><img src={artIcon('shuffle')} alt=""/><span>Acak</span><b data-testid="onet-shuffle-count">{profile.shuffles}</b></button><button data-testid="onet-hint" className="pop-button butter" onClick={useHint}><img src={artIcon('hint')} alt=""/><span>Petunjuk</span><b data-testid="onet-hint-count">{profile.hints}</b></button>
     </div></aside></div>
-    <OnetModals isPaused={isPaused} gameState={gameState} toastMsg={toastMsg} score={score} winReward={winReward} isDailyChallenge={isDailyChallenge} onResume={()=>setIsPaused(false)} onHome={()=>navigate('levels')} onRetry={initGame} onNextLevel={()=>navigate('levels')}/>
+    <OnetModals isPaused={isPaused} gameState={gameState} toastMsg={toastMsg} score={score} winReward={winReward} isDailyChallenge={isDailyChallenge} onResume={()=>setIsPaused(false)} onHome={()=>navigate('game-hub')} onRetry={initGame} onNextLevel={()=>navigate('game-hub')}/>
   </div></main>;
 };

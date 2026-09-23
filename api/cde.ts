@@ -241,8 +241,12 @@ export default async function handler(req: Request, res: Response) {
             // Actually in provision, username is stored directly or with #... Wait, let's check how it's stored.
             // If they use pseudoEmail, it's safer to check if auth user exists. But we can't query auth.users from anon.
             // We CAN query cde_accounts by username. 
-            const { data } = await supabase.from('cde_accounts').select('id, username').ilike('username', `${cleanName}%`).limit(1);
-            return res.status(200).json({ exists: data && data.length > 0 });
+            if (!cleanName) return res.status(200).json({ exists: false });
+            // Accounts share one auth identity per cleaned name, so existence is an exact match on the cleaned username.
+            const { data, error } = await supabase.from('cde_accounts').select('id, username').ilike('username', `${cleanName}%`).limit(50);
+            if (error) return res.status(500).json({ error: error.message });
+            const exists = (data || []).some(row => String(row.username || '').split('#')[0].trim().toLowerCase().replace(/[^a-z0-9]/g, '') === cleanName);
+            return res.status(200).json({ exists });
         }
 
         if (action === 'provision' && req.method === 'POST') {
@@ -429,7 +433,7 @@ export default async function handler(req: Request, res: Response) {
                  for (const [key, highest] of [['currentLevel', 'highestLevel'], ['blockPuzzleLevel', 'highestBlockPuzzleLevel']]) {
                    if (safePayload[key] !== undefined && (!Number.isInteger(safePayload[key]) || Number(safePayload[key]) < 1 || Number(safePayload[key]) > (currentProf()[highest] || 1))) return res.status(400).json({ error: 'LEVEL_LOCKED' });
                  }
-                 const protectedFields = ['hints', 'shuffles', 'hammers', 'bombs', 'fruitSwaps', 'fruitPops', 'chestSlots', 'chestProgress', 'activeMissions', 'activeWeeklyMissions', 'weeklyMissions', 'dailyMissionsDate', 'weeklyMissionsWeek', 'dailyBonusClaimed', 'dailyChallengeDate', 'achievements', 'winStreak', 'statistics', 'coins', 'permen'];
+                 const protectedFields = ['hints', 'shuffles', 'hammers', 'bombs', 'fruitSwaps', 'fruitPops', 'loginReward', 'pendingMissions', 'accountXP', 'processedRuns', 'starUpgrades', 'starLevel', 'ownedCosmetics', 'unlockedThemes', 'activeMissions', 'activeWeeklyMissions', 'weeklyMissions', 'dailyMissionsDate', 'weeklyMissionsWeek', 'dailyBonusClaimed', 'dailyChallengeDate', 'achievements', 'winStreak', 'statistics', 'coins', 'permen'];
                  for (const f of protectedFields) {
                      delete safePayload[f];
                  }
@@ -481,8 +485,8 @@ export default async function handler(req: Request, res: Response) {
                  if (current <= 0) return res.status(200).json({ success: true, ignored: true, reason: 'NO_ITEMS', result: currentProfile });
                  const { updateMissions } = await import('../src/core/misiHarian.js');
                  let nextProf = { ...currentProf(), [field]: current - 1 };
-                 if (itemId === 'hint') nextProf = updateMissions(nextProf, 'useHint', 1);
-                 if (itemId === 'shuffle') nextProf = updateMissions(nextProf, 'useShuffle', 1);
+                 if (itemId === 'hint') nextProf = updateMissions(nextProf, 'useHint', 1, 'onet');
+                 if (itemId === 'shuffle') nextProf = updateMissions(nextProf, 'useShuffle', 1, payload.game === 'block' ? 'block' : 'onet');
                  applyProfilePatch(nextProf);
             } else if (type === 'PROCESS_WIN') {
                  if(payload.isMultiplayer){
@@ -510,23 +514,12 @@ export default async function handler(req: Request, res: Response) {
                  if (result.error) return res.status(400).json({ error: result.error });
                  permenDelta = result.permenDelta;
                  applyProfilePatch(result.profile);
-            } else if (type === 'OPEN_CHEST') {
-                 const { openChestAction } = await import('../src/core/chest.js');
-                 const { updateMissions } = await import('../src/core/misiHarian.js');
-                 const { profile: newProfile, rewards } = openChestAction(currentProf(), payload.slotId);
-                 if (rewards === null) return res.status(400).json({ error: 'CHEST_NOT_READY' });
-                 if (rewards.error) return res.status(400).json({ error: rewards.error });
-                 if (!rewards.chestType) return res.status(400).json({ error: 'CHEST_EMPTY' });
-                 permenDelta = rewards.permen || 0;
-                 const withMissions = updateMissions(newProfile, 'openChest', 1);
-                 delete withMissions.permen; delete withMissions.coins;
-                 applyProfilePatch(withMissions);
-            } else if (type === 'SPEED_UP_CHEST') {
-                 const { speedUpChestAction } = await import('../src/core/chest.js');
-                 const result = speedUpChestAction(currentProf(), payload.slotId, Number(currentProfile.permen || 0));
-                 if (!result.success) return res.status(400).json({ error: result.cost === 0 ? 'CHEST_ALREADY_READY' : 'INSUFFICIENT_PERMEN' });
-                 permenDelta = -result.cost;
-                 applyProfilePatch({ chestSlots: result.profile.chestSlots });
+            } else if (type === 'CLAIM_LOGIN_REWARD') {
+                 const { claimLoginReward } = await import('../src/core/loginReward.js');
+                 const result = claimLoginReward(currentProf());
+                 if (result.error) return res.status(400).json({ error: result.error });
+                 permenDelta = result.permenDelta;
+                 applyProfilePatch(result.profile);
             } else if (type === 'CLAIM_ACHIEVEMENT_REWARD') {
                  const { claimAchievement } = await import('../src/core/achievements.js');
                  const result = claimAchievement(currentProf(), payload.achievementId);

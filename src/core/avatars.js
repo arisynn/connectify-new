@@ -8,7 +8,7 @@ export const AVATARS = [
   { id: 'avatar_robot', name: 'Bolt', requirement: 'Bersihkan 20 garis Block Puzzle', target: 20, stat: 'blockLines' },
   { id: 'avatar_bunny', name: 'Mochi', requirement: 'Klaim 5 misi harian', target: 5, stat: 'totalDailyMissionsCompleted' },
   { id: 'avatar_lion', name: 'Leo', requirement: 'Menangkan 25 permainan', target: 25, stat: 'totalWins' },
-  { id: 'avatar_owl', name: 'Ollie', requirement: 'Buka 5 peti', target: 5, stat: 'totalChestsOpened' },
+  { id: 'avatar_owl', name: 'Ollie', requirement: 'Klaim hadiah login 5 kali', target: 5, stat: 'totalLoginRewards' },
   { id: 'avatar_penguin', name: 'Pip', requirement: 'Kumpulkan total 100 Permen', target: 100, stat: 'totalPermenEarned' }
 ];
 export const isAvatarUnlocked = (profile, avatar) => (profile.statistics?.[avatar.stat] || 0) >= avatar.target;

@@ -1,0 +1,142 @@
+/* Hub portal (Poki-style) + per-game sites. One spacing scale everywhere: 8 / 12 / 16 / 24 / 32. */
+:root{--sp-1:8px;--sp-2:12px;--sp-3:16px;--sp-4:24px;--sp-5:32px;--page-pad:clamp(16px,3vw,32px);--page-max:1040px}
+.font-round,.font-round h1,.font-round h2,.font-round b{font-family:'Fredoka','Outfit',sans-serif}
+.font-bold h1,.font-bold .gp-brand b,.font-bold .poki-label b{font-family:'Outfit',sans-serif;text-transform:uppercase;letter-spacing:.02em}
+
+/* ---------- Hub ---------- */
+.poki{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--club-paper);color:var(--club-ink)}
+.poki-bar{display:flex;align-items:center;gap:var(--sp-2);width:100%;max-width:var(--page-max);margin:0 auto;padding:var(--sp-3) var(--page-pad);box-sizing:border-box;border-bottom:1.5px solid var(--club-line)}
+.poki-brand{display:flex;align-items:center;gap:var(--sp-2);flex:1;min-width:0}
+.poki-brand .club-mark{width:40px;height:40px;object-fit:contain}
+.poki-brand>span{display:flex;flex-direction:column;font-weight:800;font-size:18px;letter-spacing:-.3px;line-height:1}
+.poki-brand>span>span{font-size:8px;letter-spacing:2px;color:var(--club-muted);margin-top:3px}
+.poki-wallet{display:inline-flex;align-items:center;gap:var(--sp-1);height:40px;padding:0 var(--sp-3);border:1.5px solid var(--club-line);border-radius:999px;background:var(--club-card);font-weight:800;font-size:14px}
+.poki-wallet img{width:22px;height:22px;object-fit:contain}
+.poki-portrait{width:40px;height:40px;border-radius:14px;border:1.5px solid var(--club-line);overflow:hidden;flex-shrink:0;padding:0;background:var(--club-card)}
+.poki-portrait .player-portrait{width:100%;height:100%;border:0;border-radius:0}
+.poki-scroll{flex:1;min-height:0;overflow-y:auto;width:100%;max-width:var(--page-max);margin:0 auto;padding:var(--sp-4) var(--page-pad) var(--sp-5);box-sizing:border-box;display:flex;flex-direction:column;gap:var(--sp-4);scrollbar-width:thin}
+.poki-welcome{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,360px);gap:var(--sp-4);align-items:center}
+.poki-welcome h1{font-size:clamp(24px,3vw,34px);letter-spacing:-.6px;margin:var(--sp-1) 0;line-height:1.1}
+.poki-welcome p{margin:0;font-size:13px;color:var(--club-muted)}
+.poki-welcome .account-progress{margin:0}
+.poki-strip{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--sp-3);align-items:stretch}
+.poki-club-card{display:flex;align-items:center;gap:var(--sp-2);text-align:left;padding:var(--sp-3);border:1.5px solid var(--club-line);border-radius:18px;background:var(--club-sky);color:#172337;box-shadow:3px 3px 0 var(--club-line);transition:transform .18s,box-shadow .18s}
+.poki-club-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--club-line)}
+.poki-club-card>img{width:44px;height:44px;object-fit:contain;flex-shrink:0}
+.poki-club-card>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.poki-club-card b{font-size:15px}.poki-club-card small{font-size:11px;opacity:.8}
+.poki-heading{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--club-muted);margin:0}
+.poki-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.poki-tile{position:relative;display:flex;flex-direction:column;padding:0;border:1.5px solid var(--club-line);border-radius:22px;overflow:hidden;background:var(--club-card);color:var(--club-ink);box-shadow:4px 4px 0 var(--club-line);text-align:left;transition:transform .2s,box-shadow .2s}
+.poki-tile:hover{transform:translate(-3px,-3px);box-shadow:7px 7px 0 var(--club-line)}
+.poki-tile:hover .poki-cover img{transform:translateY(-6px) rotate(calc(var(--i) * 6deg - 9deg)) scale(1.04)}
+.poki-tile:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--club-line)}
+.poki-cover{position:relative;display:block;aspect-ratio:16/9;background:linear-gradient(135deg,var(--g-soft,var(--club-butter)),var(--club-paper));border-bottom:1.5px solid var(--club-line);overflow:hidden}
+.poki-cover img{position:absolute;bottom:-6%;left:calc(8% + var(--i) * 22%);width:26%;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 6px 0 rgba(0,0,0,.14));transform:rotate(calc(var(--i) * 6deg - 9deg));transition:transform .3s}
+.poki-cover.friends{display:grid;place-items:center;background:linear-gradient(135deg,var(--club-mint),var(--club-paper));color:var(--club-ink)}
+.poki-label{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-3)}
+.poki-label>img{width:34px;height:34px;object-fit:contain;flex-shrink:0}
+.poki-label>span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.poki-label b{font-size:17px;line-height:1.1}
+.poki-label small{font-size:9px;letter-spacing:1px;font-weight:800;color:var(--club-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.poki-badge{position:absolute;top:var(--sp-2);right:var(--sp-2);min-width:26px;height:26px;padding:0 8px;border-radius:13px;border:1.5px solid var(--club-line);background:var(--club-pink);color:#172337;font:800 12px/23px 'Outfit',sans-serif;font-style:normal;text-align:center;z-index:1}
+.poki-foot{text-align:center;font-size:11px;color:var(--club-muted);margin:0}
+
+/* Login reward card (shared) */
+.login-reward{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:var(--sp-2);align-items:center;padding:var(--sp-3);border:1.5px solid var(--club-line);border-radius:18px;background:var(--club-butter);color:#172337;box-shadow:3px 3px 0 var(--club-line)}
+.login-reward.claimed{background:var(--club-card);color:var(--club-ink)}
+.login-reward-art{width:52px;height:52px;object-fit:contain}
+.login-reward-copy{display:flex;flex-direction:column;gap:6px;min-width:0}
+.login-reward-copy .eyebrow{display:inline-flex;align-items:center;gap:4px;font-size:8px;margin:0}
+.login-reward-copy b{font-size:14px;line-height:1.2}
+.login-reward-track{display:flex;gap:4px}
+.login-reward-track span{flex:1;height:20px;border-radius:7px;border:1.5px solid var(--club-line);display:grid;place-items:center;font-size:9.5px;font-weight:800;background:var(--club-paper);color:var(--club-ink);opacity:.55}
+.login-reward-track span.done{background:var(--club-mint);opacity:1}
+.login-reward-track span.today{background:var(--club-pink);opacity:1}
+.login-reward-claim{width:auto;padding:10px var(--sp-3);white-space:nowrap}
+.login-reward-message{grid-column:1/-1;margin:0;font-size:11px;font-weight:700}
+
+/* ---------- Game site ---------- */
+.game-page{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;background:var(--club-paper);color:var(--club-ink)}
+.game-page[data-game=star]{background:radial-gradient(circle at 20% 0%,#15304d 0%,transparent 45%),var(--club-paper)}
+.gp-bar{display:flex;align-items:center;gap:var(--sp-3);width:100%;max-width:var(--page-max);margin:0 auto;padding:var(--sp-3) var(--page-pad);box-sizing:border-box;border-bottom:1.5px solid var(--club-line)}
+.gp-brand{display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0;text-align:left;color:inherit;padding:0}
+.gp-brand img{width:44px;height:44px;object-fit:contain;padding:6px;border:1.5px solid var(--club-line);border-radius:14px;background:var(--g-soft)}
+.gp-brand span{display:flex;flex-direction:column;gap:3px}
+.gp-brand small{font-size:8px;letter-spacing:1.6px;font-weight:800;color:var(--club-muted)}
+.gp-brand b{font-size:20px;line-height:1;letter-spacing:-.3px}
+.gp-menu{display:flex;gap:var(--sp-1);flex:1;justify-content:center;min-width:0}
+.gp-menu button{position:relative;display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 var(--sp-3);border:1.5px solid transparent;border-radius:999px;color:var(--club-ink);font-weight:800;font-size:12px;transition:background-color .15s,border-color .15s}
+.gp-menu button:hover{background:var(--club-card);border-color:var(--club-line)}
+.gp-menu button.active{background:var(--club-ink);color:var(--club-paper);border-color:var(--club-ink)}
+.gp-menu button b,.gp-shortcuts i,.gp-tabbar b{position:absolute;top:-6px;right:-4px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;border:1.5px solid var(--club-line);background:var(--g-accent);color:var(--club-paper);font:800 10px/17px 'Outfit',sans-serif;font-style:normal;text-align:center}
+.gp-wallet{display:inline-flex;align-items:center;gap:var(--sp-1);height:40px;padding:0 var(--sp-3);border:1.5px solid var(--club-line);border-radius:999px;background:var(--club-card);font-weight:800;font-size:14px;flex-shrink:0}
+.gp-wallet img{width:22px;height:22px;object-fit:contain}
+.gp-scroll{flex:1;min-height:0;overflow-y:auto;width:100%;max-width:var(--page-max);margin:0 auto;padding:var(--sp-4) var(--page-pad) var(--sp-5);box-sizing:border-box;display:flex;flex-direction:column;gap:var(--sp-4);scrollbar-width:thin}
+.gp-eyebrow{display:inline-block;font-size:10px;letter-spacing:2px;font-weight:800;color:var(--g-accent)}
+.gp-hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:var(--sp-4);align-items:center;padding:var(--sp-5);border:1.5px solid var(--club-line);border-radius:28px;background:var(--club-card);box-shadow:5px 5px 0 var(--club-line)}
+.gp-hero-copy{display:flex;flex-direction:column;gap:var(--sp-2)}
+.gp-hero h1{font-size:clamp(32px,4.6vw,56px);letter-spacing:-1.2px;line-height:.98;margin:0}
+.gp-hero p{margin:0;font-size:14px;line-height:1.55;color:var(--club-muted);max-width:44ch}
+.gp-modes{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-2)}
+.gp-mode{display:flex;align-items:center;gap:var(--sp-2);text-align:left;padding:var(--sp-2) var(--sp-3);border:1.5px solid var(--club-line);border-radius:16px;background:var(--club-paper);color:var(--club-ink);box-shadow:3px 3px 0 var(--club-line);transition:transform .15s,box-shadow .15s}
+.gp-mode.primary{background:var(--g-accent);color:var(--club-paper);border-color:var(--g-accent)}
+.game-page[data-game=star] .gp-mode.primary{color:#04101f}
+.gp-mode:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--club-line)}
+.gp-mode:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--club-line)}
+.gp-mode>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.gp-mode b{font-size:15px}.gp-mode small{font-size:11px;opacity:.8}
+.gp-cover{position:relative;aspect-ratio:1;max-height:360px;margin:0 auto;width:100%;max-width:360px;border-radius:24px;background:radial-gradient(circle at 50% 40%,var(--g-soft),transparent 70%)}
+.gp-cover img{position:absolute;width:32%;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 10px 0 rgba(0,0,0,.12));animation:gp-float 5s ease-in-out infinite;animation-delay:calc(var(--i) * -.8s)}
+.gp-cover img:nth-child(1){left:8%;top:6%}.gp-cover img:nth-child(2){left:52%;top:0}.gp-cover img:nth-child(3){left:0;top:44%}.gp-cover img:nth-child(4){left:34%;top:34%;width:38%}.gp-cover img:nth-child(5){left:66%;top:44%}.gp-cover img:nth-child(6){left:26%;top:70%}
+@keyframes gp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.gp-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-3)}
+.gp-shortcuts button{position:relative;display:flex;align-items:center;gap:var(--sp-2);text-align:left;padding:var(--sp-3);border:1.5px solid var(--club-line);border-radius:18px;background:var(--club-card);color:var(--club-ink);transition:transform .15s,background-color .15s}
+.gp-shortcuts button:hover{transform:translateY(-3px);background:var(--g-soft)}
+.gp-shortcuts button>svg{flex-shrink:0;color:var(--g-accent)}
+.gp-shortcuts button>span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.gp-shortcuts b{font-size:14px}.gp-shortcuts small{font-size:11px;color:var(--club-muted)}
+.gp-shortcuts i{top:var(--sp-1);right:var(--sp-1)}
+.gp-panel{display:flex;flex-direction:column;gap:var(--sp-3)}
+.gp-panel-title{font-size:clamp(24px,3vw,32px);letter-spacing:-.6px;margin:0}
+.gp-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.gp-stats>div{display:flex;flex-direction:column;gap:6px;padding:var(--sp-3);border:1.5px solid var(--club-line);border-radius:18px;background:var(--club-card)}
+.gp-stats b{font-size:26px;letter-spacing:-.6px}.gp-stats span{font-size:10px;letter-spacing:.8px;font-weight:800;color:var(--club-muted);text-transform:uppercase}
+.gp-foot{display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);padding-top:var(--sp-2);border-top:1.5px dashed var(--club-line)}
+.gp-foot small{font-size:11px;color:var(--club-muted);text-align:center}
+.gp-exit{display:inline-flex;align-items:center;gap:var(--sp-1);height:46px;padding:0 var(--sp-4);border:1.5px solid var(--club-line);border-radius:999px;background:var(--club-card);color:var(--club-ink);font-weight:800;font-size:13px;box-shadow:3px 3px 0 var(--club-line);transition:transform .15s,box-shadow .15s}
+.gp-exit:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--club-line)}
+.gp-exit:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--club-line)}
+.gp-tabbar{display:none}
+.mission-panel{display:flex;flex-direction:column}
+.game-page .simple-shop,.game-page .achievement-grid,.game-page .mission-list{color:var(--club-ink)}
+
+@media(max-width:767px){
+  .poki-bar,.gp-bar{gap:var(--sp-1);padding:var(--sp-2) var(--sp-3)}
+  .poki-brand>span{font-size:15px}.poki-brand .club-mark{width:34px;height:34px}
+  .poki-scroll,.gp-scroll{padding:var(--sp-3) var(--sp-3) var(--sp-4);gap:var(--sp-3)}
+  .poki-welcome{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
+  .poki-welcome h1{font-size:22px}
+  .poki-strip{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
+  .login-reward{grid-template-columns:44px minmax(0,1fr);padding:var(--sp-2)}
+  .login-reward-art{width:44px;height:44px}
+  .login-reward-claim{grid-column:1/-1;width:100%}
+  .poki-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
+  .poki-tile{border-radius:18px;box-shadow:3px 3px 0 var(--club-line)}
+  .poki-label{padding:var(--sp-1) var(--sp-2)}.poki-label>img{width:26px;height:26px}.poki-label b{font-size:14px}.poki-label small{font-size:8px}
+  .poki-tile.friends{grid-column:1/-1}.poki-tile.friends .poki-cover{aspect-ratio:16/5}
+  .gp-menu{display:none}
+  .gp-brand img{width:38px;height:38px}.gp-brand b{font-size:17px}.gp-brand small{display:none}
+  .gp-brand{flex:1}
+  .gp-hero{grid-template-columns:minmax(0,1fr);padding:var(--sp-3);gap:var(--sp-3);border-radius:22px}
+  .gp-cover{order:-1;max-width:220px;max-height:220px}
+  .gp-hero h1{font-size:30px}.gp-hero p{font-size:13px}
+  .gp-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
+  .gp-shortcuts button{padding:var(--sp-2)}
+  .gp-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
+  .gp-scroll{padding-bottom:calc(var(--sp-4) + 72px)}
+  .gp-tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:var(--sp-1) var(--sp-2) calc(var(--sp-1) + env(safe-area-inset-bottom));border-top:1.5px solid var(--club-line);background:var(--club-card)}
+  .gp-tabbar button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;border-radius:12px;color:var(--club-muted);font-size:9px;font-weight:800}
+  .gp-tabbar button.active{background:var(--g-soft);color:var(--club-ink)}
+  .gp-tabbar b{top:2px;right:8px}
+}

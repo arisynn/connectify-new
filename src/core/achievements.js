@@ -1,7 +1,7 @@
 import { canReceive, creditIncome } from './economy';
 export const ACHIEVEMENTS_DATA = [
     {
-        id: 'total_score',
+        id: 'total_score', game: 'hub',
         category: 'progression',
         title: 'Pengumpul Skor',
         desc: (target) => `Kumpulkan total ${target.toLocaleString('id-ID')} Score.`,
@@ -13,7 +13,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.totalScore || 0
     },
     {
-        id: 'high_score',
+        id: 'high_score', game: 'hub',
         category: 'mastery',
         title: 'Pencetak Rekor',
         desc: (target) => `Raih ${target.toLocaleString('id-ID')} Score dalam satu level.`,
@@ -25,7 +25,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.highestScore || 0
     },
     {
-        id: 'levels_cleared',
+        id: 'levels_cleared', game: 'hub',
         category: 'progression',
         title: 'Penjelajah Dunia',
         desc: (target) => `Selesaikan ${target} level.`,
@@ -39,7 +39,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.totalWins || 0
     },
     {
-        id: 'daily_missions',
+        id: 'daily_missions', game: 'hub',
         category: 'progression',
         title: 'Semangat Terus',
         desc: (target) => `Selesaikan ${target} Misi Harian.`,
@@ -53,7 +53,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.totalDailyMissionsCompleted || 0
     },
     {
-        id: 'loyalty',
+        id: 'loyalty', game: 'hub',
         category: 'progression',
         title: 'Pelanggan Setia',
         desc: (target) => `Login selama ${target} hari.`,
@@ -67,7 +67,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.totalLoginDays || 0
     },
     {
-        id: 'blocks_cleared',
+        id: 'blocks_cleared', game: 'hub',
         category: 'progression',
         title: 'Rajin Banget Bersihinnya',
         desc: (target) => `Hancurkan total ${target} blok.`,
@@ -81,7 +81,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.totalBlocksCleared || 0
     },
     {
-        id: 'flawless_victory',
+        id: 'flawless_victory', game: 'onet',
         category: 'mastery',
         title: 'Mainnya Sempurna',
         desc: (target) => `Selesaikan ${target} level tanpa melakukan kesalahan (Flawless).`,
@@ -95,7 +95,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.totalFlawless || 0
     },
     {
-        id: 'highest_combo',
+        id: 'highest_combo', game: 'onet',
         category: 'mastery',
         title: 'Kombo Mantap',
         desc: (target) => `Capai Combo x${target}.`,
@@ -109,7 +109,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.highestCombo || 0
     },
     {
-        id: 'speedrun',
+        id: 'speedrun', game: 'onet',
         category: 'mastery',
         title: 'Cepat Banget Mainnya',
         desc: (target) => `Selesaikan ${target} level di bawah 45 detik.`,
@@ -123,7 +123,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.speedrunLevels || 0
     },
     {
-        id: 'survivor',
+        id: 'survivor', game: 'onet',
         category: 'mastery',
         title: 'Master Bertahan',
         desc: (target) => `Selesaikan ${target} level dengan sisa Bar Waktu lebih dari 50%.`,
@@ -137,7 +137,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.survivorLevels || 0
     },
     {
-        id: 'theme_purchases',
+        id: 'theme_purchases', game: 'hub',
         category: 'collection',
         title: 'Suka Ganti Tema Ya',
         desc: (target) => `Buka dan kumpulkan ${target} Tema.`,
@@ -151,7 +151,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.totalThemesBought || 0
     },
     {
-        id: 'chests_opened',
+        id: 'chests_opened', game: 'hub',
         category: 'collection',
         title: 'Kolektor Peti',
         desc: (target) => `Buka ${target} Peti.`,
@@ -165,7 +165,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.totalChestsOpened || 0
     },
     {
-        id: 'overthinker',
+        id: 'overthinker', game: 'onet',
         category: 'secret',
         title: 'Lagi Bingung Ya?',
         desc: (target) => `Gunakan Shuffle saat tidak ada pasangan yang bisa dimatch sebanyak ${target} kali.`,
@@ -175,7 +175,7 @@ export const ACHIEVEMENTS_DATA = [
         getProgress: (p) => p.statistics?.shuffleOnNoMoves || 0
     },
     {
-        id: 'near_death',
+        id: 'near_death', game: 'onet',
         category: 'secret',
         title: 'Deg-degan Ya?',
         desc: (target) => `Selesaikan level saat sisa waktu kurang dari 1 detik.`,
@@ -184,22 +184,25 @@ export const ACHIEVEMENTS_DATA = [
         ],
         getProgress: (p) => p.statistics?.nearDeathEscapes || 0
     }
-].filter(a => !['overthinker', 'loyalty'].includes(a.id)).map(a => ({
+].filter(a => !['overthinker', 'chests_opened'].includes(a.id)).map(a => ({
     ...a, tiers: a.tiers.map((tier, index) => ({ ...tier, reward: { permen: Math.min(10, 5 + index * 2) } }))
 }));
 ACHIEVEMENTS_DATA.push(
-  {id:'memory_pairs',category:'mastery',title:'Pasangan dalam Ingatan',desc:n=>`Temukan ${n} pasangan kartu Memory Flip.`,tiers:[6,40,150].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.memoryMatches||0},
-  {id:'memory_combo',category:'mastery',title:'Ingatan Beruntun',desc:n=>`Raih ${n} pasangan berturut-turut di Memory Flip.`,tiers:[3,6,12].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.memoryBestCombo||0},
-  {id:'triple_trios',category:'mastery',title:'Racikan Tiga',desc:n=>`Satukan ${n} trio di Triple Match.`,tiers:[12,60,240].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.tripleMatches||0},
-  {id:'infinity_explorer',category:'progression',title:'Selalu Ada Ruang',desc:n=>`Tuntaskan ${n} ronde Block Infinity.`,tiers:[1,5,25].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.infinityGames||0},
-  {id:'club_explorer',category:'progression',title:'Kenal Seluruh Klub',desc:n=>`Mainkan ${n} jenis game berbeda hingga selesai.`,tiers:[2,4,6].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>Math.min(6,['onet','block','memory','triple','block-infinity','star','fruit'].filter(game=>(p.statistics?.[`${game}Games`]||0)>0).length)},
-  {id:'star_kills',category:'mastery',title:'Penjaga Langit',desc:n=>`Kalahkan ${n} musuh Star Patrol.`,tiers:[50,250,1000].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.starKills||0},
-  {id:'star_bosses',category:'mastery',title:'Pemburu Armada',desc:n=>`Kalahkan ${n} boss Star Patrol.`,tiers:[1,5,20].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.starBosses||0},
-  {id:'star_sector',category:'mastery',title:'Jelajah Bintang',desc:n=>`Tuntaskan sektor ${n} Star Patrol.`,tiers:[1,3,10].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.starBestSector||0},
-  { id: 'first_win', category: 'progression', title: 'Langkah Pertama', desc: n => `Menangkan ${n} permainan.`, tiers: [{ target: 1, reward: { permen: 5 } }], getProgress: p => p.statistics?.totalWins || 0 },
-  { id: 'memory_master', category: 'mastery', title: 'Ingatan Tajam', desc: n => `Menangkan ${n} Memory Flip.`, tiers: [1, 5, 20].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.memoryWins || 0 },
-  { id: 'triple_master', category: 'mastery', title: 'Tiga Serangkai', desc: n => `Menangkan ${n} Triple Match.`, tiers: [1, 5, 20].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.tripleWins || 0 },
-  { id: 'block_lines', category: 'mastery', title: 'Arsitek Balok', desc: n => `Bersihkan ${n} garis Block Puzzle.`, tiers: [5, 25, 100].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.blockLines || 0 }
+  {id:'memory_pairs',game:'memory',category:'mastery',title:'Pasangan dalam Ingatan',desc:n=>`Temukan ${n} pasangan kartu Memory Flip.`,tiers:[6,40,150].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.memoryMatches||0},
+  {id:'memory_combo',game:'memory',category:'mastery',title:'Ingatan Beruntun',desc:n=>`Raih ${n} pasangan berturut-turut di Memory Flip.`,tiers:[3,6,12].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.memoryBestCombo||0},
+  {id:'triple_trios',game:'triple',category:'mastery',title:'Racikan Tiga',desc:n=>`Satukan ${n} trio di Triple Match.`,tiers:[12,60,240].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.tripleMatches||0},
+  {id:'infinity_explorer',game:'block',category:'progression',title:'Selalu Ada Ruang',desc:n=>`Tuntaskan ${n} ronde Block Infinity.`,tiers:[1,5,25].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.infinityGames||0},
+  {id:'club_explorer',game:'hub',category:'progression',title:'Kenal Seluruh Klub',desc:n=>`Mainkan ${n} jenis game berbeda hingga selesai.`,tiers:[2,4,6].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>Math.min(6,['onet','block','memory','triple','block-infinity','star'].filter(game=>(p.statistics?.[`${game}Games`]||0)>0).length)},
+  {id:'star_kills',game:'star',category:'mastery',title:'Penjaga Langit',desc:n=>`Kalahkan ${n} musuh di Infinity.`,tiers:[50,250,1000].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.starKills||0},
+  {id:'star_bosses',game:'star',category:'mastery',title:'Pemburu Armada',desc:n=>`Kalahkan ${n} boss Infinity.`,tiers:[1,5,20].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.starBosses||0},
+  {id:'star_sector',game:'star',category:'mastery',title:'Jelajah Bintang',desc:n=>`Capai tingkat ancaman ${n} di Infinity.`,tiers:[1,3,10].map((target,i)=>({target,reward:{permen:5+i*2}})),getProgress:p=>p.statistics?.starBestSector||0},
+  { id: 'first_win', game: 'hub', category: 'progression', title: 'Langkah Pertama', desc: n => `Menangkan ${n} permainan.`, tiers: [{ target: 1, reward: { permen: 5 } }], getProgress: p => p.statistics?.totalWins || 0 },
+  { id: 'memory_master', game: 'memory', category: 'mastery', title: 'Ingatan Tajam', desc: n => `Menangkan ${n} Memory Flip.`, tiers: [1, 5, 20].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.memoryWins || 0 },
+  { id: 'triple_master', game: 'triple', category: 'mastery', title: 'Tiga Serangkai', desc: n => `Menangkan ${n} Triple Match.`, tiers: [1, 5, 20].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.tripleWins || 0 },
+  { id: 'permen_earned', game: 'hub', category: 'collection', title: 'Tabungan Manis', desc: n => `Kumpulkan total ${n.toLocaleString('id-ID')} Permen dari misi, pencapaian, dan hadiah login.`, tiers: [100, 500, 2000].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.totalPermenEarned || 0 },
+  { id: 'login_streak', game: 'hub', category: 'progression', title: 'Rutinitas Manis', desc: n => `Klaim hadiah login ${n} hari berturut-turut.`, tiers: [3, 7, 30].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.bestLoginStreak || 0 },
+  { id: 'block_stars', game: 'block', category: 'mastery', title: 'Kolektor Bintang', desc: n => `Kumpulkan ${n} bintang di Block Puzzle.`, tiers: [10, 50, 200].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.blockPuzzleStars || 0 },
+  { id: 'block_lines', game: 'block', category: 'mastery', title: 'Arsitek Balok', desc: n => `Bersihkan ${n} garis Block Puzzle.`, tiers: [5, 25, 100].map((target, i) => ({ target, reward: { permen: 5 + i * 2 } })), getProgress: p => p.statistics?.blockLines || 0 }
 );
 
 export const getCurrentTier = (profile, achId) => {
@@ -278,3 +281,7 @@ export const getAchievementRewardSummary = (tier) => {
     if (tier.reward.theme) parts.push({ type: 'theme', amount: 1, theme: tier.reward.theme });
     return parts;
 };
+
+export const HUB_GAME = 'hub';
+export const achievementsFor = (game) => ACHIEVEMENTS_DATA.filter(a => (a.game || HUB_GAME) === game);
+export const isAchievementReady = (profile, a) => { const t = getCurrentTier(profile, a.id); return t < a.tiers.length && a.getProgress(profile) >= a.tiers[t].target; };

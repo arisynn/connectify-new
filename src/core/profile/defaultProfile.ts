@@ -5,7 +5,6 @@ export const getDefaultProfile = () => ({
     avatar: null,
     avatarCollection: [],
     activeAvatarId: 'avatar_male', activeAvatarBackground: '#bde0fe',
-    chestSlots: [null, null, null], chestProgress: 0,
     hints: 3, shuffles: 3, hammers: 3, bombs: 3,
     currentLevel: 1, highestLevel: 1,
     blockPuzzleLevel: 1, highestBlockPuzzleLevel: 1,

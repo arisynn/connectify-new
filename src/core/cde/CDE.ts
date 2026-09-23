@@ -6,7 +6,7 @@ import { CDEState, CDEProfile, CDEOperation, CDEOperationType, CDESyncStatus } f
 import { CDEEventEmitter } from './events/CDEEventEmitter';
 import { V2MigrationAdapter } from './migration/V2MigrationAdapter';
 import { RewardEngine } from '../reward';
-import { openChestAction, speedUpChestAction } from '../chest';
+import { claimLoginReward } from '../loginReward';
 import { claimAchievement } from '../achievements';
 import { claimMissionReward, updateMissions } from '../misiHarian';
 import { getItemPrice, ITEM_FIELD, DEFAULT_ITEM_COUNT, recordTransaction, TRANSACTION_LABELS } from '../economy';
@@ -213,7 +213,7 @@ export class CDEngine {
   }
 
   async queueMutation(type: CDEOperationType, payload: any): Promise<string> {
-      if (type === 'MUTATE_PERMEN') throw new Error('Permen hanya tersedia dari peti, misi, dan pencapaian.');
+      if (type === 'MUTATE_PERMEN') throw new Error('Permen hanya tersedia dari hadiah login, misi, dan pencapaian.');
       if (!this.state.account || !this.state.profile) {
           throw new Error("Cannot mutate: CDE not initialized or no profile");
       }
@@ -256,8 +256,8 @@ export class CDEngine {
           if (field) {
               const current = prof()[field] !== undefined ? prof()[field] : DEFAULT_ITEM_COUNT;
               let next: any = { ...prof(), [field]: Math.max(0, current - 1) };
-              if (payload.itemId === 'hint') next = updateMissions(next, 'useHint', 1);
-              if (payload.itemId === 'shuffle') next = updateMissions(next, 'useShuffle', 1);
+              if (payload.itemId === 'hint') next = updateMissions(next, 'useHint', 1, 'onet');
+              if (payload.itemId === 'shuffle') next = updateMissions(next, 'useShuffle', 1, payload.game === 'block' ? 'block' : 'onet');
               patchProfile(next);
           }
       } else if (type === 'PURCHASE_ITEM') {
@@ -296,19 +296,11 @@ export class CDEngine {
           const { profile: updated, rewardResult } = RewardEngine.processWin(prof(), payload);
           addPermen((rewardResult.permen || 0) + (rewardResult.dailyBonus || 0));
           patchProfile(updated);
-      } else if (type === 'OPEN_CHEST') {
-          const { profile: updated, rewards } = openChestAction(prof(), payload.slotId);
-          if (rewards?.error) throw new Error(rewards.error);
-          if (rewards && rewards.chestType) {
-              addPermen(rewards.permen || 0);
-              patchProfile(updateMissions(updated, 'openChest', 1));
-          }
-      } else if (type === 'SPEED_UP_CHEST') {
-          const result = speedUpChestAction(prof(), payload.slotId, newProfile.permen || 0);
-          if (result.success) {
-              addPermen(-result.cost);
-              patchProfile({ chestSlots: result.profile.chestSlots });
-          }
+      } else if (type === 'CLAIM_LOGIN_REWARD') {
+          const result = claimLoginReward(prof());
+          if (result.error) throw new Error(result.error);
+          addPermen(result.permenDelta);
+          patchProfile(result.profile);
       } else if (type === 'CLAIM_ACHIEVEMENT_REWARD') {
           const result = claimAchievement(prof(), payload.achievementId);
           if (result.error) throw new Error(result.error);

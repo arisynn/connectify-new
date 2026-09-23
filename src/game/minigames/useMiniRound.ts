@@ -14,7 +14,7 @@ export const useMiniRound=(game:'memory'|'triple',seconds:number,frozen=false)=>
   const finish=(won:boolean,score:number,matches:number,mistakes=0,highestCombo=0)=>{
     if(sent.current)return;sent.current=true;setPhase(won?'won':'lost');
     const payload={game,runId:run.current,level:1,isWinner:won,isFlawless:won&&mistakes===0,score,matches,timeElapsed:(seconds-time)*1000,highestCombo,isDailyChallenge:false};
-    setReward(RewardEngine.processWin(profile,payload).rewardResult.chestPoints);
+    setReward(RewardEngine.processWin(profile,payload).rewardResult.xp);
     cde.queueMutation('PROCESS_WIN',payload);
   };
   return {phase,setPhase,paused,setPaused,time,finish,reward};

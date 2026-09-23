@@ -4,21 +4,42 @@ import { CDE } from '../CDE';
 
 export const CDEAuth = {
     checkUsernameExists: async (playerName: string) => {
-        try {
-            const response = await fetch('/api/cde?action=check_username', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: playerName })
-            });
-            if (response.ok) {
-                const data = await response.json();
-                return !!data.exists;
-            }
-            return false;
-        } catch (e) {
-            console.error('Failed to check username', e);
-            return false;
+        const response = await fetch('/api/cde?action=check_username', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: playerName })
+        });
+        if (!response.ok) throw new Error('Gagal memeriksa nama pemain.');
+        const data = await response.json();
+        return !!data.exists;
+    },
+    // One form for everyone: an existing name signs in, an unknown name becomes a new account.
+    smartLogin: async (playerName: string, password: string) => {
+        const cleanName = playerName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        const pseudoEmail = `${cleanName}@connectify.com`;
+        const signIn = await supabase.auth.signInWithPassword({ email: pseudoEmail, password });
+        if (!signIn.error && signIn.data.session) {
+            localStorage.setItem('pkmnPlayerName', playerName);
+            await CDE.initialize();
+            return { created: false };
         }
+        if (signIn.error && !signIn.error.message.includes('Invalid login credentials')) throw signIn.error;
+        if (await CDEAuth.checkUsernameExists(playerName)) throw new Error('Nama ini sudah terdaftar, tapi kata sandinya salah.');
+        const signUp = await supabase.auth.signUp({ email: pseudoEmail, password });
+        if (signUp.error) {
+            if (signUp.error.message.includes('already registered') || signUp.error.message.includes('already exists')) throw new Error('Nama ini sudah terdaftar, tapi kata sandinya salah.');
+            throw signUp.error;
+        }
+        if (!signUp.data.session) throw new Error('Gagal membuat sesi pendaftaran.');
+        const response = await fetch('/api/cde?action=provision', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${signUp.data.session.access_token}` },
+            body: JSON.stringify({ username: playerName.trim() })
+        });
+        if (!response.ok) throw new Error('Akun dibuat, tetapi profil belum tersimpan. Coba masuk lagi.');
+        localStorage.setItem('pkmnPlayerName', playerName);
+        await CDE.initialize();
+        return { created: true };
     },
     restoreSession: async () => {
         const { data: { session } } = await supabase.auth.getSession();

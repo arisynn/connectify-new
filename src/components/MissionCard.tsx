@@ -3,9 +3,10 @@ import { motion } from 'motion/react';
 import { Check, ArrowUpRight, Candy, Layers, Grid3X3, Gamepad2, Zap, Gift } from 'lucide-react';
 import { missionXP } from '../core/progression';
 import {artIcon} from '../core/artAssets';
-const category=(type:string)=>type.startsWith('memory')?{name:'MEMORY FLIP',art:'memory',color:'butter'}:type.startsWith('triple')?{name:'TRIPLE MATCH',art:'triple',color:'pink'}:type==='blockLines'||type==='infinityRound'?{name:type==='infinityRound'?'BLOCK INFINITY':'BLOCK PUZZLE',art:'block',color:'sky'}:['match','split','survivor','fast_clear'].includes(type)?{name:'ONET',art:'onet',color:'pink'}:type==='minigame'?{name:'MEMORY / TRIPLE',art:'memory',color:'butter'}:{name:'KLUB',art:'missions',color:'mint'};
+const GAME_META:any={onet:{name:'ONET',art:'onet',color:'pink'},block:{name:'BLOCK PUZZLE',art:'block',color:'sky'},memory:{name:'MEMORY FLIP',art:'memory',color:'butter'},triple:{name:'TRIPLE MATCH',art:'triple',color:'pink'},star:{name:'INFINITY',art:'star-patrol',color:'sky'}};
+const category=(m:any)=>m.type==='infinityRound'?{name:'BLOCK INFINITY',art:'block',color:'sky'}:GAME_META[m.game]||{name:'KLUB',art:'missions',color:'mint'};
 export const MissionCard=({mission:m,index,busy,onClaim,onPlay}:{mission:any,index:number,busy:boolean,onClaim:()=>void,onPlay:()=>void})=>{
-  const progress=Math.min(m.progress||0,m.target),done=progress>=m.target,meta=category(m.type);
+  const progress=Math.min(m.progress||0,m.target),done=progress>=m.target,meta=category(m);
   return <motion.article data-testid={`mission-card-${m.id}`} className={`quest-card ${m.claimed?'claimed':''} ${done&&!m.claimed?'ready':''}`} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:Math.min(index*.035,.2)}}>
     <div className={`quest-icon ${meta.color}`} aria-hidden="true"><img src={artIcon(meta.art)} alt=""/></div><div className="quest-copy"><span className="quest-category" data-testid={`mission-category-${m.id}`}>{meta.name} <i/> {m.difficulty}</span><h3 data-testid={`mission-title-${m.id}`}>{m.title}</h3><p data-testid={`mission-description-${m.id}`}>{m.desc}</p></div>
     <div className="quest-rewards" data-testid={`mission-rewards-${m.id}`}><span><Candy size={14}/>+{m.rewardAmount}</span><span>+{missionXP(m)} XP</span></div>

@@ -8,7 +8,7 @@ import {ownsTheme,artRewardLabel,artRewardProgress} from '../core/artRewards';
 export const ThemeScreen=()=>{
   const {navigate}=useGame(),{profile,updateProfile}=useProfile(),{availableThemes,activeTheme,setTheme}=useTheme();
   const [rewards,setRewards]=useState(false);
-  return <GameShell title="Tema permainan" eyebrow="WARNA UNTUK JEDAMU" wide>
+  return <GameShell title="Tema Onet" eyebrow="GAMBAR TILE UNTUK ONET" back="game-hub" wide>
     <div className="theme-art-tabs">{[[false,'Koleksi tema'],[true,'Edisi hadiah']].map(([value,label])=><button key={String(value)} data-testid={`themes-tab-${value?'rewards':'collection'}`} aria-pressed={rewards===value} onClick={()=>setRewards(Boolean(value))}>{label}</button>)}</div>
     <div className="theme-art-grid" data-testid="theme-products">{Object.values(availableThemes).filter(theme=>(theme.type==='reward')===rewards).map(theme=>{
       const owned=ownsTheme(profile,theme.id),equipped=activeTheme.id===theme.id;

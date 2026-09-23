@@ -1,16 +1,16 @@
-import { addChestProgress } from './chest';
 import { updateMissions } from './misiHarian';
 import { getTodayKey } from './economy';
 import { unlockAvatars } from './avatars';
 import { awardXP, getAccountProgress } from './progression.js';
 import {getClaimableAchievements} from './achievements';
+import {gameKeyOf} from './games';
 
 export const RewardEngine = {
   processWin: (profile, payload = {}) => {
     const { game = 'onet', isWinner = true, isMultiplayer = false, isFlawless = false,
       timeElapsed = 0, score = 0, matches = 0, highestCombo = 0, blocksCleared = 0,
       linesCleared = 0, stars = 0, isDailyChallenge = false, runId, level = 1 } = payload;
-    const empty = { profile, rewardResult: { chestPoints: 0, permen: 0, dailyBonus: 0, xp: 0, leveledUp: false, accountLevel: getAccountProgress(profile).level } };
+    const empty = { profile, rewardResult: { permen: 0, dailyBonus: 0, xp: 0, leveledUp: false, accountLevel: getAccountProgress(profile).level } };
     if (runId && (profile.processedRuns || []).includes(runId)) return empty;
     const xp = isWinner ? 100 + (isFlawless ? 25 : 0) + Math.min(25, highestCombo * 2) : Math.min(40, Math.floor(score / 100));
     const previousLevel = getAccountProgress(profile).level;
@@ -67,9 +67,9 @@ export const RewardEngine = {
         p.starLevel=Math.max(p.starLevel||1,(payload.bosses||0)+1);
       }
       if(isWinner&&level<=(p.starLevel||1))p.starLevel=Math.max(p.starLevel||1,level+1);
-      p=updateMissions(p,'starKills',payload.kills||0);
-      p=updateMissions(p,'starBosses',payload.bosses||0);
-      p=updateMissions(p,'starRound',1);
+      p=updateMissions(p,'starKills',payload.kills||0,'star');
+      p=updateMissions(p,'starBosses',payload.bosses||0,'star');
+      p=updateMissions(p,'starRound',1,'star');
     }
     if (isMultiplayer) {
       s.multiplayerGames = (s.multiplayerGames || 0) + 1;
@@ -83,23 +83,22 @@ export const RewardEngine = {
         s.dailyChallengesWon = (s.dailyChallengesWon || 0) + 1;
       }
     }
-    const chestPoints = isWinner ? 2 + (isFlawless ? 1 : 0) + (highestCombo >= 8 ? 1 : 0) : (game === 'star' && payload.kills >= 10 ? 1 : 0);
-    p = addChestProgress(p, chestPoints);
-    if (isWinner) p = updateMissions(p, 'winLevel', 1);
-    if (isWinner && isFlawless) p = updateMissions(p, 'flawless', 1);
-    if (isWinner && (game === 'memory' || game === 'triple')) p = updateMissions(p, 'minigameWin', 1);
-    if(game==='memory'){p=updateMissions(p,'memoryPairs',matches);p=updateMissions(p,'memoryCombo',highestCombo);if(isWinner)p=updateMissions(p,'memoryWin',1);}
-    if(game==='triple'){p=updateMissions(p,'tripleTrios',matches);if(isWinner)p=updateMissions(p,'tripleWin',1);}
-    if(game==='block-infinity')p=updateMissions(p,'infinityRound',1);
-    if (isWinner && game === 'onet' && payload.progress >= 50) p = updateMissions(p, 'survivor', 1);
-    if (isWinner && game === 'onet' && timeElapsed > 0 && timeElapsed < 45000) p = updateMissions(p, 'fast_clear', 1);
-    for (const [event, amount] of [['combo', highestCombo], ['match', game==='onet'?matches:0], ['score', score], ['blockLines', linesCleared], ['split', payload.splits || 0], ['playGame', 1]]) {
-      if (amount > 0) p = updateMissions(p, event, amount);
+    // Missions are owned by one game each; every event is scoped to the game that produced it.
+    const key = gameKeyOf(game);
+    if (isWinner) p = updateMissions(p, 'winLevel', 1, key);
+    if (isWinner && isFlawless) p = updateMissions(p, 'flawless', 1, key);
+    if(game==='memory'){p=updateMissions(p,'memoryPairs',matches,key);p=updateMissions(p,'memoryCombo',highestCombo,key);if(isWinner)p=updateMissions(p,'memoryWin',1,key);}
+    if(game==='triple'){p=updateMissions(p,'tripleTrios',matches,key);if(isWinner)p=updateMissions(p,'tripleWin',1,key);}
+    if(game==='block-infinity')p=updateMissions(p,'infinityRound',1,key);
+    if (isWinner && game === 'onet' && payload.progress >= 50) p = updateMissions(p, 'survivor', 1, key);
+    if (isWinner && game === 'onet' && timeElapsed > 0 && timeElapsed < 45000) p = updateMissions(p, 'fast_clear', 1, key);
+    for (const [event, amount] of [['combo', highestCombo], ['match', game==='onet'?matches:0], ['score', score], ['blockLines', linesCleared], ['split', payload.splits || 0]]) {
+      if (amount > 0) p = updateMissions(p, event, amount, key);
     }
     const accountLevel=getAccountProgress(p).level;
     const previousAchievements=new Set(getClaimableAchievements(profile).map(a=>`${a.id}:${a.tierIdx}`));
     const unlocked=getClaimableAchievements(p).filter(a=>!previousAchievements.has(`${a.id}:${a.tierIdx}`));
-    if(unlocked.length)p.notifications=[...unlocked.map(a=>({id:`achievement-${a.id}-${a.tierIdx}-${runId||Date.now()}`,title:'Pencapaian baru!',message:`${a.title} siap diklaim di tab Progres.`,type:'achievement',timestamp:Date.now(),read:false})),...(p.notifications||[])].slice(0,50);
-    return { profile: unlockAvatars(p), rewardResult: { chestPoints, permen: 0, dailyBonus: 0, xp, accountLevel, leveledUp: accountLevel>previousLevel } };
+    if(unlocked.length)p.notifications=[...unlocked.map(a=>({id:`achievement-${a.id}-${a.tierIdx}-${runId||Date.now()}`,title:'Pencapaian baru!',message:`${a.title} siap diklaim di menu Pencapaian.`,type:'achievement',timestamp:Date.now(),read:false})),...(p.notifications||[])].slice(0,50);
+    return { profile: unlockAvatars(p), rewardResult: { permen: 0, dailyBonus: 0, xp, accountLevel, leveledUp: accountLevel>previousLevel } };
   }
 };

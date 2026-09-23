@@ -72,7 +72,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
 
   const handleLeave = async () => {
     await leaveRoom();
-    if (!isEmbedded) navigate('levels');
+    if (!isEmbedded) navigate('home');
   };
 
   const handleAttemptLeave = () => {
@@ -128,7 +128,7 @@ export const MultiplayerScreen = ({ onBack, isEmbedded = false }: { onBack?: () 
         <div className="shell-header">
           <button
               data-testid="multiplayer-back"
-              onClick={room ? handleAttemptLeave : (onBack || (() => navigate('levels')))}
+              onClick={room ? handleAttemptLeave : (onBack || (() => navigate('home')))}
               className="round-button"
               aria-label="Kembali"
           >

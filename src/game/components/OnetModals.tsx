@@ -15,7 +15,7 @@ export const OnetModals=({isPaused,gameState,toastMsg,score,winReward,isDailyCha
       <h2 id="onet-dialog-title" data-testid="onet-dialog-title">{won?(isDailyChallenge?'Tantangan selesai!':'Papan bersih!'):lost?'Coba sekali lagi?':'Lagi istirahat.'}</h2>
       {isPaused&&!won&&!lost?<><p data-testid="onet-pause-help">Gambar dan ukuran sama, maksimal 2 belokan. Tile besar pecah menjadi pasangan gambar baru.</p><button data-testid="onet-resume" autoFocus className="pop-button mint" onClick={onResume}><Play size={18}/>Lanjutkan</button><button data-testid="onet-pause-exit" className="text-button" onClick={onHome}>Pilih permainan</button></>:<>
         <strong data-testid="onet-final-score">{score.toLocaleString('id-ID')}<small>SKOR RONDE INI</small></strong>
-        <div className="result-rewards" data-testid="onet-win-summary"><span data-testid="onet-earned-xp"><Sparkles size={16}/>+{winReward?.xp||0} XP</span>{won&&<span data-testid="onet-earned-chest">+{winReward?.chestPoints||0} poin peti</span>}</div>
+        <div className="result-rewards" data-testid="onet-win-summary"><span data-testid="onet-earned-xp"><Sparkles size={16}/>+{winReward?.xp||0} XP</span>{won&&<span data-testid="onet-earned-missions">Misi & pencapaian Onet diperbarui</span>}</div>
         {winReward?.leveledUp&&<p className="level-up-notice" data-testid="onet-level-up">Naik level! Sekarang akunmu Level {winReward.accountLevel}.</p>}
         <p data-testid="onet-mission-updated">{won?'Progres misi tercatat. Hadiah menunggu di papan misi.':'Waktunya habis, tapi progres dan XP ronde ini tetap dicatat.'}</p>
         {!won&&<button data-testid="onet-retry" autoFocus className="pop-button pink" onClick={onRetry}><RefreshCw size={17}/>Coba lagi</button>}

@@ -52,9 +52,7 @@ export const TopBarStandard = ({ onMenuClick, hideProfile = false, hideCurrency 
 }
 
 export const MAIN_FEATURES: { id: Screen, label: string, icon: any, color: string, bg: string }[] = [
-  { id: 'peti', label: 'Peti', icon: Box, color: 'text-theme-primary-warm-orange', bg: 'bg-theme-bg-soft-orange' },
   { id: 'toko', label: 'Toko', icon: Store, color: 'text-theme-primary-sunny-yellow', bg: 'bg-theme-bg-soft-yellow' },
-  { id: 'misi', label: 'Misi', icon: Target, color: 'text-theme-currency-candy-purple', bg: 'bg-theme-bg-soft-purple' },
   { id: 'tema', label: 'Tema', icon: Palette, color: 'text-theme-primary-tropical-green', bg: 'bg-theme-bg-soft-mint' },
   { id: 'prestasi', label: 'Prestasi', icon: Trophy, color: 'text-theme-primary-warm-orange', bg: 'bg-theme-bg-soft-orange' },
   { id: 'statistik', label: 'Statistik', icon: BarChart2, color: 'text-theme-primary-sky-blue', bg: 'bg-theme-bg-soft-blue' },

@@ -15,7 +15,7 @@ export const usePowerups = () => {
 
   const requestShuffle = () => {
     if (shuffles > 0) {
-      cde.queueMutation('USE_ITEM', { itemId: 'shuffle' });
+      cde.queueMutation('USE_ITEM', { itemId: 'shuffle', game: 'block' });
       setActivePowerup(null);
       return true;
     }

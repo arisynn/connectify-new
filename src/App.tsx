@@ -11,7 +11,6 @@ import { ThemeProvider } from './core/theme/ThemeProvider';
 import { AudioProvider } from './core/audio/AudioEngine';
 import { ProfileProvider } from './core/profile/ProfileContext';
 import { CDEProvider } from './core/cde';
-import { hasPublicAuth } from './lib/supabase';
 import { MobileNav } from './components/MobileNav';
 import { useAudio } from './core/audio/AudioEngine';
 
@@ -54,7 +53,6 @@ const GameApp = () => {
 };
 
 export default function App() {
-  if (!import.meta.env.DEV && !hasPublicAuth) return <main className="min-h-dvh flex flex-col items-center justify-center bg-slate-950 text-white text-center p-8 gap-5" data-testid="configuration-required"><h1 className="text-3xl font-bold">Connectify sedang dipersiapkan.</h1><p data-testid="configuration-message">Koneksi akun publik belum aktif. Silakan kembali setelah konfigurasi selesai.</p></main>;
   return (
     <ProfileProvider>
       <CDEProvider>

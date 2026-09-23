@@ -9,6 +9,5 @@ export const BRAND_LOGOS = {
   theme: artIcon('theme'), themes: artIcon('theme'), palette: artIcon('theme'),
   achievement: artIcon('achievements'), achievements: artIcon('achievements'), trophy: artIcon('achievements'),
   mission: artIcon('missions'), missions: artIcon('missions'), notification: artIcon('notifications'), notifications: artIcon('notifications'),
-  chest_common: `${ART_ROOT}/chests/common.webp`, chest_rare: `${ART_ROOT}/chests/rare.webp`, chest_epic: `${ART_ROOT}/chests/epic.webp`,
-  chest: `${ART_ROOT}/chests/common.webp`, play: artIcon('onet'), store: artIcon('collection'), shop: artIcon('collection')
+  gift: `${ART_ROOT}/chests/epic.webp`, play: artIcon('onet'), store: artIcon('collection'), shop: artIcon('collection')
 };

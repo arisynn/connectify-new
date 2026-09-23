@@ -425,7 +425,7 @@ const BlockPuzzleContent = () => {
          </div>
       )}
 
-      <BlockResults isPaused={isPaused} state={gameState} onResume={()=>setIsPaused(false)} onMenu={()=>navigate('levels')} onRestart={restart} score={score} reward={winReward} infinity={infinity} record={highScore} lines={linesClearedTotal} missions={currentLevelConfig.missions} results={missionResults}/>
+      <BlockResults isPaused={isPaused} state={gameState} onResume={()=>setIsPaused(false)} onMenu={()=>navigate('game-hub')} onRestart={restart} score={score} reward={winReward} infinity={infinity} record={highScore} lines={linesClearedTotal} missions={currentLevelConfig.missions} results={missionResults}/>
 
     </div>
   );

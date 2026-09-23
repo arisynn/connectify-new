@@ -13,7 +13,6 @@ import { AccountDataPopup } from './AccountDataPopup';
 import { Smartphone, Cloud } from 'lucide-react';
 import { DynamicIcon } from '../components/theme/DynamicIcon';
 import { ModeToggle,GameShell } from '../components/GameShell';
-import { hasPublicAuth } from '../lib/supabase';
 
 
 export const SettingsScreen = () => {
@@ -153,7 +152,7 @@ export const SettingsScreen = () => {
                    <span>Status:</span>
                 </div>
                 <span className={navigator.onLine ? 'text-[#16a34a]' : 'text-[#e11d48]'}>
-                   {navigator.onLine ? (hasPublicAuth ? 'Akun terhubung' : 'Pratinjau lokal') : 'Offline'}
+                   {navigator.onLine ? 'Akun terhubung' : 'Offline'}
                 </span>
              </div>
           </button>
