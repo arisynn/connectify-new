@@ -595,6 +595,9 @@ export default async function handler(req: Request, res: Response) {
                     if (rpcResult.error.message.includes('Operation already processed')) {
                         return res.status(200).json({ success: true, idempotent: true, result: rpcResult.data });
                     }
+                    const known = ['INVALID_INCOME_SOURCE', 'INVALID_SPEND_SOURCE', 'DAILY_INCOME_LIMIT', 'INSUFFICIENT_FUNDS', 'PROFILE_NOT_FOUND'].find(code => rpcResult.error.message.includes(code));
+                    if (known === 'INVALID_INCOME_SOURCE' && type === 'CLAIM_LOGIN_REWARD') return res.status(503).json({ error: 'DATABASE_MIGRATION_REQUIRED', hint: 'Run supabase/migrations/20260923_login_reward.sql' });
+                    if (known) return res.status(400).json({ error: known });
                     return res.status(500).json({ error: rpcResult.error.message });
                 }
             } else {

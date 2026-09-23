@@ -13,7 +13,7 @@ export const LoginRewardCard=()=>{
   const claim=async()=>{
     if(busy||state.claimedToday)return;setBusy(true);setMessage('');
     try{await cde.commitMutation('CLAIM_LOGIN_REWARD',{});audio.playSfx('uiReward');setMessage(`+${state.amount} Permen tersimpan. Sampai jumpa besok!`);}
-    catch(e:any){setMessage(e.message==='LOGIN_REWARD_CLAIMED'?'Hadiah hari ini sudah diklaim.':e.message==='DAILY_INCOME_LIMIT'?'Batas Permen hari ini tercapai. Coba lagi besok.':'Belum tersimpan. Periksa koneksimu lalu coba lagi.');}
+    catch(e:any){setMessage(e.message==='LOGIN_REWARD_CLAIMED'?'Hadiah hari ini sudah diklaim.':e.message==='DAILY_INCOME_LIMIT'?'Batas Permen hari ini tercapai. Coba lagi besok.':e.message==='DATABASE_MIGRATION_REQUIRED'?'Server Supabase belum diperbarui. Jalankan migrasi 20260923_login_reward.sql.':'Belum tersimpan. Periksa koneksimu lalu coba lagi.');}
     finally{setBusy(false);}
   };
   return <section className={`login-reward ${state.claimedToday?'claimed':''}`} data-testid="login-reward" aria-label="Hadiah login harian">

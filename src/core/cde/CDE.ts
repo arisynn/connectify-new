@@ -461,12 +461,14 @@ export class CDEngine {
                       setTimeout(() => { if (!this.isSyncing) this.sync(); }, 500); // Trigger automatic retry
                       break; // Stop processing further ops in this run until rebase
                   } else {
-                      if (res.status >= 400 && res.status < 500) {
+                      // Any rejected write reverts the optimistic state to the authoritative profile.
+                      if (res.status >= 400) {
                           const fresh = await fetch('/api/cde?action=get_profile', { headers: { Authorization: `Bearer ${session.access_token}` } });
                           const authoritative = await fresh.json();
                           if (authoritative.profile) {
-                            this.updateState({ profile: authoritative.profile });
-                            await this.db.setProfile(authoritative.profile);
+                            const reverted = { ...authoritative.profile, permen: Number(authoritative.profile.permen), revision: Number(authoritative.profile.revision) };
+                            this.updateState({ profile: reverted });
+                            await this.db.setProfile(reverted);
                           }
                       }
                       throw new Error(data.error || `Server error ${res.status}`);
