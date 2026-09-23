@@ -1,6 +1,6 @@
 export const ART_ROOT = '/art/premium';
 export const BRAND_MARK = `${ART_ROOT}/brand/mark.webp`;
-export const artIcon = name => name==='star-patrol'?'/art/star-patrol/playerShip1_blue.png':name==='star_shield'?'/art/star-patrol/powerupBlue_shield.png':name==='star_blast'?'/art/star-patrol/powerupYellow_bolt.png':`${ART_ROOT}/ui/${name}.webp`;
+export const artIcon = name => name==='star-patrol'?'/art/infinity/scout.png':name==='star_shield'?'/art/infinity/hull.png':name==='star_blast'?'/art/infinity/nova.png':`${ART_ROOT}/ui/${name}.webp`;
 export const cosmeticImage = item => item?.image || `${ART_ROOT}/surfaces/cream.webp`;
 export const BRAND_LOGOS = {
   connectify_logo: BRAND_MARK,

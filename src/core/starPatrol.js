@@ -1,15 +1,25 @@
 // Shared catalog and deterministic migration. No currency grants on migration.
-export const STAR_ROOT = '/art/star-patrol';
+export const STAR_ROOT = '/art/infinity';
+export const SHIP_SIGNATURES={
+  scout:{name:'Twin Ion',description:'Dua laser ion paralel. Presisi untuk membelah formasi.'},
+  coral:{name:'Coral Fan',description:'Tiga peluru kipas. Menjangkau musuh di kedua sayap.'},
+  glacier:{name:'Frost Lance',description:'Tombak es menembus beberapa musuh dalam satu garis.'},
+  phantom:{name:'Ruby Burst',description:'Rentetan tiga peluru merah dengan jeda pengisian.'},
+  mint:{name:'Seeker Pulse',description:'Plasma hijau melengkung mengejar target terdekat.'},
+  solar:{name:'Solar Helix',description:'Dua peluru emas berpilin untuk menyapu jalur.'},
+};
 export const STAR_SHIPS = [
-  ['scout','Scout',0,'playerShip1_blue'], ['coral','Coral Wing',60,'playerShip2_red'],
-  ['glacier','Glacier',70,'playerShip3_blue'], ['phantom','Red Comet',75,'playerShip3_red'],
-  ['mint','Mint Falcon',65,'playerShip2_green'], ['solar','Solar Ace',60,'playerShip1_orange'],
-].map(([key,name,price,asset])=>({id:`ship_${key}`,name,price,category:'ship',slot:'starShip',image:`${STAR_ROOT}/${asset}.png`,description:'Skin pesawat permanen. Kekuatan dan hitbox tetap sama.'}));
-export const STAR_TRAILS = [['blue','Ion Blue',0,'laserBlue01'],['green','Mint Beam',35,'laserGreen01'],['red','Ruby Beam',40,'laserRed01']].map(([key,name,price,asset])=>({id:`laser_${key}`,name,price,category:'laser',slot:'starLaser',image:`${STAR_ROOT}/${asset}.png`,description:'Warna laser permanen. Damage tidak berubah.'}));
+  ['scout','Scout',0,'scout'], ['coral','Coral Wing',60,'coral'],
+  ['glacier','Glacier',70,'glacier'], ['phantom','Red Comet',75,'phantom'],
+  ['mint','Mint Falcon',65,'mint'], ['solar','Solar Ace',60,'solar'],
+].map(([key,name,price,asset])=>({id:`ship_${key}`,name,price,category:'ship',slot:'starShip',image:`${STAR_ROOT}/${asset}.png`,description:`${SHIP_SIGNATURES[key].name} — ${SHIP_SIGNATURES[key].description} HP dan hitbox tetap sama.`}));
+export const STAR_TRAILS = [['blue','Ion Blue',0,'laser-blue'],['green','Mint Beam',35,'laser-green'],['red','Ruby Beam',40,'laser-red']].map(([key,name,price,asset])=>({id:`laser_${key}`,name,price,category:'laser',slot:'starLaser',image:`${STAR_ROOT}/${asset}.png`,description:'Warna laser permanen. Damage tidak berubah.'}));
 export const STAR_UPGRADES = [
-  {key:'hull',name:'Lambung',description:'Tambah 1 HP per tingkat.',image:`${STAR_ROOT}/shield_gold.png`},
-  {key:'cannon',name:'Meriam',description:'Tembakan 10% lebih cepat per tingkat.',image:`${STAR_ROOT}/bolt_gold.png`},
-  {key:'recovery',name:'Pelindung',description:'Tambah 0,4 detik kebal setelah terkena serangan per tingkat.',image:`${STAR_ROOT}/star_gold.png`},
+  {key:'hull',name:'Lambung',description:'Tambah 1 HP per tingkat.',image:`${STAR_ROOT}/hull.png`},
+  {key:'cannon',name:'Meriam',description:'Tembakan 10% lebih cepat per tingkat.',image:`${STAR_ROOT}/cannon.png`},
+  {key:'recovery',name:'Pelindung',description:'Tambah 0,4 detik kebal setelah terkena serangan per tingkat.',image:`${STAR_ROOT}/recovery.png`},
+  {key:'damage',name:'Daya Senjata',description:'Tambah 20% damage semua senjata dan rudal per tingkat.',image:`${STAR_ROOT}/power-beam.png`},
+  {key:'wingman',name:'Sistem Drone',description:'Tambah 2 detik durasi drone pendamping per tingkat.',image:`${STAR_ROOT}/power-drone.png`},
 ];
 export const STAR_UPGRADE_ITEMS = STAR_UPGRADES.flatMap(u=>[25,45,75].map((price,i)=>({...u,id:`upgrade_star_${u.key}_${i+1}`,level:i+1,price,category:'upgrade',name:`${u.name} · Lv ${i+1}`})));
 export const starUpgradeItem = id=>STAR_UPGRADE_ITEMS.find(u=>u.id===id);

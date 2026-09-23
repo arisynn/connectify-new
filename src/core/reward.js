@@ -59,6 +59,13 @@ export const RewardEngine = {
       s.starKills=(s.starKills||0)+(payload.kills||0);
       s.starBosses=(s.starBosses||0)+(payload.bosses||0);
       s.starBestSector=Math.max(s.starBestSector||0,isWinner?level:0);
+      if(payload.mode==='endless'){
+        s.starBestWave=Math.max(s.starBestWave||0,payload.waves||1);
+        s.starBestTimeMs=Math.max(s.starBestTimeMs||0,timeElapsed);
+        s.starBestBosses=Math.max(s.starBestBosses||0,payload.bosses||0);
+        s.starBestSector=Math.max(s.starBestSector||0,payload.bosses||0);
+        p.starLevel=Math.max(p.starLevel||1,(payload.bosses||0)+1);
+      }
       if(isWinner&&level<=(p.starLevel||1))p.starLevel=Math.max(p.starLevel||1,level+1);
       p=updateMissions(p,'starKills',payload.kills||0);
       p=updateMissions(p,'starBosses',payload.bosses||0);

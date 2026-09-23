@@ -1,114 +1,180 @@
 {
-  "project_name": "Connectify Club - Action Arcade 'Star Patrol' Replacement & Streamlined Atelier Experience",
-  "archetype": "ORGANIC & PASTEL ATELIER WITH RETRO SPACE ARCADE (Tactile, warm cream canvas #fffaf5, high-contrast ink borders #172337, retro arcade neon accents)",
-  "action_arcade_specifications": {
-    "game_title": "Star Patrol (Patroli Bintang)",
-    "replacement_for": "Fruit Merge (Game Fruit Merge dihapus dan diganti penuh oleh Star Patrol)",
-    "core_mechanics": {
-      "control_scheme": "Touch / Drag movement with smooth lerp, automatic firing lasers",
-      "gameplay_loop": "Navigate spaceship through enemy waves, dodge asteroid & laser hazards, defeat stage bosses, collect Permen currency drops and temporary powerups",
-      "powerups": [
-        "Shield (Perisai Bintang) - Absorbs 1 hit",
-        "Triple Shot (Tembakan Tiga) - Fires 3 laser streams",
-        "Magnet Permen - Attracts all dropped candies/Permen on screen",
-        "Overdrive Laser - High speed rapid piercing lasers"
-      ],
-      "permanent_upgrades": [
-        "Laser Power (Tingkat Damage Laser)",
-        "Fire Rate (Kecepatan Tembak)",
-        "Hull Armor (Ketahanan HP Maksimal)",
-        "Permen Magnet Range (Jangkauan Magnet Permen)"
-      ],
-      "economy": "Uses existing Permen currency for purchasing permanent ship upgrades, cosmetics, and item powerups in the simplified Shop."
-    }
+  "project_scope": {
+    "app_name": "Connectify Arcade - Infinity (Formerly Star Patrol)",
+    "target_game": "Star Patrol update renamed to Infinity",
+    "genre": "Classic Vertical Space Shooter Arcade Game",
+    "core_mechanics": [
+      "Vertical touch/pointer & keyboard shooter with auto-firing laser cannon",
+      "Sector-based progression system with rising difficulty and multi-wave enemies",
+      "Diverse enemy behavior archetypes (Scout Drones, Interceptor Fighters, Heavy Cruisers)",
+      "Varied Boss encounters with distinct bullet-hell attack patterns and dynamic health bars",
+      "Hangar customization for ship skins, laser beam cosmetics, and stat upgrades (Hull, Cannon, Recovery)",
+      "Power-up inventory system (Perisai/Shield, Nova/Blast)",
+      "Launch screen, pause state, and post-sector victory/defeat results modal with XP/Peti rewards"
+    ]
   },
-  "bug_fix_directives": {
-    "profile_photo_fix": {
-      "issue": "Bug saat mengganti foto profil (tidak bisa disimpan / avatar selection failing)",
-      "solution": "Fix EditAvatarScreen state synchronization with ProfileContext and LocalStorage / Supabase state. Ensure selected avatar image path or ID updates immediately upon tap and persists across app reloads without falling back to default avatar."
-    }
-  },
-  "simplified_ui_guidelines": {
-    "profile_screen": {
-      "style": "Simplified, clean card layout with clear stats (Level, XP, High Score, Permen balance)",
-      "navigation": "Direct 1-tap avatar photo change trigger opens EditAvatarScreen modal",
-      "features": "Clear progress bar for XP/level progression, active cosmetics badge, direct access to collections"
-    },
-    "shop_screen": {
-      "style": "Simple categorized shop with top horizontal tab navigation: [Upgrades, Cosmetics, Themes, Chests]",
-      "navigation": "Easy category switching with zero lag, clear Permen cost badges, instant purchase confirmation feedback via Sonner toast",
-      "cards": "Compact cards with 2px ink borders (#172337), high contrast price tags, 'Milik' (Owned) vs 'Beli' (Buy) state badges"
+  "visual_theme": {
+    "archetype": "Neon Retro Arcade & Cyber Space",
+    "emotional_tone": "High-octane, futuristic, tactile, rewarding, intense retro-arcade space action",
+    "color_palette": {
+      "background_space": "#0B0E14",
+      "background_card": "#121824",
+      "background_panel_glass": "rgba(18, 24, 36, 0.85)",
+      "border_subtle": "#2A3854",
+      "text_primary": "#F4F7F8",
+      "text_muted": "#8B9BB4",
+      "accent_cyan": "#00F0FF",
+      "accent_magenta": "#FF2A85",
+      "accent_gold": "#FFB800",
+      "accent_mint": "#00FF9D",
+      "accent_crimson": "#FF3B30",
+      "laser_blue": "#00E5FF",
+      "laser_green": "#00FF87",
+      "laser_red": "#FF2E63"
     }
   },
   "typography": {
-    "font_family_heading": "Fredoka, sans-serif",
-    "font_family_body": "Outfit, sans-serif",
+    "headline_font": "Fredoka, sans-serif",
+    "body_font": "Outfit, sans-serif",
+    "hud_font": "JetBrains Mono, monospace",
     "hierarchy": {
-      "h1": "text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#172337]",
-      "h2": "text-2xl sm:text-3xl font-bold tracking-tight text-[#172337]",
-      "h3": "text-xl sm:text-2xl font-semibold text-[#172337]",
-      "h4": "text-lg font-semibold text-[#172337]",
-      "body": "text-sm sm:text-base leading-relaxed text-[#172337]",
-      "caption": "text-xs text-slate-500 font-medium tracking-wide uppercase"
+      "hero_title": "text-4xl sm:text-5xl font-bold tracking-tight text-white drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]",
+      "section_heading": "text-2xl sm:text-3xl font-semibold text-white",
+      "hud_metric": "text-sm sm:text-base font-mono font-bold tracking-wider text-cyan-400",
+      "button_text": "text-base font-semibold tracking-wide"
     }
   },
-  "colors": {
-    "background_main": "#fffaf5",
-    "surface_card": "#ffffff",
-    "text_primary": "#172337",
-    "text_muted": "#5e6e82",
-    "pastel_pink": "#ffb9cd",
-    "pastel_green": "#c4efd9",
-    "pastel_blue": "#c8e7fa",
-    "pastel_yellow": "#ffe6a7",
-    "accent_orange": "#d97736",
-    "accent_purple": "#9b51e0",
-    "border_ink": "#172337",
-    "arcade_bg": "#0b0f19",
-    "arcade_cyan": "#00f0ff",
-    "arcade_magenta": "#ff007f",
-    "contrast_ratio_min": "4.5:1 for body text, 3:1 for headers and buttons"
+  "layout_and_components": {
+    "topbar_hud": {
+      "style": "Glassmorphism bar with backdrop-blur-md, border-b border-[#2A3854], fixed max-width 740px",
+      "elements": [
+        "Back button (data-testid='star-back')",
+        "Sector Title & Level Indicator (data-testid='star-title', data-testid='star-level')",
+        "Live Score Display (data-testid='star-score')",
+        "Pause Toggle Button (data-testid='star-pause')"
+      ]
+    },
+    "flight_arena": {
+      "canvas_dimensions": "480x680 responsive vertical field with auto-scaling FIT mode",
+      "overlay_hud": {
+        "player_health": "data-testid='star-health' (shows current/max HP with heart icons)",
+        "wave_counter": "data-testid='star-wave' (GELOMBANG X/3 or BOSS indicator)",
+        "elapsed_time": "data-testid='star-time'",
+        "boss_health_bar": "data-testid='star-boss-health' (high contrast animated progress bar when Boss is active)",
+        "shield_active_badge": "data-testid='star-shield-active'"
+      }
+    },
+    "bottom_power_dock": {
+      "style": "2-column power button dock with stock badges and active hover glow",
+      "controls": [
+        "Shield Powerup Button (data-testid='star-power-shield', stock count data-testid='star-shield-stock')",
+        "Nova Blast Powerup Button (data-testid='star-power-blast', stock count data-testid='star-blast-stock')"
+      ]
+    },
+    "launch_screen": {
+      "title": "INFINITY ARCADE",
+      "subtitle": "Sektor & Rekor Pilot",
+      "start_button": "data-testid='star-start' with mint/cyan pill glow",
+      "hangar_button": "data-testid='star-open-hangar' for customizing ship & upgrades"
+    },
+    "hangar_screen": {
+      "ship_showcase": "Equipped ship artwork with sector badge & change skin button (data-testid='hangar-cosmetics')",
+      "upgrades": [
+        "Lambung / Hull Upgrade (data-testid='hangar-upgrade-hull', level data-testid='hangar-level-hull')",
+        "Meriam / Cannon Upgrade (data-testid='hangar-upgrade-cannon', level data-testid='hangar-level-cannon')",
+        "Pelindung / Recovery Upgrade (data-testid='hangar-upgrade-recovery', level data-testid='hangar-level-recovery')"
+      ],
+      "actions": "Launch Flight (data-testid='hangar-play') and Buy Upgrades (data-testid='hangar-shop')"
+    },
+    "results_modal": {
+      "elements": [
+        "Sector cleared / Defeat message (data-testid='star-result-title')",
+        "Final score display (data-testid='star-final-score')",
+        "Kills & Bosses summary (data-testid='star-result-summary')",
+        "XP and Chest Points rewards (data-testid='star-reward')",
+        "Retry / Next Sector button (data-testid='star-retry')",
+        "Return to Level Select (data-testid='star-result-menu')"
+      ]
+    }
   },
-  "visual_enhancers": {
-    "card_style": "2px solid #172337 ink border, 3px offset box-shadow (shadow-[3px_3px_0px_#172337]), rounded-2xl bg-white",
-    "button_primary": "bg-[#ffb9cd] hover:bg-[#ffa0bb] text-[#172337] font-bold border-2 border-[#172337] shadow-[3px_3px_0px_#172337] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all rounded-xl min-h-[44px]",
-    "glassmorphism": "backdrop-blur-md bg-white/90 border-2 border-[#172337] shadow-sm",
-    "arcade_hud": "High-contrast tactical arcade HUD overlay with health bar, shield timer, current score, and Permen counter"
+  "asset_and_sprites": {
+    "ship_skins": [
+      {"id": "ship_scout", "name": "Scout", "asset": "/art/star-patrol/playerShip1_blue.png"},
+      {"id": "ship_coral", "name": "Coral Wing", "asset": "/art/star-patrol/playerShip2_red.png"},
+      {"id": "ship_glacier", "name": "Glacier", "asset": "/art/star-patrol/playerShip3_blue.png"},
+      {"id": "ship_phantom", "name": "Red Comet", "asset": "/art/star-patrol/playerShip3_red.png"},
+      {"id": "ship_mint", "name": "Mint Falcon", "asset": "/art/star-patrol/playerShip2_green.png"},
+      {"id": "ship_solar", "name": "Solar Ace", "asset": "/art/star-patrol/playerShip1_orange.png"}
+    ],
+    "lasers": [
+      {"id": "laser_blue", "name": "Ion Blue", "asset": "/art/star-patrol/laserBlue01.png"},
+      {"id": "laser_green", "name": "Mint Beam", "asset": "/art/star-patrol/laserGreen01.png"},
+      {"id": "laser_red", "name": "Ruby Beam", "asset": "/art/star-patrol/laserRed01.png"}
+    ],
+    "upgrades": [
+      {"key": "hull", "name": "Lambung", "asset": "/art/star-patrol/shield_gold.png"},
+      {"key": "cannon", "name": "Meriam", "asset": "/art/star-patrol/bolt_gold.png"},
+      {"key": "recovery", "name": "Pelindung", "asset": "/art/star-patrol/star_gold.png"}
+    ],
+    "backgrounds": [
+      {"name": "Deep Galaxy Stars", "asset": "/art/star-patrol/stars.png"},
+      {"name": "Effect Starfield", "asset": "/art/premium/effects/stars.webp"}
+    ]
   },
-  "grids_and_layouts": {
-    "mobile_container": "max-w-[480px] mx-auto px-4 pb-24 pt-4 min-h-screen relative",
-    "shop_bento_grid": "grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3",
-    "touch_targets": "min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
-  },
-  "motion": {
-    "framework": "Framer Motion for smooth screen transitions, bullet physics, and laser impact visual feedback",
-    "reduced_motion": "respect prefers-reduced-motion media query"
-  },
-  "accessibility": {
-    "testing_attribute": "MUST add data-testid attribute in kebab-case format to every interactive element (e.g. data-testid='start-star-patrol-btn', data-testid='save-profile-avatar-btn', data-testid='shop-upgrade-laser-btn')",
-    "contrast": "Ensure all text meets APCA & WCAG AA contrast standards against pastel cards and dark arcade gameplay backgrounds."
-  },
-  "image_urls": {
-    "vanilla": "/src/assets/vanilla/tiles/",
-    "avatars": "/public/art/avatars/",
-    "chests": "/public/art/chests/",
-    "space_sprites": "/public/art/space/",
-    "brand": "/public/brand/"
+  "testing_attributes": {
+    "required_test_ids": [
+      "star-game-screen",
+      "star-back",
+      "star-title",
+      "star-level",
+      "star-score",
+      "star-pause",
+      "star-arena",
+      "star-health",
+      "star-wave",
+      "star-time",
+      "star-boss-health",
+      "star-shield-active",
+      "star-launch",
+      "star-launch-title",
+      "star-record",
+      "star-start",
+      "star-open-hangar",
+      "star-power-shield",
+      "star-shield-stock",
+      "star-power-blast",
+      "star-blast-stock",
+      "star-kills",
+      "star-pause-title",
+      "star-resume",
+      "star-end-round",
+      "star-result-caption",
+      "star-result-title",
+      "star-final-score",
+      "star-result-summary",
+      "star-reward",
+      "star-next-level",
+      "star-retry",
+      "star-result-menu",
+      "hangar-ship-image",
+      "hangar-ship-name",
+      "hangar-sector",
+      "hangar-cosmetics",
+      "hangar-upgrade-hull",
+      "hangar-upgrade-cannon",
+      "hangar-upgrade-recovery",
+      "hangar-level-hull",
+      "hangar-level-cannon",
+      "hangar-level-recovery",
+      "hangar-play",
+      "hangar-shop"
+    ]
   },
   "instructions_to_main_agent": [
-    "Replace Fruit Merge completely with 'Star Patrol' auto-firing action arcade shooter mode with touch movement, wave progression, boss fights, item drops, and permanent upgrades.",
-    "Fix profile avatar update bug in EditAvatarScreen & ProfileScreen so selected avatar saves persistently to profile state.",
-    "Simplify ProfileScreen layout: keep it clean with level/XP progress, stats summary, avatar change button, and active equipment.",
-    "Simplify ShopScreen layout: organize items with clear tabbed navigation [Upgrades, Cosmetics, Themes, Chests] and straightforward 1-tap Permen buy buttons.",
-    "Ensure persistent state for XP, Level, Stats, Permen balance, and Missions.",
-    "Preserve all existing bitmap assets in /public/art/ without removing any file.",
-    "Perform game level & flow testing at the end after all implementations are complete.",
-    "Add kebab-case data-testid to every interactive component across the app."
-  ],
-  "UNIVERSAL GUIDELINES FOR MAIN AGENT": {
-    "testing_attribute": "MUST add data-testid to every interactive component (e.g. data-testid='shop-category-tab-upgrades')",
-    "anti_ai_slop": "Avoid generic flat layouts. Maintain tactile ink borders (#172337), playful pastel surfaces, and smooth arcade responsiveness.",
-    "no_transparent_overlays": "Headers, floating menus, and modals MUST have solid/frosted non-transparent backgrounds (bg-white/90 or solid #fffaf5 with backdrop-blur).",
-    "spacing": "Maintain generous padding inside cards and modals for comfortable mobile touch interactions."
-  }
+    "Focus ALL updates on game 'Star Patrol' renamed to 'Infinity' inside /src/game/star-patrol and core files related to Star Patrol.",
+    "Do NOT alter or touch other mini-games (e.g. Onet, Block Puzzle, Triple, Memory) or profile screens unrelated to Infinity.",
+    "Preserve user progression, currency rewards, and migration mapping while updating visual styling, sprite assets, enemy behavior, boss patterns, and HUD indicators.",
+    "Ensure all interactive elements keep or add the required data-testid attributes.",
+    "Maintain responsive dark cyber-arcade UI styling across mobile and desktop viewport sizes."
+  ]
 }

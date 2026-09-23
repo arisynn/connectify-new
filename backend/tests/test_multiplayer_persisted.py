@@ -9,7 +9,7 @@ import uuid
 import requests
 import pytest
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://3f2460a4-8c42-4127-9c16-fdcd633eff42.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://cosmic-patrol-update.preview.emergentagent.com").rstrip("/")
 SUPABASE_URL = "https://ymunfgclqfdqaczluqti.supabase.co"
 SUPABASE_ANON = "sb_publishable_Zq3ajEGs_dTEp4MuEFLI9g_F1JINDdU"
 PASSWORD = "ClubPlay2026!"
