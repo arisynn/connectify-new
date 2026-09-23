@@ -60,7 +60,7 @@
 .game-page{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;background:var(--club-paper);color:var(--club-ink)}
 .game-page[data-game=star]{background:radial-gradient(circle at 20% 0%,#15304d 0%,transparent 45%),var(--club-paper)}
 .gp-bar{display:flex;align-items:center;gap:var(--sp-3);width:100%;max-width:var(--page-max);margin:0 auto;padding:var(--sp-3) var(--page-pad);box-sizing:border-box;border-bottom:1.5px solid var(--club-line)}
-.gp-brand{display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0;text-align:left;color:inherit;padding:0}
+.gp-brand{display:flex;align-items:center;gap:var(--sp-2);flex:1;min-width:0;text-align:left;color:inherit;padding:0}
 .gp-brand img{width:44px;height:44px;object-fit:contain;padding:6px;border:1.5px solid var(--club-line);border-radius:14px;background:var(--g-soft)}
 .gp-brand span{display:flex;flex-direction:column;gap:3px}
 .gp-brand small{font-size:8px;letter-spacing:1.6px;font-weight:800;color:var(--club-muted)}
@@ -102,12 +102,23 @@
 .gp-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
 .gp-stats>div{display:flex;flex-direction:column;gap:6px;padding:var(--sp-3);border:1.5px solid var(--club-line);border-radius:18px;background:var(--club-card)}
 .gp-stats b{font-size:26px;letter-spacing:-.6px}.gp-stats span{font-size:10px;letter-spacing:.8px;font-weight:800;color:var(--club-muted);text-transform:uppercase}
-.gp-foot{display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);padding-top:var(--sp-2);border-top:1.5px dashed var(--club-line)}
+.gp-foot{display:flex;justify-content:center;padding-top:var(--sp-3);border-top:1.5px dashed var(--club-line)}
 .gp-foot small{font-size:11px;color:var(--club-muted);text-align:center}
 .gp-exit{display:inline-flex;align-items:center;gap:var(--sp-1);height:46px;padding:0 var(--sp-4);border:1.5px solid var(--club-line);border-radius:999px;background:var(--club-card);color:var(--club-ink);font-weight:800;font-size:13px;box-shadow:3px 3px 0 var(--club-line);transition:transform .15s,box-shadow .15s}
 .gp-exit:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--club-line)}
 .gp-exit:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--club-line)}
-.gp-tabbar{display:none}
+.gp-tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--sp-1);width:100%;max-width:var(--page-max);margin:0 auto;padding:var(--sp-1) var(--page-pad) calc(var(--sp-1) + env(safe-area-inset-bottom));box-sizing:border-box;border-top:1.5px solid var(--club-line);background:var(--club-card)}
+.gp-tabbar button{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:14px;color:var(--club-muted);font-size:10px;font-weight:800;transition:background-color .15s,color .15s}
+.gp-tabbar button.active{background:var(--g-soft);color:var(--club-ink)}
+.game-page[data-game=star] .gp-tabbar button.active{color:#fff}
+.gp-tabbar b{top:4px;right:calc(50% - 26px)}
+.gp-exit-icon{width:40px;height:40px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--club-line);border-radius:999px;background:var(--club-card);color:var(--club-ink);transition:transform .15s,background-color .15s}
+.gp-exit-icon:hover{transform:translateX(-2px);background:var(--g-soft)}
+.gp-leave{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--sp-2)}
+.gp-leave img{width:72px;height:72px;object-fit:contain}
+.gp-leave h2{font-size:24px;letter-spacing:-.5px;margin:0}
+.gp-leave p{margin:0;font-size:13px;line-height:1.5;opacity:.8;max-width:34ch}
+.gp-leave-actions{display:flex;flex-direction:column;gap:var(--sp-1);width:100%;margin-top:var(--sp-1)}
 .mission-panel{display:flex;flex-direction:column}
 .game-page .simple-shop,.game-page .achievement-grid,.game-page .mission-list{color:var(--club-ink)}
 
@@ -125,8 +136,7 @@
   .poki-tile{border-radius:18px;box-shadow:3px 3px 0 var(--club-line)}
   .poki-label{padding:var(--sp-1) var(--sp-2)}.poki-label>img{width:26px;height:26px}.poki-label b{font-size:14px}.poki-label small{font-size:8px}
   .poki-tile.friends{grid-column:1/-1}.poki-tile.friends .poki-cover{aspect-ratio:16/5}
-  .gp-menu{display:none}
-  .gp-brand img{width:38px;height:38px}.gp-brand b{font-size:17px}.gp-brand small{display:none}
+    .gp-brand img{width:38px;height:38px}.gp-brand b{font-size:17px}.gp-brand small{display:none}
   .gp-brand{flex:1}
   .gp-hero{grid-template-columns:minmax(0,1fr);padding:var(--sp-3);gap:var(--sp-3);border-radius:22px}
   .gp-cover{order:-1;max-width:220px;max-height:220px}
@@ -134,9 +144,6 @@
   .gp-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
   .gp-shortcuts button{padding:var(--sp-2)}
   .gp-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
-  .gp-scroll{padding-bottom:calc(var(--sp-4) + 72px)}
-  .gp-tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:var(--sp-1) var(--sp-2) calc(var(--sp-1) + env(safe-area-inset-bottom));border-top:1.5px solid var(--club-line);background:var(--club-card)}
-  .gp-tabbar button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;border-radius:12px;color:var(--club-muted);font-size:9px;font-weight:800}
-  .gp-tabbar button.active{background:var(--g-soft);color:var(--club-ink)}
-  .gp-tabbar b{top:2px;right:8px}
+  .gp-tabbar{gap:4px;padding:var(--sp-1) var(--sp-2) calc(var(--sp-1) + env(safe-area-inset-bottom))}
+  .gp-tabbar button{padding:8px 2px;font-size:9px}
 }

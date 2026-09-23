@@ -1,41 +1,28 @@
-# Connectify Club — Seasonal Stories
+# Connectify Club — Game Hub (Poki-style) + per-game sites
 
-## Original request
-"Ini sebenernya game nya udh bagus ya udh bagus bngt. Nah cuman aku pengen konsistensi kan tampilan nya semuanya, soalnya belum konsisten kan sama tampilan baru nya, ini kayak 75% baru 25% masih yang lama, terus kalau bisa pakai 1 tombol untuk 1 fitur aja biar bagus, nah contoh nih di tab playing game harusnya tuh langsung pakai file yang level select, jadi pas game over terus ke menu tetep kembali ke layar itu, untuk yang sekarang kayak beda gitu frontend nya yang pusat tantangan kalo ga salah, atur saja deh analisis dulu ya biar makin bagus. Nah udh. Itu aja kayaknya. Terus aku pengen kamu update kali ini lebih fokus ke perbanyak tema, jual kosmetik, perbanyak asets gambar biar game nya bagus nggak pakai svg semua. Udh sih, cuma perbanyak trma sama assets gambar saja di prioritaskan. Nah sama assets gambar lama, itu klo bisa digunakan gunakan aja kalau gabisa gapapa hapus saja. Klo bisa kamu ngasih pertanyaan nya setelah kamu menganalisis game nya ya nanti aku jawab hal yang ga kamu pahami biar ga salah paham"
+## Original request (2026-09-23, Indonesian)
+Setiap game punya layar sendiri (seperti Poki: tap game = buka "web" berbeda). Hub = launcher. Tombol kembali ke hub di header game dengan konfirmasi. Satu currency (Permen) untuk semua game. Misi, pencapaian, dan toko pindah ke masing-masing game; hub punya achievement meta + toko kosmetik profil. Peti dihapus → hadiah login. Supabase satu-satunya source of truth (tanpa mock/preview). Selesaikan rename Star Patrol → Infinity. Login pintar: nama belum ada → daftar, nama ada → masuk. UI tidak numpuk, padding/gap konsisten, tidak ada tombol duplikat (pertahankan bottom tab). Tema termasuk milik Onet. Multiplayer ditunda.
 
-## Explicit corrections and additional scope
-- ALL old image files must stay untouched: "Asets lama ga usah di apa apain udh bagus itu kesalahan prompt".
-- Onet tile skins sold as complete same-material sets for 1×1, domino 1×2 / 2×1, and 2×2; never separate purchases. Upgrade legacy partial owners freely.
-- Animated cosmetics for Onet, Block, and other games. Delete Challenge Center. All games equal/main games, no minor-game label.
-- Fix Block dragged pieces using default rendering instead of equipped bitmap skin. Refresh all popups and screen layouts.
-- Improve Memory with illustrated cards and mechanics. Fruit Merge with original fruit artwork requested but explicitly allowed to wait until current work is finished.
-- Update missions/achievements. Make achievements prominent. All completed-round progress feeds missions, achievements, statistics.
-- Home must fit one viewport without scrolling, retaining original features.
+## Architecture
+- Root Vite + React + TS app; Express `server.ts` (UI :3000, API :8001) via supervisor `frontend` (`/app/frontend/package.json` start script). Node 22 binary in `node_modules/node/bin`; run `yarn install --ignore-engines`, typecheck `PATH=/app/node_modules/node/bin:$PATH npx tsc --noEmit`.
+- Config in `/app/.env` (PORT, API_PORT, REACT_APP_BACKEND_URL, SUPABASE_URL, SUPABASE_SECRET_KEY, SUPABASE_ANON_KEY, VITE_*). `api/supabase.ts` and `src/lib/supabase.ts` have NO mock fallback — missing keys fail fast.
+- Supabase project ymunfgclqfdqaczluqti: tables cde_accounts, cde_profiles (permen + profile_data jsonb), cde_operations_log, cde_recovery_codes, mp_rooms; RPC cde_mutate_state (idempotent, revision-checked). No schema change needed.
+- CDE: optimistic client (`src/core/cde/CDE.ts`) + authoritative server (`api/cde.ts`) share pure helpers in `src/core/*`. Operation types: UPDATE_PROFILE, UPDATE_GAME_STATE, PURCHASE_ITEM, USE_ITEM, PROCESS_WIN, CLAIM_MISSION_REWARD, CLAIM_ACHIEVEMENT_REWARD, CLAIM_LOGIN_REWARD, DAILY_CHECK_IN. Chest ops removed.
+- Navigation (`GameContext`): screens home | game-hub | play | block-puzzle | memory | triple | star-patrol | star-hangar | toko | tema | prestasi | statistik | profile | … `openGame(id, tab)` sets activeGame + opens the game site. Game screens return to `game-hub`.
+- Game registry `src/core/games.ts`: id/name/palette/cover/modes/status/stats per game (onet, block, memory, triple, star=Infinity). Palette overrides `--club-*` tokens so each game site looks distinct.
+- Missions (`misiHarian.js`, `misiMingguan.js`): every mission has `game`; deterministic per-game pick (daily 3/2/2/2/2, weekly 2/1/1/1/1); `updateMissions(profile,event,amount,game)` scopes progress to the producing game; legacy sets archived to `pendingMissions`.
+- Achievements (`achievements.js`): `game` field ('hub' for meta: total_score, high_score, levels_cleared, daily_missions, loyalty, blocks_cleared, theme_purchases, club_explorer, first_win, permen_earned, login_streak). `achievementsFor(game)`.
+- Login reward (`loginReward.js`): streak schedule 5/5/6/7/8/9/10 Permen + 20 XP, one claim per WIB day, respects 100/day cap.
+- Shop (`ShopPanel`): hub = profile cosmetics only; onet = skin/tema/item; block = skin/item; memory = skin/item; triple = (themes from Onet); star = ships & lasers/item/upgrade. `productGames()` (shuffle sold in onet+block).
+- Auth (`CDEAuth.smartLogin`): signIn → if invalid credentials and name unknown → signUp + provision; if name known → "kata sandi salah". `check_username` exact match on cleaned name.
 
-## Architecture / preserved systems
-- Existing root-level Vite + React + TypeScript application, Express + API handlers, not FastAPI/React scaffold. State-screen navigation in GameContext.
-- Node 22 binary at node_modules/node/bin/node; `yarn install --frozen-lockfile --ignore-engines` needed under base container's Node 20. Build/lint through PATH=/app/node_modules/node/bin:$PATH.
-- Supervisor `frontend` runs root `yarn dev`, launches UI 3000 and API 8001; unused template `backend` supervisor process stopped. URLs/settings in .env; frontend/.env contains external backend URL for testing convention. No Supabase keys supplied. Existing PREVIEW_MODE store persists /app/.preview/data.json. Public production auth integration remains pre-existing configuration-dependent and was not changed.
-- CDE optimistic transactions/outbox plus authoritative server, central shared economy/cosmetics/reward modules. Existing Permen 100/day cap retained. No payment provider added.
-- Existing game mechanics, accounts, assets, achievements/mission claims preserved. Legacy `challenges` route redirects to `levels`; ChallengeScreen file deleted. navigate callback must remain stable to avoid boot effects firing again.
+## Implemented 2026-09-23
+- Poki-style hub (`MainLobby`): cover tiles per game, XP, login reward, hub achievements link, Main bareng tile. MobileNav: Hub / Pencapaian / Toko / Profil.
+- Game site (`GameHubScreen`): header (back-to-hub with confirmation modal, brand, wallet), hero + modes, bottom tab bar Main/Misi/Pencapaian/Toko/Statistik (single source of navigation, no duplicates), panels: MissionPanel, AchievementPanel, ShopPanel, stats.
+- Chest feature fully removed (screen, core, ops, missions, achievements, avatar requirement). Star Patrol → Infinity renamed everywhere; StarConfig damage/wingman upgrades wired.
+- Smart one-step login screen with live name lookup hint.
+- Spacing scale in `game-hub.css` (8/12/16/24/32).
 
-## Implemented
-1. Four themes: Autumn Harvest, Magic Atelier, Retro Arcade, Alpine Winter; 16 distinct WebP matching tiles each. 86 NEW processed image assets overall: 64 theme tiles, 16 cosmetics, 6 Memory card/face/deck images. Source sheets, manifests, extraction scripts retained in scripts/ and public/art/premium. Existing public/art and src/assets tracked files unchanged.
-2. Shared seasonal catalog with avatar, frame, block, victory effects, new skins. Ten complete tile sets (nine purchasable; Pearl free). Atomic ownership/equip across all three footprints. Existing individual skin owner derives full set ownership. Server rejects purchasing hidden individual tile parts.
-3. Twelve gameplay animation cosmetics: 4 each for Onet match/split, Block/Infinity line clear (also duel blocks), Memory matched cards. Four illustrated Memory backs (one free). Store previews use actual sprite animations, themed 16-image previews, confirmation dialogs, balance validation, equip/unequip, ownership filters.
-4. Canonical Choose Game screen for Onet, Block, Memory, Triple, Infinity, Sprint, multiplayer. Back/results lead to same screen. No Challenge Center UI. Selection-page scroll preserved.
-5. Refreshed Onet, Block results, Memory and Triple layouts. Block bitmap textures consistent in tray, ghost, drag overlay, placed cells, and multiplayer; holes remain empty. Uniform modals, keyboard focus traps, portal-backed store/account/room/settings dialogs. No duplicate close/buy-or-equip buttons.
-6. Memory: 6/8/12-pair difficulty choices (capped to available distinct art), 2.3s initial peek with frozen timer, 3D card flip, anti-double-click locks, match animation, +30 streak bonuses capped after five steps, remaining-time win bonus, accurate combo result payload.
-7. Unified GameShell for achievements, collection, chest, notification, settings, stats. Home grid fits viewport; headline/decorations scale down, XP/rounds/record/ready missions/wallet/profile/chests/notifications/nav remain. Added visible Achievement tile.
-8. Prominent Progres navigation (Misi / Pencapaian / Statistik), per-game stats and five new achievements. Dedicated daily/weekly Memory & Triple missions introduced without deleting existing progress/claims. Game-specific match events prevent Memory filling Onet missions. Results deduped by runId. Per-game matches/time/combo counters and newly claimable achievement notifications.
-
-## Verification state
-- TypeScript check and production build passed before last navigation stabilization; final rerun required.
-- Desktop screenshot flows passed: shop, full skin preview, dragged block uses equipped cloud.webp, game back returns Choose Game, Onet board visible, Home scrollHeight==clientHeight, Achievement screen accessible, six daily missions, Memory relaxed deck 12 cards + frozen 75s preview.
-- Comprehensive testing agent pending: purchases, legacy ownership, exact result/mission/achievement/statistics linkage, responsive 320/390/768/1920 and dark mode, no asset overwrites.
-
-## Prioritized backlog / next tasks
-- P0: complete integrated QA, fix all findings, recheck mobile Home all features within viewport.
-- P1 NEXT (user deferred): Fruit Merge as a main game; original fruit progression artwork; merge/drop physics, loss/retry, score/combos, shared mission/achievement/statistics events, bitmap cosmetic previews. Do not create a nonfunctional menu button now.
-- P2: further card decks/theme seasons after feedback; improve artwork-specific animation variations without mechanical advantage.
-- Existing integration limitation: no production Supabase credentials in workspace; real-project cloud login was not part of this change. Preview account credentials in test_credentials.md.
+## Backlog
+- P1: Hub theme (user idea "tema game hub"), per-game onboarding art (generated assets), multiplayer polish (deferred by user).
+- P2: Remove legacy `backend/` FastAPI tests folder; optional per-game fonts.
